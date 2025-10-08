@@ -1,20 +1,6 @@
-# HTTP proxy operators
+# Postfix Relay operator
 
-This repository provides a collection of operators related to HTTP proxies,
-including offering HTTP proxy services and managing HTTP proxy integration with
-our charms.
-
-This repository contains the code for the following charms:
-
-1. [`squid-forward-proxy`](./squid-forward-proxy-operator): A machine charm
-   managing a Squid proxy instance as a forward proxy server.
-2. [`http-proxy-policy`](./http-proxy-policy-operator): A subordinate charm that
-   adds a policy layer in front of the HTTP proxy charms.
-
-The repository also contains the snapped workload of some charms:
-
-1. [`charmed-http-proxy-policy`](./http-proxy-policy): A snapped Django
-   application specifically made for the `http-proxy-policy` charm.
+This repository container the Postfix Relay operator the charms it might be deployed alongside.
 
 ## Project and community
 
