@@ -1,6 +1,6 @@
 # Postfix Relay operator
 
-This repository container the Postfix Relay operator the charms it might be deployed alongside.
+This repository container the Postfix Relay operator the charms that can be deployed alongside it.
 
 ## Project and community
 
@@ -10,5 +10,5 @@ suggestions, fixes and constructive feedback.
 
 * [Code of conduct](https://ubuntu.com/community/code-of-conduct)
 * [Get support](https://discourse.charmhub.io/)
-* [Issues](https://github.com/canonical/http-proxy-operators/issues)
+* [Issues](https://github.com/canonical/postfix-relay-operator/issues)
 * [Matrix](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
