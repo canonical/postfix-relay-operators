@@ -1,35 +1,28 @@
-[![CharmHub Badge](https://charmhub.io/postfix-relay/badge.svg)](https://charmhub.io/postfix-relay)
-[![Publish to edge](https://github.com/canonical/postfix-relay-operator/actions/workflows/publish_charm.yaml/badge.svg)](https://github.com/canonical/postfix-relay-operator/actions/workflows/publish_charm.yaml)
-[![Promote charm](https://github.com/canonical/postfix-relay-operator/actions/workflows/promote_charm.yaml/badge.svg)](https://github.com/canonical/postfix-relay-operator/actions/workflows/promote_charm.yaml)
-[![Discourse Status](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscourse.charmhub.io&style=flat&label=CharmHub%20Discourse)](https://discourse.charmhub.io)
+# HTTP proxy operators
 
-# Postfix relay operator
+This repository provides a collection of operators related to HTTP proxies,
+including offering HTTP proxy services and managing HTTP proxy integration with
+our charms.
 
-A [Juju](https://juju.is/) [charm](https://documentation.ubuntu.com/juju/3.6/reference/charm/)
-deploying and managing a postfix Postfix relay server on bare metal. SMTP
-is an Internet standard communication protocol for email transmission.
+This repository contains the code for the following charms:
 
-Features include (not limited to):
-- set up base Postfix system
-- relay through another MTA
-- set up virtual aliases and transport maps
-- restrict relaying per domain, sender, recipient, headers checks
-- enable SPF subsystem
-- set up authenticated submission service
-- restrict sender address per user
-- fine-tune TLS settings
-- set up limits (rate, size, connections, ...)
-- set up Nagios monitoring
+1. [`squid-forward-proxy`](./squid-forward-proxy-operator): A machine charm
+   managing a Squid proxy instance as a forward proxy server.
+2. [`http-proxy-policy`](./http-proxy-policy-operator): A subordinate charm that
+   adds a policy layer in front of the HTTP proxy charms.
 
-For information about how to deploy, integrate, and manage this charm, see the Official [postfix-relay Operator Documentation](https://charmhub.io/postfix-relay/docs).
+The repository also contains the snapped workload of some charms:
 
-## Learn more
-* [Read more](https://charmhub.io/postfix-relay) <!--Link to the charm's official documentation-->
-* [Developer documentation](https://www.postfix.org/documentation.html) <!--Link to any developer documentation-->
-* [Official webpage](https://www.postfix.org/) <!--(Optional) Link to official webpage/blog/marketing content-->
-* [Troubleshooting](https://matrix.to/#/#charmhub-charmdev:ubuntu.com) <!--(Optional) Link to a page or section about troubleshooting/FAQ-->
+1. [`charmed-http-proxy-policy`](./http-proxy-policy): A snapped Django
+   application specifically made for the `http-proxy-policy` charm.
+
 ## Project and community
-* [Issues](https://github.com/canonical/postfix-relay-operator/issues) <!--Link to GitHub issues (if applicable)-->
-* [Contributing](https://charmhub.io/postfix-relay/docs/how-to-contribute) <!--Link to any contribution guides-->
-* [Matrix](https://matrix.to/#/#charmhub-charmdev:ubuntu.com) <!--Link to contact info (if applicable), e.g. Matrix channel-->
 
+The HTTP proxy operators project is a member of the Ubuntu family. It is an
+open source project that warmly welcomes community projects, contributions,
+suggestions, fixes and constructive feedback.
+
+* [Code of conduct](https://ubuntu.com/community/code-of-conduct)
+* [Get support](https://discourse.charmhub.io/)
+* [Issues](https://github.com/canonical/http-proxy-operators/issues)
+* [Matrix](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)

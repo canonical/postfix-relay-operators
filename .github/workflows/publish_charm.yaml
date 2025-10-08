@@ -10,5 +10,10 @@ jobs:
   publish-to-edge:
     uses: canonical/operator-workflows/.github/workflows/publish_charm.yaml@main
     secrets: inherit
+    strategy:
+      matrix:
+        charm: [postfix-relay-operator]
     with:
       channel: 3/edge
+      identifier: ${{ matrix.charm }}
+      working-directory: './${{ matrix.charm }}-operator'

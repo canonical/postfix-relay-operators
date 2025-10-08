@@ -7,9 +7,14 @@ jobs:
   integration-tests:
     uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
     secrets: inherit
+    strategy:
+      matrix:
+        charm: [postfix-relay-operator]
     with:
       self-hosted-runner: true
       self-hosted-runner-label: "edge"
       juju-channel: 3/stable
       provider: 'lxd'
+      working-directory: ./${{ matrix.charm }}-operator
+      identifier: ${{ matrix.charm }}
       pre-run-script: ./tests/integration/mailcatcher-installation.sh
