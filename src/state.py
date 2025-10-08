@@ -4,6 +4,7 @@
 """Charm state."""
 import itertools
 import logging
+from collections.abc import Mapping
 from enum import Enum
 from ipaddress import ip_network
 from typing import Any
@@ -87,10 +88,12 @@ class PostfixLookupTableType(Enum):
     Attributes:
         HASH: "hash"
         REGEXP: "regexp"
+        CIDR: "cidr"
     """
 
     HASH = "hash"
     REGEXP = "regexp"
+    CIDR = "cidr"
 
 
 class AccessMapValue(Enum):
@@ -142,7 +145,7 @@ def _parse_list(raw_list: str | None) -> list[str]:
 
 
 class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-instance-attributes
-    """The Indico operator charm state.
+    """The Postfix Relay operator charm state.
 
     Attributes:
         additional_smtpd_recipient_restrictions: List of additional recipient restrictions.
@@ -216,7 +219,7 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     connection_limit: int = Field(ge=0)
 
     @classmethod
-    def from_charm(cls, config: dict[str, Any]) -> "State":
+    def from_charm(cls, config: Mapping[str, Any]) -> "State":
         """Initialize the state from charm.
 
         Args:

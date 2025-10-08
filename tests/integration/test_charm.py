@@ -5,7 +5,10 @@
 
 """Integration tests."""
 
+import base64
+import hashlib
 import logging
+import os
 import smtplib
 import socket
 import time
@@ -13,8 +16,17 @@ import time
 import jubilant
 import pytest
 import requests
+import yaml
 
 logger = logging.getLogger(__name__)
+
+
+def sha512(password: str, salt: bytes | None = None) -> str:
+    if salt is None:
+        salt = os.urandom(8)
+    digest = hashlib.sha512(password.encode("utf-8") + salt).digest()
+    b64 = base64.b64encode(digest + salt).decode("ascii")
+    return "{SSHA512}" + b64
 
 
 @pytest.fixture(scope="session", name="machine_ip_address")
@@ -29,14 +41,14 @@ def machine_ip_address_fixture() -> str:
 
 
 @pytest.mark.abort_on_fail
-def test_simple_relay(juju: jubilant.Juju, smtp_relay_app, machine_ip_address):
+def test_simple_relay(juju: jubilant.Juju, postfix_relay_app, machine_ip_address):
     """
     arrange: Deploy postfix-relay charm with the testrelay.internal domain in relay domains.
     act: Send an email to an address with the testrelay.internal domain.
     assert: The email is correctly relayed to the mailcatcher local test smtp server.
     """
     status = juju.status()
-    unit = list(status.apps[smtp_relay_app].units.values())[0]
+    unit = list(status.apps[postfix_relay_app].units.values())[0]
     unit_ip = unit.public_address
 
     command_to_put_domain = (
@@ -44,9 +56,9 @@ def test_simple_relay(juju: jubilant.Juju, smtp_relay_app, machine_ip_address):
     )
     juju.exec(machine=unit.machine, command=command_to_put_domain)
 
-    juju.config(smtp_relay_app, {"relay_domains": "- testrelay.internal"})
+    juju.config(postfix_relay_app, {"relay_domains": "- testrelay.internal"})
     juju.wait(
-        lambda status: status.apps[smtp_relay_app].is_active,
+        lambda status: status.apps[postfix_relay_app].is_active,
         error=jubilant.any_blocked,
         timeout=6 * 60,
     )
@@ -71,3 +83,71 @@ def test_simple_relay(juju: jubilant.Juju, smtp_relay_app, machine_ip_address):
 
     # Clean up mailcatcher
     requests.delete(f"{mailcatcher_url}/{messages[0]['id']}", timeout=5)
+
+
+@pytest.mark.abort_on_fail
+def test_authentication(juju: jubilant.Juju, postfix_relay_app, machine_ip_address):
+    """
+    arrange: Deploy postfix-relay charm with SMTP authentication enabled and a test user.
+    act: Attempt to send an email without authentication then with authentication.
+    assert: Unauthenticated email sending is refused, authenticated email sending is accepted
+    """
+    status = juju.status()
+    unit = list(status.apps[postfix_relay_app].units.values())[0]
+    unit_ip = unit.public_address
+    mailcatcher_url = "http://127.0.0.1:1080"
+
+    username = "testuser"
+    password = "testpassword"  # nosec
+    hashed_password = sha512(password)
+    auth_users_yaml = yaml.dump([f"{username}:{hashed_password}"])
+
+    juju.config(
+        postfix_relay_app,
+        {
+            "enable_smtp_auth": "true",
+            "smtp_auth_users": auth_users_yaml,
+            "relay_host": f"[{machine_ip_address}]",
+            "enable_reject_unknown_sender_domain": "false",
+        },
+    )
+
+    juju.wait(
+        lambda s: s.apps[postfix_relay_app].is_active,
+        error=jubilant.any_blocked,
+        timeout=5 * 60,
+    )
+
+    # Unauthenticated send refused
+    with pytest.raises(smtplib.SMTPRecipientsRefused):
+        with smtplib.SMTP(unit_ip, 587, timeout=10) as server:
+            server.starttls()
+            server.sendmail(
+                from_addr="unauthenticated@example.com",
+                to_addrs=["recipient@example.com"],
+                msg="Subject: Auth Fail Test",
+            )
+
+    requests.delete(f"{mailcatcher_url}/messages", timeout=5)
+
+    # Authenticated send succeed
+    with smtplib.SMTP(unit_ip, 587, timeout=10) as server:
+        server.starttls()
+        server.login(username, password)
+        server.sendmail(
+            from_addr="authenticated@example.com",
+            to_addrs=["recipient@example.com"],
+            msg="Subject: Auth Success Test",
+        )
+
+    messages = []
+    for _ in range(5):
+        messages = requests.get(f"{mailcatcher_url}/messages", timeout=5).json()
+        if messages:
+            break
+        time.sleep(1)
+    assert len(messages) == 1
+    assert messages[0]["recipients"] == ["<recipient@example.com>"]
+
+    # Clean up mailcatcher
+    requests.delete(f"{mailcatcher_url}/messages/{messages[0]['id']}", timeout=5)
