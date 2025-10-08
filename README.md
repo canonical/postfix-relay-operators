@@ -4,7 +4,7 @@ This repository container the Postfix Relay operator the charms that can be depl
 
 ## Project and community
 
-The HTTP proxy operators project is a member of the Ubuntu family. It is an
+The Postfix Relay operators project is a member of the Ubuntu family. It is an
 open source project that warmly welcomes community projects, contributions,
 suggestions, fixes and constructive feedback.
 
