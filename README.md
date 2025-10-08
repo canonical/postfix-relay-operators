@@ -1,6 +1,6 @@
 # Postfix Relay operator
 
-This repository contains the Postfix Relay operator the charms.
+This repository contains the Postfix Relay operator charms.
 
 ## Project and community
 
