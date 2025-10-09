@@ -49,6 +49,3 @@ inet_interfaces = all
 inet_protocols = all
 
 smtpd_sender_restrictions = reject_unknown_sender_domain, check_sender_access hash:/etc/postfix/access
-
-smtpd_milters = inet:10.48.129.221:8892
-non_smtpd_milters = inet:10.48.129.221:8892

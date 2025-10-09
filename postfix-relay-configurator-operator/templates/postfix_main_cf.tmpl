@@ -91,10 +91,6 @@ smtpd_sender_restrictions = {{smtpd_sender_restrictions}}
 {% if restrict_recipients -%}
 restricted = check_recipient_access hash:/etc/postfix/restricted_recipients, reject
 {% endif -%}
-{% if milter and milter != '' %}
-smtpd_milters = {{milter}}
-non_smtpd_milters = {{milter}}
-{% endif -%}
 {% if enable_spf %}
 policyd-spf_time_limit = 3600s
 {% endif -%}
