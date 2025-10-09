@@ -1,3 +1,4 @@
+<!-- vale Canonical.011-Headings-not-followed-by-heading = NO -->
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -11,3 +12,5 @@ Each revision is versioned by the date of the revision.
 ### Added
 
 - Changelog added for tracking changes.
+
+<!-- vale Canonical.011-Headings-not-followed-by-heading = YES -->
