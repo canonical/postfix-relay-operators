@@ -9,7 +9,7 @@ jobs:
     secrets: inherit
     strategy:
       matrix:
-        charm: [postfix-relay]
+        charm: [postfix-relay, postfix-relay-configurator]
     with:
       self-hosted-runner: true
       self-hosted-runner-label: "edge"
