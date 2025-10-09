@@ -1,6 +1,9 @@
 # Postfix relay operators
 
-This repository contains the Postfix relay operator charms.
+This repository contains the Postfix relay operator charms:
+
+1. [`postfix-relay`]((./postfix-relay-operator)): A machine charm managing a Postfix Relay instance.
+2. [`postfix-relay-configurator`](./postfix-relay-configurator-operator): A subordinate charm to configure the postfix relay charm.
 
 ## Project and community
 
