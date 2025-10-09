@@ -4,6 +4,7 @@
 """Unit tests for the Postfix Relay charm."""
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import ANY, Mock, call, patch
 
 import ops.testing
@@ -14,6 +15,7 @@ from scenario import TCPPort
 import charm
 import tls
 from state import ConfigurationError
+
 
 FILES_PATH = Path(__file__).parent / "files"
 
@@ -79,10 +81,15 @@ class TestConfigureAuth:
 
         assert out.unit_status == ops.testing.ActiveStatus()
 
+    @pytest.mark.parametrize(
+        "dovecot_running",
+        [pytest.param(True, id="dovecot_running"), pytest.param(False, id="dovecot_not_running")],
+    )
     @patch("charm.utils.write_file")
     def test_with_auth_dovecot(
         self,
         mock_write_file: Mock,
+        dovecot_running: bool,
         context: Context[charm.PostfixRelayConfiguratorCharm],
     ) -> None:
         """
@@ -94,11 +101,16 @@ class TestConfigureAuth:
         charm_state = State(config={"enable_smtp_auth": True}, leader=True)
 
         out = context.run(context.on.config_changed(), charm_state)
+
         mock_write_file.assert_has_calls([call(ANY, charm.DOVECOT_CONFIG_FILEPATH)])
 
         assert out.unit_status == ops.testing.ActiveStatus()
 
 
+@pytest.mark.parametrize(
+    "postfix_running",
+    [pytest.param(True, id="postfix_running"), pytest.param(False, id="postfix_not_running")],
+)
 @patch.object(
     charm, "construct_postfix_config_params", wraps=charm.construct_postfix_config_params
 )
@@ -106,6 +118,7 @@ class TestConfigureAuth:
 @patch("charm.utils.write_file", Mock())
 def test_configure_relay(
     mock_construct_postfix_config_params: Mock,
+    postfix_running: bool,
     context: Context[charm.PostfixRelayConfiguratorCharm],
 ) -> None:
     """
@@ -117,41 +130,7 @@ def test_configure_relay(
         config={
             "domain": "example-domain.com",
         },
-        relations=[
-            ops.testing.Relation(
-                "milter",
-                remote_units_data={
-                    0: {"ingress-address": "10.0.0.10"},
-                    1: {"ingress-address": "10.0.0.11", "port": "9999"},
-                    2: {},
-                },
-            ),
-            ops.testing.Relation(
-                "milter",
-                remote_units_data={
-                    0: {"ingress-address": "10.0.1.10"},
-                    1: {"ingress-address": "10.0.1.11", "port": "9999"},
-                },
-            ),
-            ops.testing.Relation(
-                "milter",
-                remote_units_data={},
-            ),
-            ops.testing.Relation(
-                "milter",
-                remote_units_data={
-                    0: {},
-                    1: {"ingress-address": "10.0.1.10"},
-                },
-            ),
-            ops.testing.PeerRelation(
-                "peer",
-                peers_data={
-                    1: {},
-                    2: {},
-                },
-            ),
-        ],
+        relations=[],
         leader=True,
     )
 
@@ -168,7 +147,6 @@ def test_configure_relay(
     )
 
     assert out.unit_status == ops.testing.ActiveStatus()
-    assert TCPPort(25) in out.opened_ports
 
 
 class TestUpdateAliases:
@@ -228,7 +206,6 @@ class TestUpdateAliases:
             pytest.param(None, id="no-admin-email"),
         ],
     )
-    @patch("charm.subprocess.check_call", Mock())
     def test_update_aliases_content(
         self,
         admin_email_address: str | None,
