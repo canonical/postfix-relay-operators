@@ -1,4 +1,6 @@
+<!-- vale Canonical.011-Headings-not-followed-by-heading = NO -->
 # How to contribute
+<!-- vale Canonical.011-Headings-not-followed-by-heading = YES -->
 
 ## Overview
 
