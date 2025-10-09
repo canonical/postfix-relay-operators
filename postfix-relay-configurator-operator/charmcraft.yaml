@@ -33,10 +33,6 @@ parts:
       - libssl-dev
       - pkg-config
 
-charm-libs:
-  - lib: operator_libs_linux.systemd
-    version: "1"
-
 config:
   options:
     additional_smtpd_recipient_restrictions:

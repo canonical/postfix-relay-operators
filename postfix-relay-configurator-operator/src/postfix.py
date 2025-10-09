@@ -71,7 +71,6 @@ def construct_postfix_config_params(  # pylint: disable=too-many-arguments
     tls_cert_key_path: str,
     fqdn: str,
     hostname: str,
-    milters: str,
 ) -> dict[str, str | int | bool | None]:
     """Prepare the context for rendering Postfix configuration files.
 
@@ -83,7 +82,6 @@ def construct_postfix_config_params(  # pylint: disable=too-many-arguments
         tls_cert_key_path: Path to the combined certificate and key file for TLS.
         fqdn: Fully Qualified Domain Name of the system.
         hostname: Hostname of the system.
-        milters: String representing the milters to be used by Postfix.
 
     Returns:
         str: The context for remndering Postfix configuration file content.
@@ -99,7 +97,6 @@ def construct_postfix_config_params(  # pylint: disable=too-many-arguments
         "enable_spf": charm_state.enable_spf,
         "enable_tls_policy_map": bool(charm_state.tls_policy_maps),
         "header_checks": bool(charm_state.header_checks),
-        "milter": milters,
         "mynetworks": ",".join(charm_state.allowed_relay_networks),
         "relayhost": charm_state.relay_host,
         "relay_domains": " ".join(charm_state.relay_domains),

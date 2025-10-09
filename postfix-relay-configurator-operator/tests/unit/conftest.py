@@ -9,13 +9,13 @@ from collections.abc import Iterator
 import pytest
 from ops.testing import Context
 
-from charm import PostfixRelayCharm
+from charm import PostfixRelayConfiguratorCharm
 
 
 @pytest.fixture(name="context")
-def context_fixture() -> Iterator[Context[PostfixRelayCharm]]:
+def context_fixture() -> Iterator[Context[PostfixRelayConfiguratorCharm]]:
     """Context fixture.
 
     Yield: The charm context.
     """
-    yield Context(PostfixRelayCharm)
+    yield Context(PostfixRelayConfiguratorCharm)
