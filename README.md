@@ -10,5 +10,5 @@ suggestions, fixes and constructive feedback.
 
 * [Code of conduct](https://ubuntu.com/community/code-of-conduct)
 * [Get support](https://discourse.charmhub.io/)
-* [Issues](https://github.com/canonical/postfix-relay-operator/issues)
+* [Issues](https://github.com/canonical/postfix-relay-operators/issues)
 * [Matrix](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
