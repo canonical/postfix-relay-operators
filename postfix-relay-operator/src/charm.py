@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 import ops
-from charms.operator_libs_linux.v0 import apt
+from charmlibs import apt
 from charms.operator_libs_linux.v1 import systemd
 
 import utils
