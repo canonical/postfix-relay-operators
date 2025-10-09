@@ -1,10 +1,10 @@
-# Postfix Relay operator
+# Postfix relay operators
 
-This repository contains the Postfix Relay operator charms.
+This repository contains the Postfix relay operator charms.
 
 ## Project and community
 
-The Postfix Relay operators project is a member of the Ubuntu family. It is an
+The Postfix relay operators project is a member of the Ubuntu family. It is an
 open source project that warmly welcomes community projects, contributions,
 suggestions, fixes and constructive feedback.
 
