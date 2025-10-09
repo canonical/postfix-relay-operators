@@ -60,8 +60,6 @@ DOVECOT_CONFIG_FILEPATH = Path("/etc/dovecot/dovecot.conf")
 DOVECOT_USERS_FILEPATH = Path("/etc/dovecot/users")
 
 LOG_ROTATE_SYSLOG = Path("/etc/logrotate.d/rsyslog")
-FGREPMAIL_LOGS_SRC = FILES_DIRPATH / "fgrepmail-logs.py"
-FGREPMAIL_LOGS_DST = Path("/usr/local/bin/fgrepmail-logs")
 RSYSLOG_CONF_SRC = FILES_DIRPATH / "50-default.conf"
 RSYSLOG_CONF_DST = Path("/etc/rsyslog.d/50-default.conf")
 
@@ -86,7 +84,6 @@ class PostfixRelayCharm(ops.CharmBase):
         self.unit.status = ops.MaintenanceStatus("Installing packages")
         apt.add_package(APT_PACKAGES, update_cache=True)
 
-        utils.copy_file(FGREPMAIL_LOGS_SRC, FGREPMAIL_LOGS_DST, perms=0o755)
         utils.copy_file(RSYSLOG_CONF_SRC, RSYSLOG_CONF_DST, perms=0o644)
         contents = utils.update_logrotate_conf(LOG_ROTATE_SYSLOG)
         utils.write_file(contents, LOG_ROTATE_SYSLOG)
