@@ -49,12 +49,8 @@ restricted = check_recipient_access hash:/etc/postfix/restricted_recipients, rej
 policyd-spf_time_limit = 3600s
 {% endif -%}
 
-{%- if header_checks %}
 header_checks = regexp:/etc/postfix/header_checks
-{% endif -%}
-{%- if smtp_header_checks %}
 smtp_header_checks = regexp:/etc/postfix/smtp_header_checks
-{% endif -%}
 
 {%- if virtual_alias_domains %}
 virtual_alias_domains = {{virtual_alias_domains}}

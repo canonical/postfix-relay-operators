@@ -151,7 +151,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         enable_reject_unknown_sender_domain: Reject email when sender's domain cannot be resolved.
         enable_smtp_auth: If SMTP authentication is enabled.
         enable_spf: If SPF checks are enabled.
-        header_checks: Header checks to perform on inbound email.
         relay_access_sources: List of  entries to restrict access based on CIDR source.
         relay_domains: List of destination domains to relay mail to.
         restrict_recipients: Access map for restrictions by recipient address or domain.
@@ -161,7 +160,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             addresses.
         restrict_sender_access: List of domains, addresses or hosts to restrict relay from.
         sender_login_maps: List of authenticated users that can send mail.
-        smtp_header_checks: List of header checks to perform on outbound email.
         spf_skip_addresses: List of CIDR addresses to skip SPF checks.
         transport_maps: Map from recipient address to message delivery transport
             or next-hop destination.
@@ -178,7 +176,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     enable_reject_unknown_sender_domain: bool
     enable_smtp_auth: bool
     enable_spf: bool
-    header_checks: list[str]
     relay_access_sources: list[str]
     relay_domains: list[Annotated[str, Field(min_length=1)]]
     restrict_recipients: dict[str, AccessMapValue]
@@ -187,7 +184,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     relay_recipient_maps: dict[str, str]
     restrict_sender_access: list[Annotated[str, Field(min_length=1)]]
     sender_login_maps: dict[str, str]
-    smtp_header_checks: list[str]
     spf_skip_addresses: list[IPvAnyNetwork]
     transport_maps: dict[str, str]
     virtual_alias_domains: list[Annotated[str, Field(min_length=1)]]
@@ -211,7 +207,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             additional_smtpd_recipient_restrictions = _parse_list(
                 config.get("additional_smtpd_recipient_restrictions")
             )
-            header_checks = _parse_list(config.get("header_checks"))
             relay_access_sources = _parse_list(config.get("relay_access_sources"))
             relay_domains = _parse_list(config.get("relay_domains"))
             relay_recipient_maps = _parse_map(config.get("relay_recipient_maps"))
@@ -221,7 +216,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             restrict_recipients = _parse_access_map(config.get("restrict_recipients"))
             restrict_senders = _parse_access_map(config.get("restrict_senders"))
             sender_login_maps = _parse_map(config.get("sender_login_maps"))
-            smtp_header_checks = _parse_list(config.get("smtp_header_checks"))
             transport_maps = _parse_map(config.get("transport_maps"))
             virtual_alias_maps = _parse_map(config.get("virtual_alias_maps"))
 
@@ -233,7 +227,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
                 ),  # type: ignore[arg-type]
                 enable_smtp_auth=config.get("enable_smtp_auth"),  # type: ignore[arg-type]
                 enable_spf=config.get("enable_spf"),  # type: ignore[arg-type]
-                header_checks=header_checks,
                 relay_access_sources=relay_access_sources,
                 relay_domains=relay_domains,
                 relay_host=config.get("relay_host"),
@@ -242,7 +235,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
                 restrict_senders=restrict_senders,
                 restrict_sender_access=restrict_sender_access,
                 sender_login_maps=sender_login_maps,
-                smtp_header_checks=smtp_header_checks,
                 spf_skip_addresses=spf_skip_addresses,  # type: ignore[arg-type]
                 transport_maps=transport_maps,
                 virtual_alias_domains=virtual_alias_domains,
