@@ -321,7 +321,6 @@ def test_build_postfix_maps_returns_correct_data() -> None:
         "restrict_sender_access": "- unwanted.com",
         "sender_login_maps": "sender@example.com: user@example.com",
         "smtp_header_checks": "- '/^Received:/ IGNORE'",
-        "tls_policy_maps": "example.com: secure",
         "transport_maps": "domain.com: smtp:relay.example.com",
         "virtual_alias_maps": "alias@example.com: real@example.com",
         "virtual_alias_maps_type": "hash",
@@ -383,11 +382,6 @@ def test_build_postfix_maps_returns_correct_data() -> None:
             type=state.PostfixLookupTableType.REGEXP,
             path=conf_path / "smtp_header_checks",
             content=f"{utils.JUJU_HEADER}\n/^Received:/ IGNORE\n",
-        ),
-        "tls_policy_maps": postfix.PostfixMap(
-            type=state.PostfixLookupTableType.HASH,
-            path=conf_path / "tls_policy",
-            content=f"{utils.JUJU_HEADER}\nexample.com secure\n",
         ),
         "transport_maps": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,
