@@ -57,10 +57,6 @@ def test_state():
             group@example.com: group
             group2@example.com: group2
         """,
-        "smtp_auth_users": """
-            - myuser1:$1$bPb0IPiM$kmrSMZkZvICKKHXu66daQ.
-            - myuser2:$6$3r//F36qLB/J8rUfIIndaDtkxeb5iR3gs1uBn9fNyJDD1
-        """,
         "smtp_header_checks": "- '/^Received:/ PREPEND X-Launchpad-Original-To: $1'",
         "spf_skip_addresses": """
             - 10.0.114.0/24
@@ -117,9 +113,6 @@ def test_state():
     assert charm_state.sender_login_maps == yaml.safe_load(
         cast("str", charm_config["sender_login_maps"])
     )
-    assert charm_state.smtp_auth_users == yaml.safe_load(
-        cast("str", charm_config["smtp_auth_users"])
-    )
     assert charm_state.smtp_header_checks == yaml.safe_load(
         cast("str", charm_config["smtp_header_checks"])
     )
@@ -172,7 +165,6 @@ def test_state_defaults():
     assert charm_state.restrict_senders == {}
     assert charm_state.restrict_sender_access == []
     assert charm_state.sender_login_maps == {}
-    assert charm_state.smtp_auth_users == []
     assert charm_state.smtp_header_checks == []
     assert charm_state.spf_skip_addresses == []
     assert charm_state.transport_maps == {}

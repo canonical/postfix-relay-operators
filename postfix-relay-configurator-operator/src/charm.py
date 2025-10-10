@@ -13,10 +13,6 @@ from typing import Any
 import ops
 
 import utils
-from dovecot import (
-    construct_dovecot_config_file_content,
-    construct_dovecot_user_file_content,
-)
 from postfix import (
     PostfixMap,
     build_postfix_maps,
@@ -60,23 +56,9 @@ class PostfixRelayConfiguratorCharm(ops.CharmBase):
             self.unit.status = ops.BlockedStatus("Invalid config")
             return
 
-        self._configure_auth(charm_state)
         self._configure_relay(charm_state)
         self._configure_policyd_spf(charm_state)
         self.unit.status = ops.ActiveStatus()
-
-    def _configure_auth(self, charm_state: State) -> None:
-        """Ensure SMTP authentication is configured or disabled via Dovecot."""
-        self.unit.status = ops.MaintenanceStatus("Setting up authentication (dovecot)")
-
-        contents = construct_dovecot_config_file_content(
-            DOVECOT_USERS_FILEPATH, charm_state.enable_smtp_auth
-        )
-        utils.write_file(contents, DOVECOT_CONFIG_FILEPATH)
-
-        if charm_state.smtp_auth_users:
-            contents = construct_dovecot_user_file_content(charm_state.smtp_auth_users)
-            utils.write_file(contents, DOVECOT_USERS_FILEPATH, perms=0o640, group=DOVECOT_NAME)
 
     def _configure_relay(self, charm_state: State) -> None:
         """Generate and apply Postfix configuration."""

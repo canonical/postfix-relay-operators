@@ -30,67 +30,6 @@ def test_invalid_config(context: Context[charm.PostfixRelayConfiguratorCharm]) -
     assert out.unit_status == ops.testing.BlockedStatus("Invalid config")
 
 
-class TestConfigureAuth:
-    """Unit tests for _configure_auth."""
-
-    @pytest.mark.parametrize(
-        "smtp_auth_users",
-        [pytest.param("", id="no auth users"), pytest.param("- user", id="with auth users")],
-    )
-    @patch("charm.utils.write_file")
-    def test_no_auth(
-        self,
-        mock_write_file: Mock,
-        smtp_auth_users: str,
-        context: Context[charm.PostfixRelayConfiguratorCharm],
-    ) -> None:
-        """
-        arrange: Charm with SMTP auth disabled.
-        act: Run the config-changed event hook on the charm.
-        assert: The charm correctly configures dovecot for a disabled state,
-            pauses the dovecot service, and does not open SMTP auth ports.
-        """
-        charm_state = State(
-            config={
-                "enable_smtp_auth": False,
-                "smtp_auth_users": smtp_auth_users,
-            },
-            leader=True,
-        )
-
-        out = context.run(context.on.config_changed(), charm_state)
-
-        expected_write_calls = [call(ANY, charm.DOVECOT_CONFIG_FILEPATH)]
-        if smtp_auth_users:
-            expected_write_calls.append(
-                call(ANY, charm.DOVECOT_USERS_FILEPATH, perms=0o640, group=charm.DOVECOT_NAME)
-            )
-
-        mock_write_file.assert_has_calls(expected_write_calls)
-
-        assert out.unit_status == ops.testing.ActiveStatus()
-
-    @patch("charm.utils.write_file")
-    def test_with_auth_dovecot(
-        self,
-        mock_write_file: Mock,
-        context: Context[charm.PostfixRelayConfiguratorCharm],
-    ) -> None:
-        """
-        arrange: Charm with SMTP auth enabled and dovecot not running.
-        act: Run the config-changed event hook on the charm.
-        assert: Opensthe required ports, generates the dovecot config,
-            and resumes the dovecot service.
-        """
-        charm_state = State(config={"enable_smtp_auth": True}, leader=True)
-
-        out = context.run(context.on.config_changed(), charm_state)
-
-        mock_write_file.assert_has_calls([call(ANY, charm.DOVECOT_CONFIG_FILEPATH)])
-
-        assert out.unit_status == ops.testing.ActiveStatus()
-
-
 @patch.object(
     charm, "construct_postfix_config_params", wraps=charm.construct_postfix_config_params
 )

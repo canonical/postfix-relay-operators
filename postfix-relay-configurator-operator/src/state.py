@@ -165,7 +165,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             addresses.
         restrict_sender_access: List of domains, addresses or hosts to restrict relay from.
         sender_login_maps: List of authenticated users that can send mail.
-        smtp_auth_users: List of user and crypt password hashe pairs separated by ':'.
         smtp_header_checks: List of header checks to perform on outbound email.
         spf_skip_addresses: List of CIDR addresses to skip SPF checks.
         transport_maps: Map from recipient address to message delivery transport
@@ -194,7 +193,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     relay_recipient_maps: dict[str, str]
     restrict_sender_access: list[Annotated[str, Field(min_length=1)]]
     sender_login_maps: dict[str, str]
-    smtp_auth_users: list[str]
     smtp_header_checks: list[str]
     spf_skip_addresses: list[IPvAnyNetwork]
     transport_maps: dict[str, str]
@@ -233,7 +231,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             restrict_recipients = _parse_access_map(config.get("restrict_recipients"))
             restrict_senders = _parse_access_map(config.get("restrict_senders"))
             sender_login_maps = _parse_map(config.get("sender_login_maps"))
-            smtp_auth_users = _parse_list(config.get("smtp_auth_users"))
             smtp_header_checks = _parse_list(config.get("smtp_header_checks"))
             transport_maps = _parse_map(config.get("transport_maps"))
             virtual_alias_maps = _parse_map(config.get("virtual_alias_maps"))
@@ -258,7 +255,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
                 restrict_senders=restrict_senders,
                 restrict_sender_access=restrict_sender_access,
                 sender_login_maps=sender_login_maps,
-                smtp_auth_users=smtp_auth_users,
                 smtp_header_checks=smtp_header_checks,
                 spf_skip_addresses=spf_skip_addresses,  # type: ignore[arg-type]
                 transport_maps=transport_maps,
