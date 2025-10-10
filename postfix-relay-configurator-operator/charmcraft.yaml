@@ -42,9 +42,6 @@ config:
         YAML list of additional smtpd_recipient_restrictions.
 
         http://www.postfix.org/postconf.5.html#smtpd_recipient_restrictions
-    admin_email:
-      type: string
-      description: Administrator's email address where root@ emails will go.
     allowed_relay_networks:
       type: string
       description: |

@@ -23,7 +23,6 @@ def test_state():
             - reject_non_fqdn_helo_hostname
             - reject_unknown_helo_hostname
         """,
-        "admin_email": "example@domain.com",
         "allowed_relay_networks": """
             - 192.168.252.0/24
             - 192.168.253.0/24
@@ -86,7 +85,6 @@ def test_state():
     assert charm_state.additional_smtpd_recipient_restrictions == (
         yaml.safe_load(cast("str", charm_config["additional_smtpd_recipient_restrictions"]))
     )
-    assert charm_state.admin_email == charm_config["admin_email"]
     assert charm_state.allowed_relay_networks == [
         ip_network(value)
         for value in yaml.safe_load(cast("str", charm_config["allowed_relay_networks"]))
@@ -159,7 +157,6 @@ def test_state_defaults():
     charm_state = state.State.from_charm(config=charm_config)
 
     assert charm_state.additional_smtpd_recipient_restrictions == []
-    assert charm_state.admin_email is None
     assert charm_state.allowed_relay_networks == []
     assert not charm_state.append_x_envelope_to
     assert charm_state.connection_limit == 100
@@ -182,26 +179,6 @@ def test_state_defaults():
     assert charm_state.virtual_alias_domains == []
     assert charm_state.virtual_alias_maps == {}
     assert charm_state.virtual_alias_maps_type == state.PostfixLookupTableType.HASH
-
-
-def test_state_with_invalid_admin_email():
-    """
-    arrange: do nothing.
-    act: initialize a charm state from invalid configuration.
-    assert: an InvalidStateError is raised.
-    """
-    charm_config = {
-        "admin_email": "example.domain.com",
-        "append_x_envelope_to": False,
-        "connection_limit": 100,
-        "enable_rate_limits": False,
-        "enable_reject_unknown_sender_domain": True,
-        "enable_spf": False,
-        "enable_smtp_auth": True,
-        "virtual_alias_maps_type": "hash",
-    }
-    with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
 
 
 def test_state_with_invalid_allowed_relay_networks():

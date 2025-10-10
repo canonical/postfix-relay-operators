@@ -13,7 +13,6 @@ import yaml
 from pydantic import (
     BaseModel,
     ConfigDict,
-    EmailStr,
     Field,
     IPvAnyNetwork,
     ValidationError,
@@ -149,7 +148,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
 
     Attributes:
         additional_smtpd_recipient_restrictions: List of additional recipient restrictions.
-        admin_email: Administrator's email address where root@ emails will go to.
         allowed_relay_networks: List of allowed networks to relay without authenticating.
         append_x_envelope_to: Append the X-Envelope-To header.
         connection_limit: Maximum number of SMTP connections allowed.
@@ -181,7 +179,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     model_config = ConfigDict(regex_engine="python-re")  # noqa: DCO063
 
     additional_smtpd_recipient_restrictions: list[str]
-    admin_email: EmailStr | None
     allowed_relay_networks: list[IPvAnyNetwork]
     append_x_envelope_to: bool
     enable_rate_limits: bool
@@ -243,7 +240,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
 
             return cls(
                 additional_smtpd_recipient_restrictions=additional_smtpd_recipient_restrictions,
-                admin_email=config.get("admin_email"),
                 allowed_relay_networks=allowed_relay_networks,
                 append_x_envelope_to=config.get("append_x_envelope_to"),  # type: ignore[arg-type]
                 connection_limit=config.get("connection_limit"),  # type: ignore[arg-type]

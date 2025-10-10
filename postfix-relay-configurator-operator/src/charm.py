@@ -97,40 +97,12 @@ class PostfixRelayConfiguratorCharm(ops.CharmBase):
         self._apply_postfix_maps(list(postfix_maps.values()))
 
         logger.info("Updating aliases")
-        self.update_aliases(charm_state.admin_email)
 
     @staticmethod
     def _apply_postfix_maps(postfix_maps: list[PostfixMap]) -> None:
         logger.info("Applying postfix maps")
         for postfix_map in postfix_maps:
             utils.write_file(postfix_map.content, postfix_map.path)
-
-    @staticmethod
-    def update_aliases(admin_email: str | None) -> None:
-        """Update the aliases configuration.
-
-        Args:
-            admin_email: the admin email.
-        """
-        aliases = []
-        if ALIASES_FILEPATH.is_file():
-            with ALIASES_FILEPATH.open("r", encoding="utf-8") as f:
-                aliases = f.readlines()
-
-        add_devnull = True
-        new_aliases = []
-        for line in aliases:
-            if add_devnull and line.startswith("devnull:"):
-                add_devnull = False
-            if not line.startswith("root:"):
-                new_aliases.append(line)
-
-        if add_devnull:
-            new_aliases.append("devnull:       /dev/null\n")
-        if admin_email:
-            new_aliases.append(f"root:          {admin_email}\n")
-
-        utils.write_file("".join(new_aliases), ALIASES_FILEPATH)
 
     def _configure_policyd_spf(self, charm_state: State) -> None:
         """Configure Postfix SPF policy server (policyd-spf) based on charm state."""
