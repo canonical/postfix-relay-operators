@@ -62,11 +62,6 @@ config:
       type: int
       default: 100
       description: Maximum number of simultaneous SMTP connections allowed.
-    domain:
-      type: string
-      default: ""
-      description: |
-        Primary domain for hostname generation, it will be $application-$unit.$domain.
     enable_rate_limits:
       type: boolean
       default: false

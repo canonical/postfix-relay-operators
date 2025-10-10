@@ -153,7 +153,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         allowed_relay_networks: List of allowed networks to relay without authenticating.
         append_x_envelope_to: Append the X-Envelope-To header.
         connection_limit: Maximum number of SMTP connections allowed.
-        domain: Primary domain for hostname generation.
         enable_rate_limits: Enable default rate limiting features.
         enable_reject_unknown_sender_domain: Reject email when sender's domain cannot be resolved.
         enable_smtp_auth: If SMTP authentication is enabled.
@@ -190,7 +189,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     admin_email: EmailStr | None
     allowed_relay_networks: list[IPvAnyNetwork]
     append_x_envelope_to: bool
-    domain: str = Field(pattern=rf"^(?:$|{HOSTNAME_REGEX})$")
     enable_rate_limits: bool
     enable_reject_unknown_sender_domain: bool
     enable_smtp_auth: bool
@@ -262,7 +260,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
                 allowed_relay_networks=allowed_relay_networks,
                 append_x_envelope_to=config.get("append_x_envelope_to"),  # type: ignore[arg-type]
                 connection_limit=config.get("connection_limit"),  # type: ignore[arg-type]
-                domain=config.get("domain"),  # type: ignore[arg-type]
                 enable_rate_limits=config.get("enable_rate_limits"),  # type: ignore[arg-type]
                 enable_reject_unknown_sender_domain=config.get(
                     "enable_reject_unknown_sender_domain"

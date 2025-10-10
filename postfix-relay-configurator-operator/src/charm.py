@@ -79,20 +79,13 @@ class PostfixRelayConfiguratorCharm(ops.CharmBase):
             contents = construct_dovecot_user_file_content(charm_state.smtp_auth_users)
             utils.write_file(contents, DOVECOT_USERS_FILEPATH, perms=0o640, group=DOVECOT_NAME)
 
-    def _generate_fqdn(self, domain: str) -> str:
-        # This will actually output double curly braces.
-        return f"{{{{unit_name}}}}.{domain}"
-
     def _configure_relay(self, charm_state: State) -> None:
         """Generate and apply Postfix configuration."""
         self.unit.status = ops.MaintenanceStatus("Setting up Postfix relay")
 
-        fqdn = self._generate_fqdn(charm_state.domain)
         hostname = socket.gethostname()
-
         context = construct_postfix_config_params(
             charm_state=charm_state,
-            fqdn=fqdn,
             hostname=hostname,
         )
         contents = utils.render_jinja2_template(context, TEMPLATES_DIRPATH / MAIN_CF_TMPL)

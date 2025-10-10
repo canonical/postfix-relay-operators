@@ -100,14 +100,12 @@ def test_configure_relay(
     context: Context[charm.PostfixRelayConfiguratorCharm],
 ) -> None:
     """
-    arrange: Configure the charm with a specific domain.
+    arrange: Configure the charm with defaults.
     act: Run the config-changed event hook.
     assert: The charm constructs the correct FQDN.
     """
     charm_state = State(
-        config={
-            "domain": "example-domain.com",
-        },
+        config={},
         relations=[],
         leader=True,
     )
@@ -116,7 +114,6 @@ def test_configure_relay(
 
     mock_construct_postfix_config_params.assert_called_once_with(
         charm_state=ANY,
-        fqdn="{{unit_name}}.example-domain.com",
         hostname=ANY,
     )
 

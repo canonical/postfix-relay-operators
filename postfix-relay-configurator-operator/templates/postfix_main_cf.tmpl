@@ -52,7 +52,6 @@ smtpd_client_new_tls_session_rate_limit = 8
 {%- endif %}
 smtpd_helo_required = yes
 smtpd_relay_restrictions = {{smtpd_relay_restrictions}}
-myhostname = {{fqdn}}
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 mydestination = $myhostname, {{hostname}}, localhost.localdomain, localhost

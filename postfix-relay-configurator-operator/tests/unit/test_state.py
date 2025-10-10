@@ -30,7 +30,6 @@ def test_state():
         """,
         "append_x_envelope_to": True,
         "connection_limit": 200,
-        "domain": "somain.example.com",
         "enable_rate_limits": True,
         "enable_reject_unknown_sender_domain": False,
         "enable_spf": True,
@@ -108,7 +107,6 @@ def test_state():
     ]
     assert charm_state.append_x_envelope_to
     assert charm_state.connection_limit == charm_config["connection_limit"]
-    assert charm_state.domain == charm_config["domain"]
     assert charm_state.enable_rate_limits
     assert not charm_state.enable_reject_unknown_sender_domain
     assert charm_state.enable_spf
@@ -175,7 +173,6 @@ def test_state_defaults():
     charm_config = {
         "append_x_envelope_to": False,
         "connection_limit": 100,
-        "domain": "",
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -204,7 +201,6 @@ def test_state_defaults():
     assert charm_state.allowed_relay_networks == []
     assert not charm_state.append_x_envelope_to
     assert charm_state.connection_limit == 100
-    assert charm_state.domain == ""
     assert not charm_state.enable_rate_limits
     assert charm_state.enable_reject_unknown_sender_domain
     assert not charm_state.enable_spf
@@ -249,7 +245,6 @@ def test_state_with_invalid_admin_email():
         "admin_email": "example.domain.com",
         "append_x_envelope_to": False,
         "connection_limit": 100,
-        "domain": "",
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -285,7 +280,6 @@ def test_state_with_invalid_allowed_relay_networks():
         "append_x_envelope_to": False,
         "allowed_relay_networks": "- 192.0.0.0/33",
         "connection_limit": 100,
-        "domain": "",
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -320,7 +314,6 @@ def test_state_with_invalid_connection_limit():
     charm_config = {
         "append_x_envelope_to": False,
         "connection_limit": -1,
-        "domain": "",
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -355,7 +348,6 @@ def test_state_with_invalid_restrict_recipients():
     charm_config = {
         "append_x_envelope_to": False,
         "connection_limit": -1,
-        "domain": "",
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -391,7 +383,6 @@ def test_state_with_invalid_restrict_senders():
     charm_config = {
         "append_x_envelope_to": False,
         "connection_limit": -1,
-        "domain": "",
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -427,7 +418,6 @@ def test_state_with_invalid_spf_skip_addresses():
     charm_config = {
         "append_x_envelope_to": False,
         "connection_limit": -1,
-        "domain": "",
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -463,7 +453,6 @@ def test_state_with_invalid_tls_ciphers():
     charm_config = {
         "append_x_envelope_to": False,
         "connection_limit": -1,
-        "domain": "",
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -498,7 +487,6 @@ def test_state_with_invalid_tls_security_level():
     charm_config = {
         "append_x_envelope_to": False,
         "connection_limit": -1,
-        "domain": "",
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -533,7 +521,6 @@ def test_state_with_invalid_virtual_alias_maps_type():
     charm_config = {
         "append_x_envelope_to": False,
         "connection_limit": -1,
-        "domain": "",
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,

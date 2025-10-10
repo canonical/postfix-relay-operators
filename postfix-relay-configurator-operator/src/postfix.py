@@ -75,17 +75,15 @@ def smtpd_recipient_restrictions(charm_state: "State") -> list[str]:
     return recipient_restrictions
 
 
-def construct_postfix_config_params(  # pylint: disable=too-many-arguments
+def construct_postfix_config_params(
     *,
     charm_state: "State",
-    fqdn: str,
     hostname: str,
 ) -> dict[str, str | int | bool | None]:
     """Prepare the context for rendering Postfix configuration files.
 
     Args:
         charm_state: The current state of the charm.
-        fqdn: Fully Qualified Domain Name of the system.
         hostname: Hostname of the system.
 
     Returns:
@@ -93,7 +91,6 @@ def construct_postfix_config_params(  # pylint: disable=too-many-arguments
     """
     return {
         "JUJU_HEADER": utils.JUJU_HEADER,
-        "fqdn": fqdn,
         "hostname": hostname,
         "connection_limit": charm_state.connection_limit,
         "enable_rate_limits": charm_state.enable_rate_limits,
