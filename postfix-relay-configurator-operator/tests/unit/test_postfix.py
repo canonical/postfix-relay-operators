@@ -111,8 +111,6 @@ def test_smtpd_relay_restrictions(
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "domain": "example.domain.com",
-        "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
@@ -177,8 +175,6 @@ def test_smtpd_sender_restrictions(
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "domain": "example.domain.com",
-        "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
@@ -265,8 +261,6 @@ def test_smtpd_recipient_restrictions(
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "domain": "example.domain.com",
-        "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
@@ -322,9 +316,7 @@ def test_build_postfix_maps_returns_correct_data() -> None:
         "virtual_alias_maps": "alias@example.com: real@example.com",
         "virtual_alias_maps_type": "hash",
         # Values required for State object instantiation
-        "domain": "example.domain.com",
         "append_x_envelope_to": False,
-        "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": False,
         "enable_smtp_auth": False,
         "enable_spf": False,

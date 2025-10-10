@@ -51,15 +51,6 @@ config:
 
         This is useful to allow end users filter by destination when they
         receive emails for multiple individual or shared aliases.
-    enable_rate_limits:
-      type: boolean
-      default: false
-      description: |
-        Enable various rate limiting features.
-
-        smtpd_client_auth_rate_limit 8
-        smtpd_client_connection_rate_limit 8
-        smtpd_client_new_tls_session_rate_limit 8
     enable_reject_unknown_sender_domain:
       type: boolean
       default: true

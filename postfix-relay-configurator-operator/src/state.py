@@ -148,7 +148,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     Attributes:
         additional_smtpd_recipient_restrictions: List of additional recipient restrictions.
         append_x_envelope_to: Append the X-Envelope-To header.
-        enable_rate_limits: Enable default rate limiting features.
         enable_reject_unknown_sender_domain: Reject email when sender's domain cannot be resolved.
         enable_smtp_auth: If SMTP authentication is enabled.
         enable_spf: If SPF checks are enabled.
@@ -176,7 +175,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
 
     additional_smtpd_recipient_restrictions: list[str]
     append_x_envelope_to: bool
-    enable_rate_limits: bool
     enable_reject_unknown_sender_domain: bool
     enable_smtp_auth: bool
     enable_spf: bool
@@ -230,7 +228,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             return cls(
                 additional_smtpd_recipient_restrictions=additional_smtpd_recipient_restrictions,
                 append_x_envelope_to=config.get("append_x_envelope_to"),  # type: ignore[arg-type]
-                enable_rate_limits=config.get("enable_rate_limits"),  # type: ignore[arg-type]
                 enable_reject_unknown_sender_domain=config.get(
                     "enable_reject_unknown_sender_domain"
                 ),  # type: ignore[arg-type]

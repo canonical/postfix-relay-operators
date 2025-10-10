@@ -24,7 +24,6 @@ def test_state():
             - reject_unknown_helo_hostname
         """,
         "append_x_envelope_to": True,
-        "enable_rate_limits": True,
         "enable_reject_unknown_sender_domain": False,
         "enable_spf": True,
         "enable_smtp_auth": False,
@@ -77,7 +76,6 @@ def test_state():
         yaml.safe_load(cast("str", charm_config["additional_smtpd_recipient_restrictions"]))
     )
     assert charm_state.append_x_envelope_to
-    assert charm_state.enable_rate_limits
     assert not charm_state.enable_reject_unknown_sender_domain
     assert charm_state.enable_spf
     assert not charm_state.enable_smtp_auth
@@ -130,7 +128,6 @@ def test_state_defaults():
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
@@ -140,7 +137,6 @@ def test_state_defaults():
 
     assert charm_state.additional_smtpd_recipient_restrictions == []
     assert not charm_state.append_x_envelope_to
-    assert not charm_state.enable_rate_limits
     assert charm_state.enable_reject_unknown_sender_domain
     assert not charm_state.enable_spf
     assert charm_state.enable_smtp_auth
@@ -168,7 +164,6 @@ def test_state_with_invalid_restrict_recipients():
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
@@ -187,7 +182,6 @@ def test_state_with_invalid_restrict_senders():
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
@@ -206,7 +200,6 @@ def test_state_with_invalid_spf_skip_addresses():
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
@@ -225,7 +218,6 @@ def test_state_with_invalid_virtual_alias_maps_type():
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
