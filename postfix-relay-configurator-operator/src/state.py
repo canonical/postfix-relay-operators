@@ -170,11 +170,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         smtp_auth_users: List of user and crypt password hashe pairs separated by ':'.
         smtp_header_checks: List of header checks to perform on outbound email.
         spf_skip_addresses: List of CIDR addresses to skip SPF checks.
-        tls_ciphers: Minimum TLS cipher grade for TLS encryption.
-        tls_exclude_ciphers: List of TLS ciphers or cipher types to exclude from the cipher list.
-        tls_policy_maps: Map for TLS policy.
-        tls_protocols: List of TLS protocols accepted by the Postfix SMTP.
-        tls_security_level: The TLS security level.
         transport_maps: Map from recipient address to message delivery transport
             or next-hop destination.
         virtual_alias_domains: List of domains for which all addresses are aliased.
@@ -205,11 +200,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     smtp_auth_users: list[str]
     smtp_header_checks: list[str]
     spf_skip_addresses: list[IPvAnyNetwork]
-    tls_ciphers: SmtpTlsCipherGrade | None
-    tls_exclude_ciphers: list[Annotated[str, Field(min_length=1)]]
-    tls_policy_maps: dict[str, str]
-    tls_protocols: list[Annotated[str, Field(min_length=1)]]
-    tls_security_level: SmtpTlsSecurityLevel | None
     transport_maps: dict[str, str]
     virtual_alias_domains: list[Annotated[str, Field(min_length=1)]]
     virtual_alias_maps: dict[str, str]
@@ -242,9 +232,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             relay_recipient_maps = _parse_map(config.get("relay_recipient_maps"))
             restrict_sender_access = _parse_list(config.get("restrict_sender_access"))
             spf_skip_addresses = _parse_list(config.get("spf_skip_addresses"))
-            tls_exclude_ciphers = _parse_list(config.get("tls_exclude_ciphers"))
-            tls_policy_maps = _parse_map(config.get("tls_policy_maps"))
-            tls_protocols = _parse_list(config.get("tls_protocols"))
             virtual_alias_domains = _parse_list(config.get("virtual_alias_domains"))
             restrict_recipients = _parse_access_map(config.get("restrict_recipients"))
             restrict_senders = _parse_access_map(config.get("restrict_senders"))
@@ -278,19 +265,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
                 smtp_auth_users=smtp_auth_users,
                 smtp_header_checks=smtp_header_checks,
                 spf_skip_addresses=spf_skip_addresses,  # type: ignore[arg-type]
-                tls_ciphers=(
-                    SmtpTlsCipherGrade(config.get("tls_ciphers"))
-                    if config.get("tls_ciphers")
-                    else None
-                ),
-                tls_exclude_ciphers=tls_exclude_ciphers,
-                tls_policy_maps=tls_policy_maps,
-                tls_protocols=tls_protocols,
-                tls_security_level=(
-                    SmtpTlsSecurityLevel(config.get("tls_security_level"))
-                    if config.get("tls_security_level")
-                    else None
-                ),
                 transport_maps=transport_maps,
                 virtual_alias_domains=virtual_alias_domains,
                 virtual_alias_maps=virtual_alias_maps,

@@ -97,7 +97,6 @@ def construct_postfix_config_params(
         "enable_sender_login_map": bool(charm_state.sender_login_maps),
         "enable_smtp_auth": charm_state.enable_smtp_auth,
         "enable_spf": charm_state.enable_spf,
-        "enable_tls_policy_map": bool(charm_state.tls_policy_maps),
         "header_checks": bool(charm_state.header_checks),
         "mynetworks": ",".join(charm_state.allowed_relay_networks),
         "relayhost": charm_state.relay_host,
@@ -108,12 +107,6 @@ def construct_postfix_config_params(
         "smtpd_recipient_restrictions": ", ".join(smtpd_recipient_restrictions(charm_state)),
         "smtpd_relay_restrictions": ", ".join(smtpd_relay_restrictions(charm_state)),
         "smtpd_sender_restrictions": ", ".join(smtpd_sender_restrictions(charm_state)),
-        "tls_ciphers": charm_state.tls_ciphers.value if charm_state.tls_ciphers else None,
-        "tls_exclude_ciphers": ", ".join(charm_state.tls_exclude_ciphers),
-        "tls_protocols": " ".join(charm_state.tls_protocols),
-        "tls_security_level": (
-            charm_state.tls_security_level.value if charm_state.tls_security_level else None
-        ),
         "transport_maps": bool(charm_state.transport_maps),
         "virtual_alias_domains": " ".join(charm_state.virtual_alias_domains),
         "virtual_alias_maps": bool(charm_state.virtual_alias_maps),
@@ -215,11 +208,6 @@ def build_postfix_maps(postfix_conf_dir: str, charm_state: "State") -> dict[str,
             PostfixLookupTableType.REGEXP,
             "smtp_header_checks",
             ";".join(charm_state.smtp_header_checks),
-        ),
-        "tls_policy_maps": _create_map(
-            PostfixLookupTableType.HASH,
-            "tls_policy",
-            "\n".join([f"{key} {value}" for key, value in charm_state.tls_policy_maps.items()]),
         ),
         "transport_maps": _create_map(
             PostfixLookupTableType.HASH,

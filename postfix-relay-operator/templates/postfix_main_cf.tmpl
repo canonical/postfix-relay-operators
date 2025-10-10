@@ -10,6 +10,35 @@ readme_directory = no
 # fresh installs.
 compatibility_level = 2
 
+# TLS parameters
+tls_preempt_cipherlist = yes
+{%- if tls_cert_key != "" %}
+smtpd_tls_chain_files = {{tls_cert_key}}
+{%- else %}
+smtpd_tls_cert_file = {{tls_cert}}
+smtpd_tls_key_file = {{tls_key}}
+{%- endif %}
+smtpd_tls_dh1024_param_file = {{tls_dh_params}}
+{%- if tls_ciphers %}
+smtpd_tls_ciphers = {{tls_ciphers}}
+{%- endif %}
+{%- if tls_exclude_ciphers %}
+smtpd_tls_exclude_ciphers = {{tls_exclude_ciphers}}
+{%- endif %}
+smtpd_tls_loglevel = 1
+{%- if tls_ciphers %}
+smtpd_tls_mandatory_ciphers = {{tls_ciphers}}
+{%- endif %}
+{%- if tls_protocols %}
+smtpd_tls_mandatory_protocols = {{tls_protocols}}
+smtpd_tls_protocols = {{tls_protocols}}
+{%- endif %}
+smtpd_tls_received_header = yes
+{%- if tls_security_level %}
+smtpd_tls_security_level = {{tls_security_level}}
+{%- endif %}
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+
 smtp_tls_CApath = /etc/ssl/certs
 smtp_tls_loglevel = 1
 smtp_tls_security_level = may
@@ -30,6 +59,7 @@ smtpd_client_new_tls_session_rate_limit = 8
 {%- endif %}
 smtpd_helo_required = yes
 smtpd_relay_restrictions = {{smtpd_relay_restrictions}}
+myhostname = {{fqdn}}
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 mydestination = $myhostname, {{hostname}}, localhost.localdomain, localhost
@@ -60,6 +90,10 @@ smtpd_restriction_classes = restricted
 smtpd_sender_restrictions = {{smtpd_sender_restrictions}}
 {% if restrict_recipients -%}
 restricted = check_recipient_access hash:/etc/postfix/restricted_recipients, reject
+{% endif -%}
+{% if milter and milter != '' %}
+smtpd_milters = {{milter}}
+non_smtpd_milters = {{milter}}
 {% endif -%}
 {% if enable_spf %}
 policyd-spf_time_limit = 3600s

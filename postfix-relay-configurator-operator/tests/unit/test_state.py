@@ -67,20 +67,6 @@ def test_state():
             - 10.0.114.0/24
             - 10.1.1.0/24
         """,
-        "tls_ciphers": "HIGH",
-        "tls_exclude_ciphers": """
-            - aNULL
-            - eNULL
-        """,
-        "tls_policy_maps": """
-            example.com: 'smtp:[mx.example.com]'
-            admin.example.com: 'smtp:[mx.example.com]'
-        """,
-        "tls_protocols": """
-            - '!SSLv2'
-            - '!SSLv3'
-        """,
-        "tls_security_level": "may",
         "transport_maps": """
             example.com: 'smtp:[mx.example.com]'
             admin.example1.com: 'smtp:[mx.example.com]'
@@ -143,15 +129,6 @@ def test_state():
         ip_network(address)
         for address in yaml.safe_load(cast("str", charm_config["spf_skip_addresses"]))
     ]
-    assert charm_state.tls_ciphers == state.SmtpTlsCipherGrade.HIGH
-    assert charm_state.tls_exclude_ciphers == yaml.safe_load(
-        cast("str", charm_config["tls_exclude_ciphers"])
-    )
-    assert charm_state.tls_policy_maps == yaml.safe_load(
-        cast("str", charm_config["tls_policy_maps"])
-    )
-    assert charm_state.tls_protocols == yaml.safe_load(cast("str", charm_config["tls_protocols"]))
-    assert charm_state.tls_security_level == state.SmtpTlsSecurityLevel.MAY
     assert charm_state.transport_maps == yaml.safe_load(
         cast("str", charm_config["transport_maps"])
     )
@@ -177,21 +154,6 @@ def test_state_defaults():
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
-        "tls_ciphers": "HIGH",
-        "tls_exclude_ciphers": """
-            - aNULL
-            - eNULL
-            - DES
-            - 3DES
-            - MD5
-            - RC4
-            - CAMELLIA
-        """,
-        "tls_protocols": """
-            - '!SSLv2'
-            - '!SSLv3'
-        """,
-        "tls_security_level": "may",
         "virtual_alias_maps_type": "hash",
     }
     charm_state = state.State.from_charm(config=charm_config)
@@ -216,19 +178,6 @@ def test_state_defaults():
     assert charm_state.smtp_auth_users == []
     assert charm_state.smtp_header_checks == []
     assert charm_state.spf_skip_addresses == []
-    assert charm_state.tls_ciphers == state.SmtpTlsCipherGrade.HIGH
-    assert charm_state.tls_exclude_ciphers == [
-        "aNULL",
-        "eNULL",
-        "DES",
-        "3DES",
-        "MD5",
-        "RC4",
-        "CAMELLIA",
-    ]
-    assert charm_state.tls_policy_maps == {}
-    assert charm_state.tls_protocols == ["!SSLv2", "!SSLv3"]
-    assert charm_state.tls_security_level == state.SmtpTlsSecurityLevel.MAY
     assert charm_state.transport_maps == {}
     assert charm_state.virtual_alias_domains == []
     assert charm_state.virtual_alias_maps == {}
@@ -249,21 +198,6 @@ def test_state_with_invalid_admin_email():
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
-        "tls_ciphers": "HIGH",
-        "tls_exclude_ciphers": """
-            - aNULL
-            - eNULL
-            - DES
-            - 3DES
-            - MD5
-            - RC4
-            - CAMELLIA
-        """,
-        "tls_protocols": """
-            - '!SSLv2'
-            - '!SSLv3'
-        """,
-        "tls_security_level": "may",
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
@@ -284,21 +218,6 @@ def test_state_with_invalid_allowed_relay_networks():
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
-        "tls_ciphers": "HIGH",
-        "tls_exclude_ciphers": """
-            - aNULL
-            - eNULL
-            - DES
-            - 3DES
-            - MD5
-            - RC4
-            - CAMELLIA
-        """,
-        "tls_protocols": """
-            - '!SSLv2'
-            - '!SSLv3'
-        """,
-        "tls_security_level": "may",
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
@@ -318,21 +237,6 @@ def test_state_with_invalid_connection_limit():
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
-        "tls_ciphers": "HIGH",
-        "tls_exclude_ciphers": """
-            - aNULL
-            - eNULL
-            - DES
-            - 3DES
-            - MD5
-            - RC4
-            - CAMELLIA
-        """,
-        "tls_protocols": """
-            - '!SSLv2'
-            - '!SSLv3'
-        """,
-        "tls_security_level": "may",
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
@@ -353,21 +257,6 @@ def test_state_with_invalid_restrict_recipients():
         "enable_spf": False,
         "enable_smtp_auth": True,
         "restrict_recipients": "recipient: invalid_value",
-        "tls_ciphers": "HIGH",
-        "tls_exclude_ciphers": """
-            - aNULL
-            - eNULL
-            - DES
-            - 3DES
-            - MD5
-            - RC4
-            - CAMELLIA
-        """,
-        "tls_protocols": """
-            - '!SSLv2'
-            - '!SSLv3'
-        """,
-        "tls_security_level": "may",
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
@@ -388,21 +277,6 @@ def test_state_with_invalid_restrict_senders():
         "enable_spf": False,
         "enable_smtp_auth": True,
         "restrict_senders": "sender: invalid_value",
-        "tls_ciphers": "HIGH",
-        "tls_exclude_ciphers": """
-            - aNULL
-            - eNULL
-            - DES
-            - 3DES
-            - MD5
-            - RC4
-            - CAMELLIA
-        """,
-        "tls_protocols": """
-            - '!SSLv2'
-            - '!SSLv3'
-        """,
-        "tls_security_level": "may",
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
@@ -423,89 +297,6 @@ def test_state_with_invalid_spf_skip_addresses():
         "enable_spf": False,
         "enable_smtp_auth": True,
         "spf_skip_addresses": "- 192.0.0.0/33",
-        "tls_ciphers": "HIGH",
-        "tls_exclude_ciphers": """
-            - aNULL
-            - eNULL
-            - DES
-            - 3DES
-            - MD5
-            - RC4
-            - CAMELLIA
-        """,
-        "tls_protocols": """
-            - '!SSLv2'
-            - '!SSLv3'
-        """,
-        "tls_security_level": "may",
-        "virtual_alias_maps_type": "hash",
-    }
-    with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
-
-
-def test_state_with_invalid_tls_ciphers():
-    """
-    arrange: do nothing.
-    act: initialize a charm state from invalid configuration.
-    assert: an InvalidStateError is raised.
-    """
-    charm_config = {
-        "append_x_envelope_to": False,
-        "connection_limit": -1,
-        "enable_rate_limits": False,
-        "enable_reject_unknown_sender_domain": True,
-        "enable_spf": False,
-        "enable_smtp_auth": True,
-        "tls_ciphers": "invalid",
-        "tls_exclude_ciphers": """
-            - aNULL
-            - eNULL
-            - DES
-            - 3DES
-            - MD5
-            - RC4
-            - CAMELLIA
-        """,
-        "tls_protocols": """
-            - '!SSLv2'
-            - '!SSLv3'
-        """,
-        "tls_security_level": "may",
-        "virtual_alias_maps_type": "hash",
-    }
-    with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
-
-
-def test_state_with_invalid_tls_security_level():
-    """
-    arrange: do nothing.
-    act: initialize a charm state from invalid configuration.
-    assert: an InvalidStateError is raised.
-    """
-    charm_config = {
-        "append_x_envelope_to": False,
-        "connection_limit": -1,
-        "enable_rate_limits": False,
-        "enable_reject_unknown_sender_domain": True,
-        "enable_spf": False,
-        "enable_smtp_auth": True,
-        "tls_ciphers": "HIGH",
-        "tls_exclude_ciphers": """
-            - aNULL
-            - eNULL
-            - DES
-            - 3DES
-            - MD5
-            - RC4
-            - CAMELLIA
-        """,
-        "tls_protocols": """
-            - '!SSLv2'
-            - '!SSLv3'
-        """,
-        "tls_security_level": "invalid",
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
@@ -525,21 +316,6 @@ def test_state_with_invalid_virtual_alias_maps_type():
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
         "enable_smtp_auth": True,
-        "tls_ciphers": "HIGH",
-        "tls_exclude_ciphers": """
-            - aNULL
-            - eNULL
-            - DES
-            - 3DES
-            - MD5
-            - RC4
-            - CAMELLIA
-        """,
-        "tls_protocols": """
-            - '!SSLv2'
-            - '!SSLv3'
-        """,
-        "tls_security_level": "may",
         "virtual_alias_maps_type": "invalid",
     }
     with pytest.raises(state.ConfigurationError):
