@@ -31,7 +31,6 @@ TEMPLATES_DIRPATH = Path("templates")
 FILES_DIRPATH = Path("files")
 
 POSTFIX_CONF_DIRPATH = Path("/etc/postfix")
-ALIASES_FILEPATH = Path("/etc/aliases")
 POLICYD_SPF_FILEPATH = Path("/etc/postfix-policyd-spf-python/policyd-spf.conf")
 MAIN_CF = "main.cf"
 MAIN_CF_TMPL = "postfix_main_cf.tmpl"
