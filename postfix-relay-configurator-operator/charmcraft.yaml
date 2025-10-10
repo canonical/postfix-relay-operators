@@ -4,6 +4,7 @@
 type: "charm"
 name: postfix-relay-configurator
 title: Postfix Relay Configurator
+subordinate: true
 summary: Subordinate charm for configuring the Postfix Relay charm
 links:
   issues: https://github.com/canonical/postfix-relay-operators/issues
