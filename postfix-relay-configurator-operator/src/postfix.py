@@ -97,7 +97,6 @@ def construct_postfix_config_params(
         "enable_smtp_auth": charm_state.enable_smtp_auth,
         "enable_spf": charm_state.enable_spf,
         "header_checks": bool(charm_state.header_checks),
-        "mynetworks": ",".join(charm_state.allowed_relay_networks),
         "relayhost": charm_state.relay_host,
         "relay_domains": " ".join(charm_state.relay_domains),
         "relay_recipient_maps": bool(charm_state.relay_recipient_maps),

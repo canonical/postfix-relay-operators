@@ -6,7 +6,6 @@ import itertools
 import logging
 from collections.abc import Mapping
 from enum import Enum
-from ipaddress import ip_network
 from typing import Any
 
 import yaml
@@ -148,7 +147,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
 
     Attributes:
         additional_smtpd_recipient_restrictions: List of additional recipient restrictions.
-        allowed_relay_networks: List of allowed networks to relay without authenticating.
         append_x_envelope_to: Append the X-Envelope-To header.
         enable_rate_limits: Enable default rate limiting features.
         enable_reject_unknown_sender_domain: Reject email when sender's domain cannot be resolved.
@@ -177,7 +175,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     model_config = ConfigDict(regex_engine="python-re")  # noqa: DCO063
 
     additional_smtpd_recipient_restrictions: list[str]
-    allowed_relay_networks: list[IPvAnyNetwork]
     append_x_envelope_to: bool
     enable_rate_limits: bool
     enable_reject_unknown_sender_domain: bool
@@ -213,9 +210,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             ConfigurationError: if invalid state values were encountered.
         """
         try:
-            allowed_relay_networks = [
-                ip_network(value) for value in _parse_list(config.get("allowed_relay_networks"))
-            ]
             additional_smtpd_recipient_restrictions = _parse_list(
                 config.get("additional_smtpd_recipient_restrictions")
             )
@@ -235,7 +229,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
 
             return cls(
                 additional_smtpd_recipient_restrictions=additional_smtpd_recipient_restrictions,
-                allowed_relay_networks=allowed_relay_networks,
                 append_x_envelope_to=config.get("append_x_envelope_to"),  # type: ignore[arg-type]
                 enable_rate_limits=config.get("enable_rate_limits"),  # type: ignore[arg-type]
                 enable_reject_unknown_sender_domain=config.get(

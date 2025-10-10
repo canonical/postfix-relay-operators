@@ -42,10 +42,6 @@ config:
         YAML list of additional smtpd_recipient_restrictions.
 
         http://www.postfix.org/postconf.5.html#smtpd_recipient_restrictions
-    allowed_relay_networks:
-      type: string
-      description: |
-        YAML list of allowed networks to relay without authenticating.
     append_x_envelope_to:
       type: boolean
       default: false
