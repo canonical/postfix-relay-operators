@@ -12,13 +12,6 @@ compatibility_level = 2
 
 # TLS parameters
 tls_preempt_cipherlist = yes
-{%- if tls_cert_key != "" %}
-smtpd_tls_chain_files = {{tls_cert_key}}
-{%- else %}
-smtpd_tls_cert_file = {{tls_cert}}
-smtpd_tls_key_file = {{tls_key}}
-{%- endif %}
-smtpd_tls_dh1024_param_file = {{tls_dh_params}}
 {%- if tls_ciphers %}
 smtpd_tls_ciphers = {{tls_ciphers}}
 {%- endif %}

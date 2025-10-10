@@ -78,10 +78,6 @@ def smtpd_recipient_restrictions(charm_state: "State") -> list[str]:
 def construct_postfix_config_params(  # pylint: disable=too-many-arguments
     *,
     charm_state: "State",
-    tls_dh_params_path: str,
-    tls_cert_path: str,
-    tls_key_path: str,
-    tls_cert_key_path: str,
     fqdn: str,
     hostname: str,
 ) -> dict[str, str | int | bool | None]:
@@ -89,10 +85,6 @@ def construct_postfix_config_params(  # pylint: disable=too-many-arguments
 
     Args:
         charm_state: The current state of the charm.
-        tls_dh_params_path: Path to the Diffie-Hellman parameters file for TLS.
-        tls_cert_path: Path to the TLS certificate file.
-        tls_key_path: Path to the TLS private key file.
-        tls_cert_key_path: Path to the combined certificate and key file for TLS.
         fqdn: Fully Qualified Domain Name of the system.
         hostname: Hostname of the system.
 
@@ -119,11 +111,7 @@ def construct_postfix_config_params(  # pylint: disable=too-many-arguments
         "smtpd_recipient_restrictions": ", ".join(smtpd_recipient_restrictions(charm_state)),
         "smtpd_relay_restrictions": ", ".join(smtpd_relay_restrictions(charm_state)),
         "smtpd_sender_restrictions": ", ".join(smtpd_sender_restrictions(charm_state)),
-        "tls_cert_key": tls_cert_key_path,
-        "tls_cert": tls_cert_path,
-        "tls_key": tls_key_path,
         "tls_ciphers": charm_state.tls_ciphers.value if charm_state.tls_ciphers else None,
-        "tls_dh_params": tls_dh_params_path,
         "tls_exclude_ciphers": ", ".join(charm_state.tls_exclude_ciphers),
         "tls_protocols": " ".join(charm_state.tls_protocols),
         "tls_security_level": (

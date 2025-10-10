@@ -11,17 +11,9 @@ import pytest
 from ops.testing import Context, State
 
 import charm
-import tls
 from state import ConfigurationError
 
 FILES_PATH = Path(__file__).parent / "files"
-
-DEFAULT_TLS_CONFIG_PATHS = tls.TLSConfigPaths(
-    "/etc/ssl/private/dhparams.pem",
-    "/etc/ssl/certs/ssl-cert-snakeoil.pem",
-    "/etc/ssl/private/ssl-cert-snakeoil.key",
-    "",
-)
 
 
 @patch("charm.State.from_charm", Mock(side_effect=ConfigurationError("Invalid configuration")))
@@ -46,7 +38,6 @@ class TestConfigureAuth:
         [pytest.param("", id="no auth users"), pytest.param("- user", id="with auth users")],
     )
     @patch("charm.utils.write_file")
-    @patch.object(charm, "get_tls_config_paths", Mock(return_value=DEFAULT_TLS_CONFIG_PATHS))
     def test_no_auth(
         self,
         mock_write_file: Mock,
@@ -80,7 +71,6 @@ class TestConfigureAuth:
         assert out.unit_status == ops.testing.ActiveStatus()
 
     @patch("charm.utils.write_file")
-    @patch.object(charm, "get_tls_config_paths", Mock(return_value=DEFAULT_TLS_CONFIG_PATHS))
     def test_with_auth_dovecot(
         self,
         mock_write_file: Mock,
@@ -104,7 +94,6 @@ class TestConfigureAuth:
 @patch.object(
     charm, "construct_postfix_config_params", wraps=charm.construct_postfix_config_params
 )
-@patch.object(charm, "get_tls_config_paths", Mock(return_value=DEFAULT_TLS_CONFIG_PATHS))
 @patch("charm.utils.write_file", Mock())
 def test_configure_relay(
     mock_construct_postfix_config_params: Mock,
@@ -127,10 +116,6 @@ def test_configure_relay(
 
     mock_construct_postfix_config_params.assert_called_once_with(
         charm_state=ANY,
-        tls_dh_params_path=DEFAULT_TLS_CONFIG_PATHS.tls_dh_params,
-        tls_cert_path=DEFAULT_TLS_CONFIG_PATHS.tls_cert,
-        tls_key_path=DEFAULT_TLS_CONFIG_PATHS.tls_key,
-        tls_cert_key_path=DEFAULT_TLS_CONFIG_PATHS.tls_cert_key,
         fqdn="{{unit_name}}.example-domain.com",
         hostname=ANY,
     )
@@ -249,7 +234,6 @@ class TestUpdateAliases:
     [pytest.param(True, id="enable_spf"), pytest.param(False, id="disable_spf")],
 )
 @patch("charm.utils.write_file")
-@patch.object(charm, "get_tls_config_paths", Mock(return_value=DEFAULT_TLS_CONFIG_PATHS))
 def test_configure_policyd_spf(
     mock_write_file: Mock,
     enable_spf: bool,

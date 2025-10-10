@@ -24,7 +24,6 @@ from postfix import (
     construct_postfix_config_params,
 )
 from state import ConfigurationError, State
-from tls import get_tls_config_paths
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +33,6 @@ FILES_DIRPATH = Path("files")
 POSTFIX_CONF_DIRPATH = Path("/etc/postfix")
 ALIASES_FILEPATH = Path("/etc/aliases")
 POLICYD_SPF_FILEPATH = Path("/etc/postfix-policyd-spf-python/policyd-spf.conf")
-TLS_DH_PARAMS_FILEPATH = Path("/etc/ssl/private/dhparams.pem")
 MAIN_CF = "main.cf"
 MAIN_CF_TMPL = "postfix_main_cf.tmpl"
 MASTER_CF = "master.cf"
@@ -43,9 +41,6 @@ MASTER_CF_TMPL = "postfix_master_cf.tmpl"
 DOVECOT_NAME = "dovecot"
 DOVECOT_CONFIG_FILEPATH = Path("/etc/dovecot/dovecot.conf")
 DOVECOT_USERS_FILEPATH = Path("/etc/dovecot/users")
-
-RSYSLOG_CONF_SRC = FILES_DIRPATH / "50-default.conf"
-RSYSLOG_CONF_DST = Path("/etc/rsyslog.d/50-default.conf")
 
 
 class PostfixRelayConfiguratorCharm(ops.CharmBase):
@@ -92,16 +87,11 @@ class PostfixRelayConfiguratorCharm(ops.CharmBase):
         """Generate and apply Postfix configuration."""
         self.unit.status = ops.MaintenanceStatus("Setting up Postfix relay")
 
-        tls_config_paths = get_tls_config_paths(TLS_DH_PARAMS_FILEPATH)
         fqdn = self._generate_fqdn(charm_state.domain)
         hostname = socket.gethostname()
 
         context = construct_postfix_config_params(
             charm_state=charm_state,
-            tls_dh_params_path=tls_config_paths.tls_dh_params,
-            tls_cert_path=tls_config_paths.tls_cert,
-            tls_key_path=tls_config_paths.tls_key,
-            tls_cert_key_path=tls_config_paths.tls_cert_key,
             fqdn=fqdn,
             hostname=hostname,
         )
