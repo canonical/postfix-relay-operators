@@ -150,7 +150,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         additional_smtpd_recipient_restrictions: List of additional recipient restrictions.
         allowed_relay_networks: List of allowed networks to relay without authenticating.
         append_x_envelope_to: Append the X-Envelope-To header.
-        connection_limit: Maximum number of SMTP connections allowed.
         enable_rate_limits: Enable default rate limiting features.
         enable_reject_unknown_sender_domain: Reject email when sender's domain cannot be resolved.
         enable_smtp_auth: If SMTP authentication is enabled.
@@ -199,7 +198,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     virtual_alias_domains: list[Annotated[str, Field(min_length=1)]]
     virtual_alias_maps: dict[str, str]
     virtual_alias_maps_type: PostfixLookupTableType
-    connection_limit: int = Field(ge=0)
 
     @classmethod
     def from_charm(cls, config: Mapping[str, Any]) -> "State":
@@ -239,7 +237,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
                 additional_smtpd_recipient_restrictions=additional_smtpd_recipient_restrictions,
                 allowed_relay_networks=allowed_relay_networks,
                 append_x_envelope_to=config.get("append_x_envelope_to"),  # type: ignore[arg-type]
-                connection_limit=config.get("connection_limit"),  # type: ignore[arg-type]
                 enable_rate_limits=config.get("enable_rate_limits"),  # type: ignore[arg-type]
                 enable_reject_unknown_sender_domain=config.get(
                     "enable_reject_unknown_sender_domain"

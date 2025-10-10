@@ -55,10 +55,6 @@ config:
 
         This is useful to allow end users filter by destination when they
         receive emails for multiple individual or shared aliases.
-    connection_limit:
-      type: int
-      default: 100
-      description: Maximum number of simultaneous SMTP connections allowed.
     enable_rate_limits:
       type: boolean
       default: false

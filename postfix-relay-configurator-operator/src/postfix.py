@@ -92,7 +92,6 @@ def construct_postfix_config_params(
     return {
         "JUJU_HEADER": utils.JUJU_HEADER,
         "hostname": hostname,
-        "connection_limit": charm_state.connection_limit,
         "enable_rate_limits": charm_state.enable_rate_limits,
         "enable_sender_login_map": bool(charm_state.sender_login_maps),
         "enable_smtp_auth": charm_state.enable_smtp_auth,

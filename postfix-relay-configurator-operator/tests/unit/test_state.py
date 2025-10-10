@@ -28,7 +28,6 @@ def test_state():
             - 192.168.253.0/24
         """,
         "append_x_envelope_to": True,
-        "connection_limit": 200,
         "enable_rate_limits": True,
         "enable_reject_unknown_sender_domain": False,
         "enable_spf": True,
@@ -86,7 +85,6 @@ def test_state():
         for value in yaml.safe_load(cast("str", charm_config["allowed_relay_networks"]))
     ]
     assert charm_state.append_x_envelope_to
-    assert charm_state.connection_limit == charm_config["connection_limit"]
     assert charm_state.enable_rate_limits
     assert not charm_state.enable_reject_unknown_sender_domain
     assert charm_state.enable_spf
@@ -140,7 +138,6 @@ def test_state_defaults():
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "connection_limit": 100,
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -152,7 +149,6 @@ def test_state_defaults():
     assert charm_state.additional_smtpd_recipient_restrictions == []
     assert charm_state.allowed_relay_networks == []
     assert not charm_state.append_x_envelope_to
-    assert charm_state.connection_limit == 100
     assert not charm_state.enable_rate_limits
     assert charm_state.enable_reject_unknown_sender_domain
     assert not charm_state.enable_spf
@@ -182,26 +178,6 @@ def test_state_with_invalid_allowed_relay_networks():
     charm_config = {
         "append_x_envelope_to": False,
         "allowed_relay_networks": "- 192.0.0.0/33",
-        "connection_limit": 100,
-        "enable_rate_limits": False,
-        "enable_reject_unknown_sender_domain": True,
-        "enable_spf": False,
-        "enable_smtp_auth": True,
-        "virtual_alias_maps_type": "hash",
-    }
-    with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
-
-
-def test_state_with_invalid_connection_limit():
-    """
-    arrange: do nothing.
-    act: initialize a charm state from invalid configuration.
-    assert: an InvalidStateError is raised.
-    """
-    charm_config = {
-        "append_x_envelope_to": False,
-        "connection_limit": -1,
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -220,7 +196,6 @@ def test_state_with_invalid_restrict_recipients():
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "connection_limit": -1,
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -240,7 +215,6 @@ def test_state_with_invalid_restrict_senders():
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "connection_limit": -1,
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -260,7 +234,6 @@ def test_state_with_invalid_spf_skip_addresses():
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "connection_limit": -1,
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
@@ -280,7 +253,6 @@ def test_state_with_invalid_virtual_alias_maps_type():
     """
     charm_config = {
         "append_x_envelope_to": False,
-        "connection_limit": -1,
         "enable_rate_limits": False,
         "enable_reject_unknown_sender_domain": True,
         "enable_spf": False,
