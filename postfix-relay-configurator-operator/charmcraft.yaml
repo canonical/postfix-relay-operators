@@ -66,8 +66,7 @@ config:
       type: string
       default: ""
       description: |
-        Primary domain for hostname generation, it will be
-        $application-$unit.$domain. Set to '' to use the system FQDN.
+        Primary domain for hostname generation, it will be $application-$unit.$domain.
     enable_rate_limits:
       type: boolean
       default: false
