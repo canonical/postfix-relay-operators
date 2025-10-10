@@ -1,26 +1,21 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+"""Utils unit tests."""
+
 import os
-import shutil
 import tempfile
-import unittest
+
+import utils
 
 
-class TestLibUtils(unittest.TestCase):
-    def setUp(self):
-        self.maxDiff = None
-        self.tmpdir = tempfile.mkdtemp(prefix="charm-unittests-")
-        self.charm_dir = os.path.dirname(
-            os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        )
-        self.addCleanup(shutil.rmtree, self.tmpdir)
+def test_write_file():
+    source = "# User-provided config added here"
+    tmpdir = tempfile.mkdtemp(prefix="charm-unittests-")
+    dest = os.path.join(tmpdir, "my-test-file")
 
-    def test__write_file(self):
-        source = "# User-provided config added here"
-        dest = os.path.join(self.tmpdir, "my-test-file")
+    utils.write_file(source, dest)
 
-        # Check contents
-        with open(dest, "r") as f:
-            got = f.read()
-        self.assertEqual(got, source)
+    with open(dest, "r", encoding="utf-8") as f:
+        got = f.read()
+    assert got == source

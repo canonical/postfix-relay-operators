@@ -125,7 +125,7 @@ def test_smtpd_relay_restrictions(
     charm_state.sender_login_maps = sender_login_maps
     charm_state.restrict_senders = restrict_senders
 
-    result = postfix._smtpd_relay_restrictions(charm_state)
+    result = postfix.smtpd_relay_restrictions(charm_state)
 
     assert result == expected
 
@@ -173,7 +173,7 @@ def test_smtpd_sender_restrictions(
 ) -> None:
     """
     arrange: Create charm_state with different sender restriction settings.
-    act: Call _smtpd_sender_restrictions with the charm_state.
+    act: Call smtpd_sender_restrictions with the charm_state.
     assert: The returned list of restrictions is correct and in order.
     """
     charm_config = {
@@ -190,7 +190,7 @@ def test_smtpd_sender_restrictions(
     charm_state.enable_reject_unknown_sender_domain = enable_reject_unknown_sender
     charm_state.restrict_sender_access = restrict_sender_access
 
-    result = postfix._smtpd_sender_restrictions(charm_state)
+    result = postfix.smtpd_sender_restrictions(charm_state)
 
     assert result == expected
 
@@ -262,7 +262,7 @@ def test_smtpd_recipient_restrictions(
 ) -> None:
     """
     arrange: Create charm_state with different recipient restriction settings.
-    act: Call _smtpd_recipient_restrictions with the charm_state.
+    act: Call smtpd_recipient_restrictions with the charm_state.
     assert: The returned list of restrictions is correct and in order.
     """
     charm_config = {
@@ -281,7 +281,7 @@ def test_smtpd_recipient_restrictions(
     charm_state.additional_smtpd_recipient_restrictions = additional_restrictions
     charm_state.enable_spf = enable_spf
 
-    result = postfix._smtpd_recipient_restrictions(charm_state)
+    result = postfix.smtpd_recipient_restrictions(charm_state)
 
     assert result == expected
 

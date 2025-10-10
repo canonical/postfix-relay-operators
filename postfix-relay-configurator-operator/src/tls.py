@@ -9,7 +9,12 @@ import subprocess  # nosec
 from typing import NamedTuple
 
 
-def _get_autocert_cn(autocert_conf_dir: str = "/etc/autocert/postfix") -> str:
+def get_autocert_cn(autocert_conf_dir: str = "/etc/autocert/postfix") -> str:
+    """Get the autocert common name.
+
+    Args:
+        autocert_conf_dir: the autocert configuration dir.
+    """
     # autocert relation is reversed so we can't get this info from
     # juju relations but rather try work it out from the shipped out
     # config.
@@ -48,7 +53,7 @@ def get_tls_config_paths(tls_dh_params: str) -> TLSConfigPaths:
     tls_cert_key = ""
     tls_cert = "/etc/ssl/certs/ssl-cert-snakeoil.pem"
     tls_key = "/etc/ssl/private/ssl-cert-snakeoil.key"
-    tls_cn = _get_autocert_cn()
+    tls_cn = get_autocert_cn()
     if tls_cn:
         # autocert currently bundles certs with the key at the end which postfix doesn't like:
         # `warning: error loading chain from /etc/postfix/ssl/{...}.pem: key not first`

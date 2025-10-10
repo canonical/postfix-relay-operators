@@ -85,14 +85,15 @@ class PostfixRelayConfiguratorCharm(ops.CharmBase):
             utils.write_file(contents, DOVECOT_USERS_FILEPATH, perms=0o640, group=DOVECOT_NAME)
 
     def _generate_fqdn(self, domain: str) -> str:
-        return f"{self.unit.name.replace('/', '-')}.{domain}"
+        # This will actually output double curly braces.
+        return f"{{{{unit_name}}}}.{domain}"
 
     def _configure_relay(self, charm_state: State) -> None:
         """Generate and apply Postfix configuration."""
         self.unit.status = ops.MaintenanceStatus("Setting up Postfix relay")
 
         tls_config_paths = get_tls_config_paths(TLS_DH_PARAMS_FILEPATH)
-        fqdn = self._generate_fqdn(charm_state.domain) if charm_state.domain else socket.getfqdn()
+        fqdn = self._generate_fqdn(charm_state.domain)
         hostname = socket.gethostname()
 
         context = construct_postfix_config_params(
@@ -113,7 +114,7 @@ class PostfixRelayConfiguratorCharm(ops.CharmBase):
         self._apply_postfix_maps(list(postfix_maps.values()))
 
         logger.info("Updating aliases")
-        self._update_aliases(charm_state.admin_email)
+        self.update_aliases(charm_state.admin_email)
 
     @staticmethod
     def _apply_postfix_maps(postfix_maps: list[PostfixMap]) -> None:
@@ -122,8 +123,12 @@ class PostfixRelayConfiguratorCharm(ops.CharmBase):
             utils.write_file(postfix_map.content, postfix_map.path)
 
     @staticmethod
-    def _update_aliases(admin_email: str | None) -> None:
+    def update_aliases(admin_email: str | None) -> None:
+        """Update the aliases configuration.
 
+        Args:
+            admin_email: the admin email.
+        """
         aliases = []
         if ALIASES_FILEPATH.is_file():
             with ALIASES_FILEPATH.open("r", encoding="utf-8") as f:

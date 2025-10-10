@@ -4,18 +4,15 @@
 """Unit tests for the Postfix Relay charm."""
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 from unittest.mock import ANY, Mock, call, patch
 
 import ops.testing
 import pytest
 from ops.testing import Context, State
-from scenario import TCPPort
 
 import charm
 import tls
 from state import ConfigurationError
-
 
 FILES_PATH = Path(__file__).parent / "files"
 
@@ -49,6 +46,7 @@ class TestConfigureAuth:
         [pytest.param("", id="no auth users"), pytest.param("- user", id="with auth users")],
     )
     @patch("charm.utils.write_file")
+    @patch.object(charm, "get_tls_config_paths", Mock(return_value=DEFAULT_TLS_CONFIG_PATHS))
     def test_no_auth(
         self,
         mock_write_file: Mock,
@@ -81,15 +79,11 @@ class TestConfigureAuth:
 
         assert out.unit_status == ops.testing.ActiveStatus()
 
-    @pytest.mark.parametrize(
-        "dovecot_running",
-        [pytest.param(True, id="dovecot_running"), pytest.param(False, id="dovecot_not_running")],
-    )
     @patch("charm.utils.write_file")
+    @patch.object(charm, "get_tls_config_paths", Mock(return_value=DEFAULT_TLS_CONFIG_PATHS))
     def test_with_auth_dovecot(
         self,
         mock_write_file: Mock,
-        dovecot_running: bool,
         context: Context[charm.PostfixRelayConfiguratorCharm],
     ) -> None:
         """
@@ -107,10 +101,6 @@ class TestConfigureAuth:
         assert out.unit_status == ops.testing.ActiveStatus()
 
 
-@pytest.mark.parametrize(
-    "postfix_running",
-    [pytest.param(True, id="postfix_running"), pytest.param(False, id="postfix_not_running")],
-)
 @patch.object(
     charm, "construct_postfix_config_params", wraps=charm.construct_postfix_config_params
 )
@@ -118,7 +108,6 @@ class TestConfigureAuth:
 @patch("charm.utils.write_file", Mock())
 def test_configure_relay(
     mock_construct_postfix_config_params: Mock,
-    postfix_running: bool,
     context: Context[charm.PostfixRelayConfiguratorCharm],
 ) -> None:
     """
@@ -142,32 +131,35 @@ def test_configure_relay(
         tls_cert_path=DEFAULT_TLS_CONFIG_PATHS.tls_cert,
         tls_key_path=DEFAULT_TLS_CONFIG_PATHS.tls_key,
         tls_cert_key_path=DEFAULT_TLS_CONFIG_PATHS.tls_cert_key,
-        fqdn="postfix-relay-0.example-domain.com",
+        fqdn="{{unit_name}}.example-domain.com",
         hostname=ANY,
     )
 
     assert out.unit_status == ops.testing.ActiveStatus()
 
 
+# pylint: disable=too-many-arguments,too-many-positional-arguments
 class TestUpdateAliases:
+    """Update aliases unit tests."""
+
     @pytest.mark.parametrize(
         ("changed"),
         [pytest.param(True, id="change"), pytest.param(False, id="no_change")],
     )
     @patch("charm.utils.write_file")
-    def test_update_aliases_calls_newaliases(
+    def testupdate_aliases_calls_newaliases(
         self,
         mock_write_file: Mock,
         changed: bool,
     ) -> None:
         """
         arrange: Parameterize whether the aliases file content has changed.
-        act: Call the internal _update_aliases method.
+        act: Call the internal update_aliases method.
         assert: The 'newaliases' command is executed only if the file content changed.
         """
         mock_write_file.return_value = changed
 
-        charm.PostfixRelayConfiguratorCharm._update_aliases("admin@email.com")
+        charm.PostfixRelayConfiguratorCharm.update_aliases("admin@email.com")
 
     @pytest.mark.parametrize(
         "initial_content, expected_content",
@@ -206,7 +198,7 @@ class TestUpdateAliases:
             pytest.param(None, id="no-admin-email"),
         ],
     )
-    def test_update_aliases_content(
+    def testupdate_aliases_content(
         self,
         admin_email_address: str | None,
         initial_content: str,
@@ -216,7 +208,7 @@ class TestUpdateAliases:
     ) -> None:
         """
         arrange: Parametrize different initial contents.
-        act: Call the internal _update_aliases method.
+        act: Call the internal update_aliases method.
         assert: The content of the aliases file is updated to the expected state.
         """
         aliases_path = tmp_path / "aliases"
@@ -224,7 +216,7 @@ class TestUpdateAliases:
 
         monkeypatch.setattr(charm, "ALIASES_FILEPATH", aliases_path)
 
-        charm.PostfixRelayConfiguratorCharm._update_aliases(admin_email_address)
+        charm.PostfixRelayConfiguratorCharm.update_aliases(admin_email_address)
 
         if not admin_email_address:
             expected_content = "\n".join(
@@ -233,20 +225,20 @@ class TestUpdateAliases:
 
         assert aliases_path.read_text() == expected_content
 
-    def test_update_aliases_no_file(
+    def testupdate_aliases_no_file(
         self,
         tmp_path: "Path",
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """
         arrange: Define a path for an aliases file that does not exist.
-        act: Call the internal _update_aliases method.
+        act: Call the internal update_aliases method.
         assert: The method creates the aliases file with the correct default content.
         """
         non_existing_path = tmp_path / "aliases"
         monkeypatch.setattr(charm, "ALIASES_FILEPATH", non_existing_path)
 
-        charm.PostfixRelayConfiguratorCharm._update_aliases(None)
+        charm.PostfixRelayConfiguratorCharm.update_aliases(None)
 
         assert non_existing_path.is_file()
         assert non_existing_path.read_text() == "devnull:       /dev/null\n"
@@ -257,6 +249,7 @@ class TestUpdateAliases:
     [pytest.param(True, id="enable_spf"), pytest.param(False, id="disable_spf")],
 )
 @patch("charm.utils.write_file")
+@patch.object(charm, "get_tls_config_paths", Mock(return_value=DEFAULT_TLS_CONFIG_PATHS))
 def test_configure_policyd_spf(
     mock_write_file: Mock,
     enable_spf: bool,

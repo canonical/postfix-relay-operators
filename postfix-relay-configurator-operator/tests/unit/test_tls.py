@@ -15,49 +15,51 @@ if TYPE_CHECKING:
 
 
 class TestGetAutocertCn:
+    """Autocert unit tests."""
+
     def test_no_autocert_dir(self, tmp_path: "Path") -> None:
         """
         arrange: Define a path to a non-existent autocert directory.
-        act: Call _get_autocert_cn.
+        act: Call get_autocert_cn.
         assert: An empty string is returned.
         """
         autocert_conf_dir = tmp_path / "autocert"
 
-        result = tls._get_autocert_cn(str(autocert_conf_dir))
+        result = tls.get_autocert_cn(str(autocert_conf_dir))
 
         assert result == ""
 
     def test_empty_autocert_dir(self, tmp_path: "Path") -> None:
         """
         arrange: Create an empty autocert directory.
-        act: Call _get_autocert_cn.
+        act: Call get_autocert_cn.
         assert: An empty string is returned.
         """
         autocert_conf_dir = tmp_path / "autocert"
         autocert_conf_dir.mkdir()
 
-        result = tls._get_autocert_cn(str(autocert_conf_dir))
+        result = tls.get_autocert_cn(str(autocert_conf_dir))
 
         assert result == ""
 
     def test_single_config_file(self, tmp_path: "Path") -> None:
         """
         arrange: Create an autocert directory with one .ini file.
-        act: Call _get_autocert_cn.
+        act: Call get_autocert_cn.
         assert: The common name is correctly extracted from the filename.
         """
         autocert_conf_dir = tmp_path / "autocert"
         autocert_conf_dir.mkdir()
         (autocert_conf_dir / "smtp.mydomain.local.ini").touch()
 
-        result = tls._get_autocert_cn(str(autocert_conf_dir))
+        result = tls.get_autocert_cn(str(autocert_conf_dir))
 
         assert result == "smtp.mydomain.local"
 
     def test_multiple_files_sorted(self, tmp_path: "Path") -> None:
         """
         arrange: Create an autocert directory with multiple files.
-        act: Call _get_autocert_cn.
+        act: Call get_autocert_cn.
         assert: The common name from the first .ini file alphabetically is returned.
         """
         autocert_conf_dir = tmp_path / "autocert"
@@ -66,12 +68,14 @@ class TestGetAutocertCn:
         (autocert_conf_dir / "zzz.mydomain.local.ini").touch()
         (autocert_conf_dir / "bbb.mydomain.local.ini").touch()
 
-        result = tls._get_autocert_cn(str(autocert_conf_dir))
+        result = tls.get_autocert_cn(str(autocert_conf_dir))
 
         assert result == "bbb.mydomain.local"
 
 
 class TestGetTlsConfigPaths:
+    """TLS config paths unit tests."""
+
     @pytest.mark.parametrize(
         ("dhparams_exist"),
         [
@@ -80,7 +84,7 @@ class TestGetTlsConfigPaths:
         ],
     )
     @patch("tls.subprocess.check_call")
-    @patch("tls._get_autocert_cn", Mock(return_value=""))
+    @patch("tls.get_autocert_cn", Mock(return_value=""))
     def test_path_logic_without_autocert(
         self,
         mock_subprocess_call: Mock,
@@ -110,7 +114,7 @@ class TestGetTlsConfigPaths:
         assert result.tls_dh_params == str(dhparams_path)
 
     @patch("tls.subprocess.check_call")
-    @patch("tls._get_autocert_cn", Mock(return_value="smtp.example.com"))
+    @patch("tls.get_autocert_cn", Mock(return_value="smtp.example.com"))
     @patch("tls.os.path.exists", Mock(return_value=False))
     def test_path_logic_with_autocert(
         self,

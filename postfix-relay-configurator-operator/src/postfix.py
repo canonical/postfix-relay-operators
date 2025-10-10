@@ -15,51 +15,64 @@ if TYPE_CHECKING:
     from state import State
 
 
-def _smtpd_relay_restrictions(charm_state: "State") -> list[str]:
-    smtpd_relay_restrictions = ["permit_mynetworks"]
+def smtpd_relay_restrictions(charm_state: "State") -> list[str]:
+    """Generate the SMTP relay restrictions configuration snippet.
+
+    Args:
+        charm_state: the charm state.
+    """
+    relay_restrictions = ["permit_mynetworks"]
     if bool(charm_state.relay_access_sources):
-        smtpd_relay_restrictions.append("check_client_access cidr:/etc/postfix/relay_access")
+        relay_restrictions.append("check_client_access cidr:/etc/postfix/relay_access")
 
     if charm_state.enable_smtp_auth:
         if charm_state.sender_login_maps:
-            smtpd_relay_restrictions.append("reject_known_sender_login_mismatch")
+            relay_restrictions.append("reject_known_sender_login_mismatch")
         if charm_state.restrict_senders:
-            smtpd_relay_restrictions.append("reject_sender_login_mismatch")
-        smtpd_relay_restrictions.append("permit_sasl_authenticated")
+            relay_restrictions.append("reject_sender_login_mismatch")
+        relay_restrictions.append("permit_sasl_authenticated")
 
-    smtpd_relay_restrictions.append("defer_unauth_destination")
+    relay_restrictions.append("defer_unauth_destination")
 
-    return smtpd_relay_restrictions
+    return relay_restrictions
 
 
-def _smtpd_sender_restrictions(charm_state: "State") -> list[str]:
-    smtpd_sender_restrictions = []
+def smtpd_sender_restrictions(charm_state: "State") -> list[str]:
+    """Generate the SMTP sender restrictions configuration snippet.
+
+    Args:
+        charm_state: the charm state.
+    """
+    sender_restrictions = []
     if charm_state.enable_reject_unknown_sender_domain:
-        smtpd_sender_restrictions.append("reject_unknown_sender_domain")
-    smtpd_sender_restrictions.append("check_sender_access hash:/etc/postfix/access")
+        sender_restrictions.append("reject_unknown_sender_domain")
+    sender_restrictions.append("check_sender_access hash:/etc/postfix/access")
     if charm_state.restrict_sender_access:
-        smtpd_sender_restrictions.append("reject")
+        sender_restrictions.append("reject")
 
-    return smtpd_sender_restrictions
+    return sender_restrictions
 
 
-def _smtpd_recipient_restrictions(charm_state: "State") -> list[str]:
-    smtpd_recipient_restrictions = []
+def smtpd_recipient_restrictions(charm_state: "State") -> list[str]:
+    """Generate the SMTP recipient restrictions configuration snippet.
+
+    Args:
+        charm_state: the charm state.
+    """
+    recipient_restrictions = []
     if charm_state.append_x_envelope_to:
-        smtpd_recipient_restrictions.append(
+        recipient_restrictions.append(
             "check_recipient_access regexp:/etc/postfix/append_envelope_to_header"
         )
 
     if charm_state.restrict_senders:
-        smtpd_recipient_restrictions.append(
-            "check_sender_access hash:/etc/postfix/restricted_senders"
-        )
-    smtpd_recipient_restrictions.extend(charm_state.additional_smtpd_recipient_restrictions)
+        recipient_restrictions.append("check_sender_access hash:/etc/postfix/restricted_senders")
+    recipient_restrictions.extend(charm_state.additional_smtpd_recipient_restrictions)
 
     if charm_state.enable_spf:
-        smtpd_recipient_restrictions.append("check_policy_service unix:private/policyd-spf")
+        recipient_restrictions.append("check_policy_service unix:private/policyd-spf")
 
-    return smtpd_recipient_restrictions
+    return recipient_restrictions
 
 
 def construct_postfix_config_params(  # pylint: disable=too-many-arguments
@@ -103,9 +116,9 @@ def construct_postfix_config_params(  # pylint: disable=too-many-arguments
         "relay_recipient_maps": bool(charm_state.relay_recipient_maps),
         "restrict_recipients": bool(charm_state.restrict_recipients),
         "smtp_header_checks": bool(charm_state.smtp_header_checks),
-        "smtpd_recipient_restrictions": ", ".join(_smtpd_recipient_restrictions(charm_state)),
-        "smtpd_relay_restrictions": ", ".join(_smtpd_relay_restrictions(charm_state)),
-        "smtpd_sender_restrictions": ", ".join(_smtpd_sender_restrictions(charm_state)),
+        "smtpd_recipient_restrictions": ", ".join(smtpd_recipient_restrictions(charm_state)),
+        "smtpd_relay_restrictions": ", ".join(smtpd_relay_restrictions(charm_state)),
+        "smtpd_sender_restrictions": ", ".join(smtpd_sender_restrictions(charm_state)),
         "tls_cert_key": tls_cert_key_path,
         "tls_cert": tls_cert_path,
         "tls_key": tls_key_path,
