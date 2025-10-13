@@ -82,10 +82,3 @@ config:
         domains to other local or remote addresses.
 
         http://www.postfix.org/postconf.5.html#virtual_alias_maps
-    virtual_alias_maps_type:
-      type: string
-      default: "hash"
-      description: |
-        Specify the map type used for virtual aliases.
-
-        https://www.postfix.org/DATABASE_README.html#types

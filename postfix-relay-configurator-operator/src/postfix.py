@@ -13,50 +13,6 @@ if TYPE_CHECKING:
     from state import State
 
 
-def smtpd_relay_restrictions(charm_state: "State") -> list[str]:
-    """Generate the SMTP relay restrictions configuration snippet.
-
-    Args:
-        charm_state: the charm state.
-    """
-    relay_restrictions = []
-    if bool(charm_state.relay_access_sources):
-        relay_restrictions.append("check_client_access cidr:/etc/postfix/relay_access")
-
-    return relay_restrictions
-
-
-def smtpd_recipient_restrictions(charm_state: "State") -> list[str]:
-    """Generate the SMTP recipient restrictions configuration snippet.
-
-    Args:
-        charm_state: the charm state.
-    """
-    recipient_restrictions = []
-    if charm_state.restrict_senders:
-        recipient_restrictions.append("check_sender_access hash:/etc/postfix/restricted_senders")
-
-    return recipient_restrictions
-
-
-def construct_postfix_config_params(
-    charm_state: "State",
-) -> dict[str, str | int | bool | None]:
-    """Prepare the context for rendering Postfix configuration files.
-
-    Args:
-        charm_state: The current state of the charm.
-
-    Returns:
-        str: The context for remndering Postfix configuration file content.
-    """
-    return {
-        "JUJU_HEADER": utils.JUJU_HEADER,
-        "restrict_recipients": bool(charm_state.restrict_recipients),
-        "virtual_alias_maps_type": charm_state.virtual_alias_maps_type.value,
-    }
-
-
 class PostfixMap(NamedTuple):
     """Represents a Postfix lookup table and its source file content.
 
@@ -148,7 +104,7 @@ def build_postfix_maps(postfix_conf_dir: str, charm_state: "State") -> dict[str,
             "\n".join([f"{key} {value}" for key, value in charm_state.transport_maps.items()]),
         ),
         "virtual_alias_maps": _create_map(
-            charm_state.virtual_alias_maps_type.value,
+            PostfixLookupTableType.HASH,
             "virtual_alias",
             "\n".join([f"{key} {value}" for key, value in charm_state.virtual_alias_maps.items()]),
         ),

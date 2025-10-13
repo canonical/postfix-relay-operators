@@ -44,7 +44,6 @@ def test_state():
             /^group@example.net/: group@example.com
             /^group2@example.net/: group2@example.com
         """,
-        "virtual_alias_maps_type": "hash",
     }
     charm_state = state.State.from_charm(config=charm_config)
 
@@ -73,7 +72,6 @@ def test_state():
     assert charm_state.virtual_alias_maps == yaml.safe_load(
         cast("str", charm_config["virtual_alias_maps"])
     )
-    assert charm_state.virtual_alias_maps_type == state.PostfixLookupTableType.HASH
 
 
 def test_state_defaults():
@@ -82,10 +80,7 @@ def test_state_defaults():
     act: initialize a charm state from default configuration.
     assert: the state values are parsed correctly.
     """
-    charm_config = {
-        "virtual_alias_maps_type": "hash",
-    }
-    charm_state = state.State.from_charm(config=charm_config)
+    charm_state = state.State.from_charm(config={})
 
     assert charm_state.relay_access_sources == []
     assert charm_state.restrict_recipients == {}
@@ -94,7 +89,6 @@ def test_state_defaults():
     assert charm_state.sender_login_maps == {}
     assert charm_state.transport_maps == {}
     assert charm_state.virtual_alias_maps == {}
-    assert charm_state.virtual_alias_maps_type == state.PostfixLookupTableType.HASH
 
 
 def test_state_with_invalid_restrict_recipients():
@@ -105,7 +99,6 @@ def test_state_with_invalid_restrict_recipients():
     """
     charm_config = {
         "restrict_recipients": "recipient: invalid_value",
-        "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
         state.State.from_charm(config=charm_config)
@@ -119,20 +112,6 @@ def test_state_with_invalid_restrict_senders():
     """
     charm_config = {
         "restrict_senders": "sender: invalid_value",
-        "virtual_alias_maps_type": "hash",
-    }
-    with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
-
-
-def test_state_with_invalid_virtual_alias_maps_type():
-    """
-    arrange: do nothing.
-    act: initialize a charm state from invalid configuration.
-    assert: an InvalidStateError is raised.
-    """
-    charm_config = {
-        "virtual_alias_maps_type": "invalid",
     }
     with pytest.raises(state.ConfigurationError):
         state.State.from_charm(config=charm_config)

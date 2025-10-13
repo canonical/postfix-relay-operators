@@ -156,7 +156,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             or next-hop destination.
         virtual_alias_maps: Map of aliases of mail addresses or domains to other local or
             remote addresses.
-        virtual_alias_maps_type: The virtual alias map type.
     """
 
     model_config = ConfigDict(regex_engine="python-re")  # noqa: DCO063
@@ -169,7 +168,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     sender_login_maps: dict[str, str]
     transport_maps: dict[str, str]
     virtual_alias_maps: dict[str, str]
-    virtual_alias_maps_type: PostfixLookupTableType
 
     @classmethod
     def from_charm(cls, config: Mapping[str, Any]) -> "State":
@@ -203,9 +201,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
                 sender_login_maps=sender_login_maps,
                 transport_maps=transport_maps,
                 virtual_alias_maps=virtual_alias_maps,
-                virtual_alias_maps_type=PostfixLookupTableType(
-                    config.get("virtual_alias_maps_type")
-                ),
             )
 
         except ValueError as exc:

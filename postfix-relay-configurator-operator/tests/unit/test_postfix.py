@@ -26,7 +26,6 @@ def test_build_postfix_maps_returns_correct_data() -> None:
         "sender_login_maps": "sender@example.com: user@example.com",
         "transport_maps": "domain.com: smtp:relay.example.com",
         "virtual_alias_maps": "alias@example.com: real@example.com",
-        "virtual_alias_maps_type": "hash",
     }
     charm_state = state.State.from_charm(config=charm_config)
     postfix_conf_dir = "/etc/postfix"

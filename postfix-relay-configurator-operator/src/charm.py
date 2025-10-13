@@ -12,20 +12,12 @@ from typing import Any
 import ops
 
 import utils
-from postfix import (
-    PostfixMap,
-    build_postfix_maps,
-    construct_postfix_config_params,
-)
+from postfix import PostfixMap, build_postfix_maps
 from state import ConfigurationError, State
 
 logger = logging.getLogger(__name__)
 
-TEMPLATES_DIRPATH = Path("templates")
-
 POSTFIX_CONF_DIRPATH = Path("/etc/postfix")
-MAIN_CF = "main.cf"
-MAIN_CF_TMPL = "postfix_main_cf.tmpl"
 
 
 class PostfixRelayConfiguratorCharm(ops.CharmBase):
@@ -53,14 +45,8 @@ class PostfixRelayConfiguratorCharm(ops.CharmBase):
         """Generate and apply Postfix configuration."""
         self.unit.status = ops.MaintenanceStatus("Setting up Postfix relay")
 
-        context = construct_postfix_config_params(charm_state=charm_state)
-        contents = utils.render_jinja2_template(context, TEMPLATES_DIRPATH / MAIN_CF_TMPL)
-        utils.write_file(contents, POSTFIX_CONF_DIRPATH / MAIN_CF)
-
         postfix_maps = build_postfix_maps(POSTFIX_CONF_DIRPATH, charm_state)
         self._apply_postfix_maps(list(postfix_maps.values()))
-
-        logger.info("Updating aliases")
 
     @staticmethod
     def _apply_postfix_maps(postfix_maps: list[PostfixMap]) -> None:
