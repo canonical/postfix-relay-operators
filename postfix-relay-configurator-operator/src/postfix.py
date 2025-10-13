@@ -52,9 +52,7 @@ def construct_postfix_config_params(
     """
     return {
         "JUJU_HEADER": utils.JUJU_HEADER,
-        "relay_domains": " ".join(charm_state.relay_domains),
         "restrict_recipients": bool(charm_state.restrict_recipients),
-        "virtual_alias_domains": " ".join(charm_state.virtual_alias_domains),
         "virtual_alias_maps_type": charm_state.virtual_alias_maps_type.value,
     }
 

@@ -146,7 +146,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
 
     Attributes:
         relay_access_sources: List of  entries to restrict access based on CIDR source.
-        relay_domains: List of destination domains to relay mail to.
         restrict_recipients: Access map for restrictions by recipient address or domain.
         restrict_senders: Access map for restrictions by sender address or domain.
         relay_recipient_maps: Map that alias mail addresses or domains to
@@ -155,7 +154,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         sender_login_maps: List of authenticated users that can send mail.
         transport_maps: Map from recipient address to message delivery transport
             or next-hop destination.
-        virtual_alias_domains: List of domains for which all addresses are aliased.
         virtual_alias_maps: Map of aliases of mail addresses or domains to other local or
             remote addresses.
         virtual_alias_maps_type: The virtual alias map type.
@@ -164,14 +162,12 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     model_config = ConfigDict(regex_engine="python-re")  # noqa: DCO063
 
     relay_access_sources: list[str]
-    relay_domains: list[Annotated[str, Field(min_length=1)]]
     restrict_recipients: dict[str, AccessMapValue]
     restrict_senders: dict[str, AccessMapValue]
     relay_recipient_maps: dict[str, str]
     restrict_sender_access: list[Annotated[str, Field(min_length=1)]]
     sender_login_maps: dict[str, str]
     transport_maps: dict[str, str]
-    virtual_alias_domains: list[Annotated[str, Field(min_length=1)]]
     virtual_alias_maps: dict[str, str]
     virtual_alias_maps_type: PostfixLookupTableType
 
@@ -190,10 +186,8 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         """
         try:
             relay_access_sources = _parse_list(config.get("relay_access_sources"))
-            relay_domains = _parse_list(config.get("relay_domains"))
             relay_recipient_maps = _parse_map(config.get("relay_recipient_maps"))
             restrict_sender_access = _parse_list(config.get("restrict_sender_access"))
-            virtual_alias_domains = _parse_list(config.get("virtual_alias_domains"))
             restrict_recipients = _parse_access_map(config.get("restrict_recipients"))
             restrict_senders = _parse_access_map(config.get("restrict_senders"))
             sender_login_maps = _parse_map(config.get("sender_login_maps"))
@@ -202,14 +196,12 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
 
             return cls(
                 relay_access_sources=relay_access_sources,
-                relay_domains=relay_domains,
                 relay_recipient_maps=relay_recipient_maps,
                 restrict_recipients=restrict_recipients,
                 restrict_senders=restrict_senders,
                 restrict_sender_access=restrict_sender_access,
                 sender_login_maps=sender_login_maps,
                 transport_maps=transport_maps,
-                virtual_alias_domains=virtual_alias_domains,
                 virtual_alias_maps=virtual_alias_maps,
                 virtual_alias_maps_type=PostfixLookupTableType(
                     config.get("virtual_alias_maps_type")

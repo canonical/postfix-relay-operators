@@ -23,10 +23,6 @@ def test_state():
             - 10.10.10.5    REJECT
             - 10.10.10.0/24 OK
         """,
-        "relay_domains": """
-            - domain.example.com
-            - domain2.example.com
-        """,
         "relay_recipient_maps": """
             noreply@mydomain.local: noreply@mydomain.local
         """,
@@ -44,10 +40,6 @@ def test_state():
             example.com: 'smtp:[mx.example.com]'
             admin.example1.com: 'smtp:[mx.example.com]'
         """,
-        "virtual_alias_domains": """
-            - mydomain.local
-            - mydomain2.local
-        """,
         "virtual_alias_maps": """
             /^group@example.net/: group@example.com
             /^group2@example.net/: group2@example.com
@@ -59,7 +51,6 @@ def test_state():
     assert charm_state.relay_access_sources == yaml.safe_load(
         cast("str", charm_config["relay_access_sources"])
     )
-    assert charm_state.relay_domains == yaml.safe_load(cast("str", charm_config["relay_domains"]))
     restrict_recipients_raw = yaml.safe_load(cast("str", charm_config["restrict_recipients"]))
     restrict_recipients = {
         key: state.AccessMapValue(value) for key, value in restrict_recipients_raw.items()
@@ -79,9 +70,6 @@ def test_state():
     assert charm_state.transport_maps == yaml.safe_load(
         cast("str", charm_config["transport_maps"])
     )
-    assert charm_state.virtual_alias_domains == yaml.safe_load(
-        cast("str", charm_config["virtual_alias_domains"])
-    )
     assert charm_state.virtual_alias_maps == yaml.safe_load(
         cast("str", charm_config["virtual_alias_maps"])
     )
@@ -100,13 +88,11 @@ def test_state_defaults():
     charm_state = state.State.from_charm(config=charm_config)
 
     assert charm_state.relay_access_sources == []
-    assert charm_state.relay_domains == []
     assert charm_state.restrict_recipients == {}
     assert charm_state.restrict_senders == {}
     assert charm_state.restrict_sender_access == []
     assert charm_state.sender_login_maps == {}
     assert charm_state.transport_maps == {}
-    assert charm_state.virtual_alias_domains == []
     assert charm_state.virtual_alias_maps == {}
     assert charm_state.virtual_alias_maps_type == state.PostfixLookupTableType.HASH
 

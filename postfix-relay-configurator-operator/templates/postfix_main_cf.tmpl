@@ -30,13 +30,6 @@ restricted = check_recipient_access hash:/etc/postfix/restricted_recipients, rej
 header_checks = regexp:/etc/postfix/header_checks
 smtp_header_checks = regexp:/etc/postfix/smtp_header_checks
 
-{%- if virtual_alias_domains %}
-virtual_alias_domains = {{virtual_alias_domains}}
-{%- endif %}
-{%- if relay_domains %}
-relay_domains = {{relay_domains}}
-{% endif %}
-
 transport_maps = hash:/etc/postfix/transport
 virtual_alias_maps = {{virtual_alias_maps_type}}:/etc/postfix/virtual_alias
 relay_recipient_maps = hash:/etc/postfix/relay_recipient
