@@ -145,7 +145,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     """The Postfix Relay operator charm state.
 
     Attributes:
-        enable_reject_unknown_sender_domain: Reject email when sender's domain cannot be resolved.
         relay_access_sources: List of  entries to restrict access based on CIDR source.
         relay_domains: List of destination domains to relay mail to.
         restrict_recipients: Access map for restrictions by recipient address or domain.
@@ -165,7 +164,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
 
     model_config = ConfigDict(regex_engine="python-re")  # noqa: DCO063
 
-    enable_reject_unknown_sender_domain: bool
     relay_access_sources: list[str]
     relay_domains: list[Annotated[str, Field(min_length=1)]]
     restrict_recipients: dict[str, AccessMapValue]
@@ -205,9 +203,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             virtual_alias_maps = _parse_map(config.get("virtual_alias_maps"))
 
             return cls(
-                enable_reject_unknown_sender_domain=config.get(
-                    "enable_reject_unknown_sender_domain"
-                ),  # type: ignore[arg-type]
                 relay_access_sources=relay_access_sources,
                 relay_domains=relay_domains,
                 relay_host=config.get("relay_host"),

@@ -19,10 +19,9 @@ def smtpd_relay_restrictions(charm_state: "State") -> list[str]:
     Args:
         charm_state: the charm state.
     """
-    relay_restrictions = ["permit_mynetworks"]
+    relay_restrictions = []
     if bool(charm_state.relay_access_sources):
         relay_restrictions.append("check_client_access cidr:/etc/postfix/relay_access")
-    relay_restrictions.append("defer_unauth_destination")
 
     return relay_restrictions
 
@@ -34,9 +33,6 @@ def smtpd_sender_restrictions(charm_state: "State") -> list[str]:
         charm_state: the charm state.
     """
     sender_restrictions = []
-    if charm_state.enable_reject_unknown_sender_domain:
-        sender_restrictions.append("reject_unknown_sender_domain")
-    sender_restrictions.append("check_sender_access hash:/etc/postfix/access")
     if charm_state.restrict_sender_access:
         sender_restrictions.append("reject")
 

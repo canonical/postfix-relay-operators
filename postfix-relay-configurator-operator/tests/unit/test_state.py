@@ -18,7 +18,6 @@ def test_state():
     assert: the state values are parsed correctly.
     """
     charm_config = {
-        "enable_reject_unknown_sender_domain": False,
         "relay_access_sources": """
             # Reject some made user.
             - 10.10.10.5    REJECT
@@ -58,7 +57,6 @@ def test_state():
     }
     charm_state = state.State.from_charm(config=charm_config)
 
-    assert not charm_state.enable_reject_unknown_sender_domain
     assert charm_state.relay_access_sources == yaml.safe_load(
         cast("str", charm_config["relay_access_sources"])
     )
@@ -99,12 +97,10 @@ def test_state_defaults():
     assert: the state values are parsed correctly.
     """
     charm_config = {
-        "enable_reject_unknown_sender_domain": True,
         "virtual_alias_maps_type": "hash",
     }
     charm_state = state.State.from_charm(config=charm_config)
 
-    assert charm_state.enable_reject_unknown_sender_domain
     assert charm_state.relay_access_sources == []
     assert charm_state.relay_domains == []
     assert charm_state.relay_host is None
@@ -125,7 +121,6 @@ def test_state_with_invalid_restrict_recipients():
     assert: an InvalidStateError is raised.
     """
     charm_config = {
-        "enable_reject_unknown_sender_domain": True,
         "restrict_recipients": "recipient: invalid_value",
         "virtual_alias_maps_type": "hash",
     }
@@ -140,7 +135,6 @@ def test_state_with_invalid_restrict_senders():
     assert: an InvalidStateError is raised.
     """
     charm_config = {
-        "enable_reject_unknown_sender_domain": True,
         "restrict_senders": "sender: invalid_value",
         "virtual_alias_maps_type": "hash",
     }
@@ -155,7 +149,6 @@ def test_state_with_invalid_virtual_alias_maps_type():
     assert: an InvalidStateError is raised.
     """
     charm_config = {
-        "enable_reject_unknown_sender_domain": True,
         "virtual_alias_maps_type": "invalid",
     }
     with pytest.raises(state.ConfigurationError):

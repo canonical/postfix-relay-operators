@@ -24,7 +24,7 @@ import utils
             [],
             {},
             {},
-            ["permit_mynetworks", "defer_unauth_destination"],
+            [],
             id="no_access_sources",
         ),
         pytest.param(
@@ -32,9 +32,7 @@ import utils
             {},
             {},
             [
-                "permit_mynetworks",
                 "check_client_access cidr:/etc/postfix/relay_access",
-                "defer_unauth_destination",
             ],
             id="has_access_sources",
         ),
@@ -52,7 +50,6 @@ def test_smtpd_relay_restrictions(
     assert: The returned list of restrictions is correct and in order..
     """
     charm_config = {
-        "enable_reject_unknown_sender_domain": True,
         "virtual_alias_maps_type": "hash",
     }
     charm_state = state.State.from_charm(config=charm_config)
@@ -66,43 +63,21 @@ def test_smtpd_relay_restrictions(
 
 
 @pytest.mark.parametrize(
-    ("enable_reject_unknown_sender", "restrict_sender_access", "expected"),
+    ("restrict_sender_access", "expected"),
     [
         pytest.param(
-            False,
             [],
-            ["check_sender_access hash:/etc/postfix/access"],
-            id="neither_enabled",
+            [],
+            id="not_enabled",
         ),
         pytest.param(
-            True,
-            [],
-            [
-                "reject_unknown_sender_domain",
-                "check_sender_access hash:/etc/postfix/access",
-            ],
-            id="reject_unknown_enabled",
-        ),
-        pytest.param(
-            False,
             ["example.com"],
-            ["check_sender_access hash:/etc/postfix/access", "reject"],
+            ["reject"],
             id="restrict_access_enabled",
-        ),
-        pytest.param(
-            True,
-            ["example.com"],
-            [
-                "reject_unknown_sender_domain",
-                "check_sender_access hash:/etc/postfix/access",
-                "reject",
-            ],
-            id="both_enabled",
         ),
     ],
 )
 def test_smtpd_sender_restrictions(
-    enable_reject_unknown_sender: bool,
     restrict_sender_access: list[str],
     expected: list[str],
 ) -> None:
@@ -112,11 +87,9 @@ def test_smtpd_sender_restrictions(
     assert: The returned list of restrictions is correct and in order.
     """
     charm_config = {
-        "enable_reject_unknown_sender_domain": True,
         "virtual_alias_maps_type": "hash",
     }
     charm_state = state.State.from_charm(config=charm_config)
-    charm_state.enable_reject_unknown_sender_domain = enable_reject_unknown_sender
     charm_state.restrict_sender_access = restrict_sender_access
 
     result = postfix.smtpd_sender_restrictions(charm_state)
@@ -155,7 +128,6 @@ def test_smtpd_recipient_restrictions(
     assert: The returned list of restrictions is correct and in order.
     """
     charm_config = {
-        "enable_reject_unknown_sender_domain": True,
         "virtual_alias_maps_type": "hash",
     }
     charm_state = state.State.from_charm(config=charm_config)
@@ -183,7 +155,6 @@ def test_build_postfix_maps_returns_correct_data() -> None:
         "transport_maps": "domain.com: smtp:relay.example.com",
         "virtual_alias_maps": "alias@example.com: real@example.com",
         "virtual_alias_maps_type": "hash",
-        "enable_reject_unknown_sender_domain": False,
     }
     charm_state = state.State.from_charm(config=charm_config)
     postfix_conf_dir = "/etc/postfix"
