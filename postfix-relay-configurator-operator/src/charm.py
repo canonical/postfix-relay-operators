@@ -6,7 +6,6 @@
 """Postfix Relay Configurator charm."""
 
 import logging
-import socket
 from pathlib import Path
 from typing import Any
 
@@ -54,11 +53,7 @@ class PostfixRelayConfiguratorCharm(ops.CharmBase):
         """Generate and apply Postfix configuration."""
         self.unit.status = ops.MaintenanceStatus("Setting up Postfix relay")
 
-        hostname = socket.gethostname()
-        context = construct_postfix_config_params(
-            charm_state=charm_state,
-            hostname=hostname,
-        )
+        context = construct_postfix_config_params(charm_state=charm_state)
         contents = utils.render_jinja2_template(context, TEMPLATES_DIRPATH / MAIN_CF_TMPL)
         utils.write_file(contents, POSTFIX_CONF_DIRPATH / MAIN_CF)
 

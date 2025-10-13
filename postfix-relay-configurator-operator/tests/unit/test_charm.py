@@ -3,7 +3,6 @@
 
 """Unit tests for the Postfix Relay charm."""
 
-from pathlib import Path
 from unittest.mock import ANY, Mock, patch
 
 import ops.testing
@@ -50,7 +49,6 @@ def test_configure_relay(
 
     mock_construct_postfix_config_params.assert_called_once_with(
         charm_state=ANY,
-        hostname=ANY,
     )
 
     assert out.unit_status == ops.testing.ActiveStatus()
