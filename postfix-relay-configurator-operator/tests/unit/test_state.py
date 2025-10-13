@@ -27,7 +27,6 @@ def test_state():
             - domain.example.com
             - domain2.example.com
         """,
-        "relay_host": "smtp.relay",
         "relay_recipient_maps": """
             noreply@mydomain.local: noreply@mydomain.local
         """,
@@ -61,7 +60,6 @@ def test_state():
         cast("str", charm_config["relay_access_sources"])
     )
     assert charm_state.relay_domains == yaml.safe_load(cast("str", charm_config["relay_domains"]))
-    assert charm_state.relay_host == charm_config["relay_host"]
     restrict_recipients_raw = yaml.safe_load(cast("str", charm_config["restrict_recipients"]))
     restrict_recipients = {
         key: state.AccessMapValue(value) for key, value in restrict_recipients_raw.items()
@@ -103,7 +101,6 @@ def test_state_defaults():
 
     assert charm_state.relay_access_sources == []
     assert charm_state.relay_domains == []
-    assert charm_state.relay_host is None
     assert charm_state.restrict_recipients == {}
     assert charm_state.restrict_senders == {}
     assert charm_state.restrict_sender_access == []

@@ -149,7 +149,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         relay_domains: List of destination domains to relay mail to.
         restrict_recipients: Access map for restrictions by recipient address or domain.
         restrict_senders: Access map for restrictions by sender address or domain.
-        relay_host: Postfix relay host to forward mail to.
         relay_recipient_maps: Map that alias mail addresses or domains to
             addresses.
         restrict_sender_access: List of domains, addresses or hosts to restrict relay from.
@@ -168,7 +167,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     relay_domains: list[Annotated[str, Field(min_length=1)]]
     restrict_recipients: dict[str, AccessMapValue]
     restrict_senders: dict[str, AccessMapValue]
-    relay_host: Annotated[str, Field(min_length=1)] | None
     relay_recipient_maps: dict[str, str]
     restrict_sender_access: list[Annotated[str, Field(min_length=1)]]
     sender_login_maps: dict[str, str]
@@ -205,7 +203,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             return cls(
                 relay_access_sources=relay_access_sources,
                 relay_domains=relay_domains,
-                relay_host=config.get("relay_host"),
                 relay_recipient_maps=relay_recipient_maps,
                 restrict_recipients=restrict_recipients,
                 restrict_senders=restrict_senders,

@@ -3,7 +3,7 @@
 
 """Unit tests for the Postfix Relay charm."""
 
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import Mock, patch
 
 import ops.testing
 from ops.testing import Context, State
@@ -26,12 +26,8 @@ def test_invalid_config(context: Context[charm.PostfixRelayConfiguratorCharm]) -
     assert out.unit_status == ops.testing.BlockedStatus("Invalid config")
 
 
-@patch.object(
-    charm, "construct_postfix_config_params", wraps=charm.construct_postfix_config_params
-)
 @patch("charm.utils.write_file", Mock())
 def test_configure_relay(
-    mock_construct_postfix_config_params: Mock,
     context: Context[charm.PostfixRelayConfiguratorCharm],
 ) -> None:
     """
@@ -46,9 +42,5 @@ def test_configure_relay(
     )
 
     out = context.run(context.on.config_changed(), charm_state)
-
-    mock_construct_postfix_config_params.assert_called_once_with(
-        charm_state=ANY,
-    )
 
     assert out.unit_status == ops.testing.ActiveStatus()

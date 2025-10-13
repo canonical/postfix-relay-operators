@@ -40,7 +40,6 @@ def smtpd_recipient_restrictions(charm_state: "State") -> list[str]:
 
 
 def construct_postfix_config_params(
-    *,
     charm_state: "State",
 ) -> dict[str, str | int | bool | None]:
     """Prepare the context for rendering Postfix configuration files.
@@ -53,7 +52,6 @@ def construct_postfix_config_params(
     """
     return {
         "JUJU_HEADER": utils.JUJU_HEADER,
-        "relayhost": charm_state.relay_host,
         "relay_domains": " ".join(charm_state.relay_domains),
         "restrict_recipients": bool(charm_state.restrict_recipients),
         "virtual_alias_domains": " ".join(charm_state.virtual_alias_domains),
