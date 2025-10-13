@@ -97,12 +97,8 @@ non_smtpd_milters = {{milter}}
 policyd-spf_time_limit = 3600s
 {% endif -%}
 
-{%- if header_checks %}
 header_checks = regexp:/etc/postfix/header_checks
-{% endif -%}
-{%- if smtp_header_checks %}
 smtp_header_checks = regexp:/etc/postfix/smtp_header_checks
-{% endif -%}
 
 {%- if virtual_alias_domains %}
 virtual_alias_domains = {{virtual_alias_domains}}
@@ -111,14 +107,6 @@ virtual_alias_domains = {{virtual_alias_domains}}
 relay_domains = {{relay_domains}}
 {% endif %}
 
-{%- if transport_maps %}
 transport_maps = hash:/etc/postfix/transport
-{% endif %}
-{%- if virtual_alias_maps -%}
 virtual_alias_maps = {{virtual_alias_maps_type}}:/etc/postfix/virtual_alias
-{% endif %}
-{%- if relay_recipient_maps_combined -%}
-relay_recipient_maps = ${virtual_alias_maps}, ${transport_maps}
-{% elif relay_recipient_maps %}
 relay_recipient_maps = hash:/etc/postfix/relay_recipient
-{% endif %}
