@@ -12,8 +12,6 @@ from ops.testing import Context, State
 import charm
 from state import ConfigurationError
 
-FILES_PATH = Path(__file__).parent / "files"
-
 
 @patch("charm.State.from_charm", Mock(side_effect=ConfigurationError("Invalid configuration")))
 def test_invalid_config(context: Context[charm.PostfixRelayConfiguratorCharm]) -> None:

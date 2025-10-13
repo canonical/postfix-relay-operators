@@ -26,19 +26,6 @@ def smtpd_relay_restrictions(charm_state: "State") -> list[str]:
     return relay_restrictions
 
 
-def smtpd_sender_restrictions(charm_state: "State") -> list[str]:
-    """Generate the SMTP sender restrictions configuration snippet.
-
-    Args:
-        charm_state: the charm state.
-    """
-    sender_restrictions = []
-    if charm_state.restrict_sender_access:
-        sender_restrictions.append("reject")
-
-    return sender_restrictions
-
-
 def smtpd_recipient_restrictions(charm_state: "State") -> list[str]:
     """Generate the SMTP recipient restrictions configuration snippet.
 
@@ -72,9 +59,6 @@ def construct_postfix_config_params(
         "relayhost": charm_state.relay_host,
         "relay_domains": " ".join(charm_state.relay_domains),
         "restrict_recipients": bool(charm_state.restrict_recipients),
-        "smtpd_recipient_restrictions": ", ".join(smtpd_recipient_restrictions(charm_state)),
-        "smtpd_relay_restrictions": ", ".join(smtpd_relay_restrictions(charm_state)),
-        "smtpd_sender_restrictions": ", ".join(smtpd_sender_restrictions(charm_state)),
         "virtual_alias_domains": " ".join(charm_state.virtual_alias_domains),
         "virtual_alias_maps_type": charm_state.virtual_alias_maps_type.value,
     }

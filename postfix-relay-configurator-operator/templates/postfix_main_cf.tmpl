@@ -13,7 +13,6 @@ compatibility_level = 2
 message_size_limit = 50000000
 strict_rfc821_envelopes = yes
 smtpd_helo_required = yes
-smtpd_relay_restrictions = {{smtpd_relay_restrictions}}
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 mydestination = $myhostname, {{hostname}}, localhost.localdomain, localhost
@@ -24,14 +23,10 @@ recipient_delimiter = +
 inet_interfaces = all
 inet_protocols = all
 
-{% if smtpd_recipient_restrictions -%}
-smtpd_recipient_restrictions = {{smtpd_recipient_restrictions}}
-{% endif -%}
 {% if restrict_recipients -%}
 smtpd_restriction_classes = restricted
 restricted = check_recipient_access hash:/etc/postfix/restricted_recipients, reject
 {% endif -%}
-smtpd_sender_restrictions = {{smtpd_sender_restrictions}}
 
 header_checks = regexp:/etc/postfix/header_checks
 smtp_header_checks = regexp:/etc/postfix/smtp_header_checks
