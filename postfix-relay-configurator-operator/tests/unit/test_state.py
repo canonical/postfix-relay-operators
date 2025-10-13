@@ -27,7 +27,6 @@ def test_state():
         "enable_reject_unknown_sender_domain": False,
         "enable_spf": True,
         "enable_smtp_auth": False,
-        "header_checks": "- /^Received:/ HOLD",
         "relay_access_sources": """
             # Reject some made user.
             - 10.10.10.5    REJECT
@@ -78,7 +77,6 @@ def test_state():
     assert not charm_state.enable_reject_unknown_sender_domain
     assert charm_state.enable_spf
     assert not charm_state.enable_smtp_auth
-    assert charm_state.header_checks == yaml.safe_load(cast("str", charm_config["header_checks"]))
     assert charm_state.relay_access_sources == yaml.safe_load(
         cast("str", charm_config["relay_access_sources"])
     )
@@ -136,7 +134,6 @@ def test_state_defaults():
     assert charm_state.enable_reject_unknown_sender_domain
     assert not charm_state.enable_spf
     assert charm_state.enable_smtp_auth
-    assert charm_state.header_checks == []
     assert charm_state.relay_access_sources == []
     assert charm_state.relay_domains == []
     assert charm_state.relay_host is None

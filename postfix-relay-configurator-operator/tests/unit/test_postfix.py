@@ -304,7 +304,6 @@ def test_build_postfix_maps_returns_correct_data() -> None:
     """
     charm_config = {
         # Values directly used by the function under test
-        "header_checks": "- '/^Subject:/ WARN'",
         "relay_access_sources": "- 192.168.1.0/24",
         "relay_recipient_maps": "user@example.com: OK",
         "restrict_recipients": "bad@example.com: REJECT",
@@ -329,11 +328,6 @@ def test_build_postfix_maps_returns_correct_data() -> None:
             type=state.PostfixLookupTableType.REGEXP,
             path=conf_path / "append_envelope_to_header",
             content=f"{utils.JUJU_HEADER}\n/^(.*)$/ PREPEND X-Envelope-To: $1\n",
-        ),
-        "header_checks": postfix.PostfixMap(
-            type=state.PostfixLookupTableType.REGEXP,
-            path=conf_path / "header_checks",
-            content=f"{utils.JUJU_HEADER}\n/^Subject:/ WARN\n",
         ),
         "relay_access_sources": postfix.PostfixMap(
             type=state.PostfixLookupTableType.CIDR,

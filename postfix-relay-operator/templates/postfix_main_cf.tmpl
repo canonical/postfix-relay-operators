@@ -43,9 +43,7 @@ smtp_tls_CApath = /etc/ssl/certs
 smtp_tls_loglevel = 1
 smtp_tls_security_level = may
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
-{%- if enable_tls_policy_map %}
 smtp_tls_policy_maps = hash:/etc/postfix/tls_policy
-{%- endif %}
 
 message_size_limit = 50000000
 strict_rfc821_envelopes = yes

@@ -30,9 +30,7 @@ smtpd_sasl_auth_enable = yes
 smtpd_sasl_security_options = noanonymous
 smtpd_sasl_type = dovecot
 smtpd_sasl_path = private/auth
-{% if enable_sender_login_map -%}
 smtpd_sender_login_maps = hash:/etc/postfix/sender_login
-{% endif -%}
 smtpd_tls_auth_only = yes
 {% endif -%}
 {% if smtpd_recipient_restrictions -%}
