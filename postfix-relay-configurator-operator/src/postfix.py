@@ -96,14 +96,11 @@ def construct_postfix_config_params(
         "enable_spf": charm_state.enable_spf,
         "relayhost": charm_state.relay_host,
         "relay_domains": " ".join(charm_state.relay_domains),
-        "relay_recipient_maps": bool(charm_state.relay_recipient_maps),
         "restrict_recipients": bool(charm_state.restrict_recipients),
         "smtpd_recipient_restrictions": ", ".join(smtpd_recipient_restrictions(charm_state)),
         "smtpd_relay_restrictions": ", ".join(smtpd_relay_restrictions(charm_state)),
         "smtpd_sender_restrictions": ", ".join(smtpd_sender_restrictions(charm_state)),
-        "transport_maps": bool(charm_state.transport_maps),
         "virtual_alias_domains": " ".join(charm_state.virtual_alias_domains),
-        "virtual_alias_maps": bool(charm_state.virtual_alias_maps),
         "virtual_alias_maps_type": charm_state.virtual_alias_maps_type.value,
     }
 
