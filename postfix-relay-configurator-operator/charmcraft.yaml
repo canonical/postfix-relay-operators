@@ -36,15 +36,6 @@ parts:
 
 config:
   options:
-    append_x_envelope_to:
-      type: boolean
-      default: false
-      description: |
-        Configure Postfix to append X-Envelope-To header consisting of the
-        email address of the recipient, per the envelope.
-
-        This is useful to allow end users filter by destination when they
-        receive emails for multiple individual or shared aliases.
     enable_reject_unknown_sender_domain:
       type: boolean
       default: true

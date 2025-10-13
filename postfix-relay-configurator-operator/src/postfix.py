@@ -50,11 +50,6 @@ def smtpd_recipient_restrictions(charm_state: "State") -> list[str]:
         charm_state: the charm state.
     """
     recipient_restrictions = []
-    if charm_state.append_x_envelope_to:
-        recipient_restrictions.append(
-            "check_recipient_access regexp:/etc/postfix/append_envelope_to_header"
-        )
-
     if charm_state.restrict_senders:
         recipient_restrictions.append("check_sender_access hash:/etc/postfix/restricted_senders")
 

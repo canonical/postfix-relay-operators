@@ -145,7 +145,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     """The Postfix Relay operator charm state.
 
     Attributes:
-        append_x_envelope_to: Append the X-Envelope-To header.
         enable_reject_unknown_sender_domain: Reject email when sender's domain cannot be resolved.
         relay_access_sources: List of  entries to restrict access based on CIDR source.
         relay_domains: List of destination domains to relay mail to.
@@ -166,7 +165,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
 
     model_config = ConfigDict(regex_engine="python-re")  # noqa: DCO063
 
-    append_x_envelope_to: bool
     enable_reject_unknown_sender_domain: bool
     relay_access_sources: list[str]
     relay_domains: list[Annotated[str, Field(min_length=1)]]
@@ -207,7 +205,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             virtual_alias_maps = _parse_map(config.get("virtual_alias_maps"))
 
             return cls(
-                append_x_envelope_to=config.get("append_x_envelope_to"),  # type: ignore[arg-type]
                 enable_reject_unknown_sender_domain=config.get(
                     "enable_reject_unknown_sender_domain"
                 ),  # type: ignore[arg-type]

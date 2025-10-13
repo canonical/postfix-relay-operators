@@ -52,7 +52,6 @@ def test_smtpd_relay_restrictions(
     assert: The returned list of restrictions is correct and in order..
     """
     charm_config = {
-        "append_x_envelope_to": False,
         "enable_reject_unknown_sender_domain": True,
         "virtual_alias_maps_type": "hash",
     }
@@ -113,7 +112,6 @@ def test_smtpd_sender_restrictions(
     assert: The returned list of restrictions is correct and in order.
     """
     charm_config = {
-        "append_x_envelope_to": False,
         "enable_reject_unknown_sender_domain": True,
         "virtual_alias_maps_type": "hash",
     }
@@ -128,35 +126,19 @@ def test_smtpd_sender_restrictions(
 
 @pytest.mark.parametrize(
     (
-        "append_x_envelope_to",
         "restrict_senders",
         "expected",
     ),
     [
-        pytest.param(False, {}, [], id="all_disabled"),
+        pytest.param({}, [], id="all_disabled"),
         pytest.param(
-            True,
-            {},
-            ["check_recipient_access regexp:/etc/postfix/append_envelope_to_header"],
-            id="append_x_envelope_enabled",
-        ),
-        pytest.param(
-            False,
             {"sender": "value"},
             ["check_sender_access hash:/etc/postfix/restricted_senders"],
             id="restrict_senders_enabled",
         ),
         pytest.param(
-            False,
-            {},
-            [],
-            id="no_restrictions_enabled",
-        ),
-        pytest.param(
-            True,
             {"sender": "value"},
             [
-                "check_recipient_access regexp:/etc/postfix/append_envelope_to_header",
                 "check_sender_access hash:/etc/postfix/restricted_senders",
             ],
             id="all_enabled",
@@ -164,7 +146,6 @@ def test_smtpd_sender_restrictions(
     ],
 )
 def test_smtpd_recipient_restrictions(
-    append_x_envelope_to: bool,
     restrict_senders: dict,
     expected: list[str],
 ) -> None:
@@ -174,12 +155,10 @@ def test_smtpd_recipient_restrictions(
     assert: The returned list of restrictions is correct and in order.
     """
     charm_config = {
-        "append_x_envelope_to": False,
         "enable_reject_unknown_sender_domain": True,
         "virtual_alias_maps_type": "hash",
     }
     charm_state = state.State.from_charm(config=charm_config)
-    charm_state.append_x_envelope_to = append_x_envelope_to
     charm_state.restrict_senders = restrict_senders
 
     result = postfix.smtpd_recipient_restrictions(charm_state)
@@ -204,8 +183,6 @@ def test_build_postfix_maps_returns_correct_data() -> None:
         "transport_maps": "domain.com: smtp:relay.example.com",
         "virtual_alias_maps": "alias@example.com: real@example.com",
         "virtual_alias_maps_type": "hash",
-        # Values required for State object instantiation
-        "append_x_envelope_to": False,
         "enable_reject_unknown_sender_domain": False,
     }
     charm_state = state.State.from_charm(config=charm_config)
