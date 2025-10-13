@@ -1,5 +1,0 @@
-# This file is Juju managed - do not edit by hand #
-
-gapps.mydomain.local secure match=mx.google.com
-someplace.local encrypt
-.someplace.local encrypt
