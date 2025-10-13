@@ -43,8 +43,6 @@ class PostfixRelayConfiguratorCharm(ops.CharmBase):
 
     def _configure_relay(self, charm_state: State) -> None:
         """Generate and apply Postfix configuration."""
-        self.unit.status = ops.MaintenanceStatus("Setting up Postfix relay")
-
         postfix_maps = build_postfix_maps(POSTFIX_CONF_DIRPATH, charm_state)
         self._apply_postfix_maps(list(postfix_maps.values()))
 
