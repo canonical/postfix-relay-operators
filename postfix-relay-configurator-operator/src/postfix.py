@@ -10,8 +10,6 @@ import utils
 from state import PostfixLookupTableType
 
 if TYPE_CHECKING:
-    from pydantic import IPvAnyNetwork
-
     from state import State
 
 
@@ -24,14 +22,6 @@ def smtpd_relay_restrictions(charm_state: "State") -> list[str]:
     relay_restrictions = ["permit_mynetworks"]
     if bool(charm_state.relay_access_sources):
         relay_restrictions.append("check_client_access cidr:/etc/postfix/relay_access")
-
-    if charm_state.enable_smtp_auth:
-        if charm_state.sender_login_maps:
-            relay_restrictions.append("reject_known_sender_login_mismatch")
-        if charm_state.restrict_senders:
-            relay_restrictions.append("reject_sender_login_mismatch")
-        relay_restrictions.append("permit_sasl_authenticated")
-
     relay_restrictions.append("defer_unauth_destination")
 
     return relay_restrictions
@@ -67,10 +57,6 @@ def smtpd_recipient_restrictions(charm_state: "State") -> list[str]:
 
     if charm_state.restrict_senders:
         recipient_restrictions.append("check_sender_access hash:/etc/postfix/restricted_senders")
-    recipient_restrictions.extend(charm_state.additional_smtpd_recipient_restrictions)
-
-    if charm_state.enable_spf:
-        recipient_restrictions.append("check_policy_service unix:private/policyd-spf")
 
     return recipient_restrictions
 
@@ -92,8 +78,6 @@ def construct_postfix_config_params(
     return {
         "JUJU_HEADER": utils.JUJU_HEADER,
         "hostname": hostname,
-        "enable_smtp_auth": charm_state.enable_smtp_auth,
-        "enable_spf": charm_state.enable_spf,
         "relayhost": charm_state.relay_host,
         "relay_domains": " ".join(charm_state.relay_domains),
         "restrict_recipients": bool(charm_state.restrict_recipients),
@@ -203,19 +187,3 @@ def build_postfix_maps(postfix_conf_dir: str, charm_state: "State") -> dict[str,
     }
 
     return maps
-
-
-def construct_policyd_spf_config_file_content(spf_skip_addresses: "list[IPvAnyNetwork]") -> str:
-    """Generate the configuration content for the policyd-spf service.
-
-    Args:
-        spf_skip_addresses: A list of IP addresses or networks to exclude from SPF checks.
-
-    Returns:
-        str: The rendered configuration file content for policyd-spf.
-    """
-    context = {
-        "JUJU_HEADER": utils.JUJU_HEADER,
-        "skip_addresses": ",".join([str(address) for address in spf_skip_addresses]),
-    }
-    return utils.render_jinja2_template(context, "templates/policyd_spf_conf.tmpl")

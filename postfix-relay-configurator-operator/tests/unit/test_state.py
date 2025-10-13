@@ -3,7 +3,6 @@
 
 """State unit tests."""
 
-from ipaddress import ip_network
 from typing import cast
 
 import pytest
@@ -19,14 +18,8 @@ def test_state():
     assert: the state values are parsed correctly.
     """
     charm_config = {
-        "additional_smtpd_recipient_restrictions": """
-            - reject_non_fqdn_helo_hostname
-            - reject_unknown_helo_hostname
-        """,
         "append_x_envelope_to": True,
         "enable_reject_unknown_sender_domain": False,
-        "enable_spf": True,
-        "enable_smtp_auth": False,
         "relay_access_sources": """
             # Reject some made user.
             - 10.10.10.5    REJECT
@@ -50,10 +43,6 @@ def test_state():
             group@example.com: group
             group2@example.com: group2
         """,
-        "spf_skip_addresses": """
-            - 10.0.114.0/24
-            - 10.1.1.0/24
-        """,
         "transport_maps": """
             example.com: 'smtp:[mx.example.com]'
             admin.example1.com: 'smtp:[mx.example.com]'
@@ -70,13 +59,8 @@ def test_state():
     }
     charm_state = state.State.from_charm(config=charm_config)
 
-    assert charm_state.additional_smtpd_recipient_restrictions == (
-        yaml.safe_load(cast("str", charm_config["additional_smtpd_recipient_restrictions"]))
-    )
     assert charm_state.append_x_envelope_to
     assert not charm_state.enable_reject_unknown_sender_domain
-    assert charm_state.enable_spf
-    assert not charm_state.enable_smtp_auth
     assert charm_state.relay_access_sources == yaml.safe_load(
         cast("str", charm_config["relay_access_sources"])
     )
@@ -98,10 +82,6 @@ def test_state():
     assert charm_state.sender_login_maps == yaml.safe_load(
         cast("str", charm_config["sender_login_maps"])
     )
-    assert charm_state.spf_skip_addresses == [
-        ip_network(address)
-        for address in yaml.safe_load(cast("str", charm_config["spf_skip_addresses"]))
-    ]
     assert charm_state.transport_maps == yaml.safe_load(
         cast("str", charm_config["transport_maps"])
     )
@@ -123,17 +103,12 @@ def test_state_defaults():
     charm_config = {
         "append_x_envelope_to": False,
         "enable_reject_unknown_sender_domain": True,
-        "enable_spf": False,
-        "enable_smtp_auth": True,
         "virtual_alias_maps_type": "hash",
     }
     charm_state = state.State.from_charm(config=charm_config)
 
-    assert charm_state.additional_smtpd_recipient_restrictions == []
     assert not charm_state.append_x_envelope_to
     assert charm_state.enable_reject_unknown_sender_domain
-    assert not charm_state.enable_spf
-    assert charm_state.enable_smtp_auth
     assert charm_state.relay_access_sources == []
     assert charm_state.relay_domains == []
     assert charm_state.relay_host is None
@@ -141,7 +116,6 @@ def test_state_defaults():
     assert charm_state.restrict_senders == {}
     assert charm_state.restrict_sender_access == []
     assert charm_state.sender_login_maps == {}
-    assert charm_state.spf_skip_addresses == []
     assert charm_state.transport_maps == {}
     assert charm_state.virtual_alias_domains == []
     assert charm_state.virtual_alias_maps == {}
@@ -157,8 +131,6 @@ def test_state_with_invalid_restrict_recipients():
     charm_config = {
         "append_x_envelope_to": False,
         "enable_reject_unknown_sender_domain": True,
-        "enable_spf": False,
-        "enable_smtp_auth": True,
         "restrict_recipients": "recipient: invalid_value",
         "virtual_alias_maps_type": "hash",
     }
@@ -175,27 +147,7 @@ def test_state_with_invalid_restrict_senders():
     charm_config = {
         "append_x_envelope_to": False,
         "enable_reject_unknown_sender_domain": True,
-        "enable_spf": False,
-        "enable_smtp_auth": True,
         "restrict_senders": "sender: invalid_value",
-        "virtual_alias_maps_type": "hash",
-    }
-    with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
-
-
-def test_state_with_invalid_spf_skip_addresses():
-    """
-    arrange: do nothing.
-    act: initialize a charm state from invalid configuration.
-    assert: an InvalidStateError is raised.
-    """
-    charm_config = {
-        "append_x_envelope_to": False,
-        "enable_reject_unknown_sender_domain": True,
-        "enable_spf": False,
-        "enable_smtp_auth": True,
-        "spf_skip_addresses": "- 192.0.0.0/33",
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
@@ -211,8 +163,6 @@ def test_state_with_invalid_virtual_alias_maps_type():
     charm_config = {
         "append_x_envelope_to": False,
         "enable_reject_unknown_sender_domain": True,
-        "enable_spf": False,
-        "enable_smtp_auth": True,
         "virtual_alias_maps_type": "invalid",
     }
     with pytest.raises(state.ConfigurationError):

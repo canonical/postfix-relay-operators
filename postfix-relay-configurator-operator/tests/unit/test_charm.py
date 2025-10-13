@@ -4,10 +4,9 @@
 """Unit tests for the Postfix Relay charm."""
 
 from pathlib import Path
-from unittest.mock import ANY, Mock, call, patch
+from unittest.mock import ANY, Mock, patch
 
 import ops.testing
-import pytest
 from ops.testing import Context, State
 
 import charm
@@ -55,39 +54,5 @@ def test_configure_relay(
         charm_state=ANY,
         hostname=ANY,
     )
-
-    assert out.unit_status == ops.testing.ActiveStatus()
-
-
-@pytest.mark.parametrize(
-    "enable_spf",
-    [pytest.param(True, id="enable_spf"), pytest.param(False, id="disable_spf")],
-)
-@patch("charm.utils.write_file")
-def test_configure_policyd_spf(
-    mock_write_file: Mock,
-    enable_spf: bool,
-    context: Context[charm.PostfixRelayConfiguratorCharm],
-) -> None:
-    """
-    arrange: Configure the charm state with SPF enabled or disabled.
-    act: Run the config-changed event hook.
-    assert: Configured only when SPF is enabled.
-    """
-    charm_state = State(
-        config={
-            "enable_spf": enable_spf,
-            "spf_skip_addresses": "- 10.0.114.0/24",
-        }
-    )
-
-    out = context.run(context.on.config_changed(), charm_state)
-
-    investigated_call = call(ANY, charm.POLICYD_SPF_FILEPATH)
-
-    if enable_spf:
-        mock_write_file.assert_has_calls([investigated_call])
-    else:
-        assert investigated_call not in mock_write_file.mock_calls
 
     assert out.unit_status == ops.testing.ActiveStatus()

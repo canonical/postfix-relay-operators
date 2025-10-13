@@ -24,15 +24,6 @@ recipient_delimiter = +
 inet_interfaces = all
 inet_protocols = all
 
-{% if enable_smtp_auth -%}
-broken_sasl_auth_clients = yes
-smtpd_sasl_auth_enable = yes
-smtpd_sasl_security_options = noanonymous
-smtpd_sasl_type = dovecot
-smtpd_sasl_path = private/auth
-smtpd_sender_login_maps = hash:/etc/postfix/sender_login
-smtpd_tls_auth_only = yes
-{% endif -%}
 {% if smtpd_recipient_restrictions -%}
 smtpd_recipient_restrictions = {{smtpd_recipient_restrictions}}
 {% endif -%}
@@ -41,9 +32,6 @@ smtpd_restriction_classes = restricted
 restricted = check_recipient_access hash:/etc/postfix/restricted_recipients, reject
 {% endif -%}
 smtpd_sender_restrictions = {{smtpd_sender_restrictions}}
-{% if enable_spf %}
-policyd-spf_time_limit = 3600s
-{% endif -%}
 
 header_checks = regexp:/etc/postfix/header_checks
 smtp_header_checks = regexp:/etc/postfix/smtp_header_checks
