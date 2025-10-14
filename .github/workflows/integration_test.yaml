@@ -17,4 +17,4 @@ jobs:
       provider: 'lxd'
       working-directory: ./${{ matrix.charm }}-operator
       identifier: ${{ matrix.charm }}
-      pre-run-script: ./${{ matrix.charm }}-operator/tests/integration/mailcatcher-installation.sh
+      pre-run-script: ./tests/integration/mailcatcher-installation.sh
