@@ -20,13 +20,6 @@ from typing_extensions import Annotated
 logger = logging.getLogger(__name__)
 
 
-# RFC-1034 and RFC-2181 compliance REGEX for validating FQDNs
-HOSTNAME_REGEX = (
-    r"(?=.{1,253})(?!.*--.*)(?:(?!-)(?![0-9])[a-zA-Z0-9-]"
-    r"{1,63}(?<!-)\.){1,}(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-))"
-)
-
-
 class CharmStateBaseError(Exception):
     """Represents an error with charm state."""
 
@@ -45,38 +38,6 @@ class ConfigurationError(CharmStateBaseError):
             msg: Explanation of the error.
         """
         self.msg = msg
-
-
-class SmtpTlsCipherGrade(Enum):
-    """TLS cipher grade.
-
-    Attributes:
-        HIGH: "HIGH"
-        MEDIUM: "MEDIUM"
-        NULL: "NULL"
-        LOW: "LOW"º
-        EXPORT: "EXPORT"
-    """
-
-    HIGH = "HIGH"
-    MEDIUM = "MEDIUM"
-    NULL = "NULL"
-    LOW = "LOW"
-    EXPORT = "EXPORT"
-
-
-class SmtpTlsSecurityLevel(Enum):
-    """TLS secutiry level.
-
-    Attributes:
-        NONE: "none"
-        MAY: "may"
-        ENCRYPT: "encrypt"
-    """
-
-    NONE = "none"
-    MAY = "may"
-    ENCRYPT = "encrypt"
 
 
 class PostfixLookupTableType(Enum):

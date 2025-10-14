@@ -20,17 +20,11 @@ class PostfixMap(NamedTuple):
         type: The type of the Postfix lookup table (e.g., 'hash').
         path: The path to the map's source file.
         content: The content to be written to the map's source file.
-        source: The Postfix lookup table source string
     """
 
     type: PostfixLookupTableType
     path: Path
     content: str
-
-    @property
-    def source(self) -> str:
-        """Return the full Postfix lookup table source string."""
-        return f"{self.type.value}:{self.path}"
 
 
 def build_postfix_maps(postfix_conf_dir: str, charm_state: "State") -> dict[str, PostfixMap]:
