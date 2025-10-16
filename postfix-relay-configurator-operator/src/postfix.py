@@ -51,11 +51,6 @@ def build_postfix_maps(postfix_conf_dir: str, charm_state: "State") -> dict[str,
 
     # Create a map of all the maps we may need to create/update from the charm state.
     maps = {
-        "append_envelope_to_header": _create_map(
-            PostfixLookupTableType.REGEXP,
-            "append_envelope_to_header",
-            "/^(.*)$/ PREPEND X-Envelope-To: $1",
-        ),
         "relay_access_sources": _create_map(
             PostfixLookupTableType.CIDR,
             "relay_access",

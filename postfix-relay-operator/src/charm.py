@@ -60,8 +60,6 @@ DOVECOT_CONFIG_FILEPATH = Path("/etc/dovecot/dovecot.conf")
 DOVECOT_USERS_FILEPATH = Path("/etc/dovecot/users")
 
 LOG_ROTATE_SYSLOG = Path("/etc/logrotate.d/rsyslog")
-RSYSLOG_CONF_SRC = FILES_DIRPATH / "50-default.conf"
-RSYSLOG_CONF_DST = Path("/etc/rsyslog.d/50-default.conf")
 
 MILTER_RELATION_NAME = "milter"
 PEER_RELATION_NAME = "peer"
@@ -84,7 +82,6 @@ class PostfixRelayCharm(ops.CharmBase):
         self.unit.status = ops.MaintenanceStatus("Installing packages")
         apt.add_package(APT_PACKAGES, update_cache=True)
 
-        utils.copy_file(RSYSLOG_CONF_SRC, RSYSLOG_CONF_DST, perms=0o644)
         contents = utils.update_logrotate_conf(LOG_ROTATE_SYSLOG)
         utils.write_file(contents, LOG_ROTATE_SYSLOG)
 
@@ -93,7 +90,10 @@ class PostfixRelayCharm(ops.CharmBase):
     def _reconcile(self, _: ops.EventBase) -> None:
         self.unit.status = ops.MaintenanceStatus("Reconciling SMTP relay")
         try:
-            charm_state = State.from_charm(self.config)
+            charm_state = State.from_charm(
+                self.config,
+                # parse files here
+            )
         except ConfigurationError:
             logger.exception("Error validating the charm configuration.")
             self.unit.status = ops.BlockedStatus("Invalid config")
@@ -165,7 +165,7 @@ class PostfixRelayCharm(ops.CharmBase):
         self._apply_postfix_maps(list(postfix_maps.values()))
 
         logger.info("Updating aliases")
-        self._update_aliases(charm_state.admin_email)
+        self.update_aliases(charm_state.admin_email)
 
         self.unit.open_port(POSTFIX_PORT.protocol, POSTFIX_PORT.port)
 
@@ -179,8 +179,8 @@ class PostfixRelayCharm(ops.CharmBase):
     def _apply_postfix_maps(postfix_maps: list[PostfixMap]) -> None:
         logger.info("Applying postfix maps")
         for postfix_map in postfix_maps:
-            changed = utils.write_file(postfix_map.content, postfix_map.path)
-            if changed and postfix_map.type == PostfixLookupTableType.HASH:
+            utils.write_file(postfix_map.content, postfix_map.path)
+            if postfix_map.type == PostfixLookupTableType.HASH:
                 subprocess.check_call(["postmap", postfix_map.source])  # nosec
 
     @staticmethod
@@ -233,8 +233,12 @@ class PostfixRelayCharm(ops.CharmBase):
         return " ".join(result)
 
     @staticmethod
-    def _update_aliases(admin_email: str | None) -> None:
+    def update_aliases(admin_email: str | None) -> None:
+        """Update email aliases.
 
+        Args:
+            admin_email: the admin email.
+        """
         aliases = []
         if ALIASES_FILEPATH.is_file():
             with ALIASES_FILEPATH.open("r", encoding="utf-8") as f:
@@ -253,9 +257,8 @@ class PostfixRelayCharm(ops.CharmBase):
         if admin_email:
             new_aliases.append(f"root:          {admin_email}\n")
 
-        changed = utils.write_file("".join(new_aliases), ALIASES_FILEPATH)
-        if changed:
-            subprocess.check_call(["newaliases"])  # nosec
+        utils.write_file("".join(new_aliases), ALIASES_FILEPATH)
+        subprocess.check_call(["newaliases"])  # nosec
 
     def _configure_policyd_spf(self, charm_state: State) -> None:
         """Configure Postfix SPF policy server (policyd-spf) based on charm state."""

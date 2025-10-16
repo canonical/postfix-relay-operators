@@ -53,28 +53,12 @@ def update_logrotate_conf(logrotate_path: str | os.PathLike) -> str:
     return "\n".join(new)
 
 
-def copy_file(
-    source_path: str | os.PathLike,
-    destination_path: str | os.PathLike,
-    perms: int = 0o644,
-) -> bool:
-    """Copy file.
-
-    Args:
-        source_path: path to the source file.
-        destination_path: destination path.
-        perms: permissions.
-    """
-    content = Path(source_path).read_text(encoding="utf-8")
-    return write_file(content, destination_path, perms=perms)
-
-
 def write_file(
     content: str,
     destination_path: str | os.PathLike,
     perms: int = 0o644,
     group: str | None = None,
-) -> bool:
+) -> None:
     """Write file only on changes and return True if changes written.
 
     Args:
@@ -84,18 +68,12 @@ def write_file(
         group: file group.
     """
     path = Path(destination_path)
-
-    if path.is_file() and path.read_text("utf-8") == content:
-        return False
-
     owner = pwd.getpwuid(os.getuid()).pw_name
     if group is None:
         group = grp.getgrgid(pwd.getpwnam(owner).pw_gid).gr_name
     path.write_text(content, "utf-8")
     path.chmod(perms)
-
     shutil.chown(path, user=owner, group=group)
-    return True
 
 
 def render_jinja2_template(

@@ -168,51 +168,10 @@ def build_postfix_maps(postfix_conf_dir: str, charm_state: "State") -> dict[str,
 
     # Create a map of all the maps we may need to create/update from the charm state.
     maps = {
-        "append_envelope_to_header": _create_map(
-            PostfixLookupTableType.REGEXP,
-            "append_envelope_to_header",
-            "/^(.*)$/ PREPEND X-Envelope-To: $1",
-        ),
         "header_checks": _create_map(
             PostfixLookupTableType.REGEXP,
             "header_checks",
             ";".join(charm_state.header_checks),
-        ),
-        "relay_access_sources": _create_map(
-            PostfixLookupTableType.CIDR,
-            "relay_access",
-            "\n".join(charm_state.relay_access_sources),
-        ),
-        "relay_recipient_maps": _create_map(
-            PostfixLookupTableType.HASH,
-            "relay_recipient",
-            "\n".join(
-                [f"{key} {value}" for key, value in charm_state.relay_recipient_maps.items()]
-            ),
-        ),
-        "restrict_recipients": _create_map(
-            PostfixLookupTableType.HASH,
-            "restricted_recipients",
-            "\n".join(
-                [f"{key} {value.value}" for key, value in charm_state.restrict_recipients.items()]
-            ),
-        ),
-        "restrict_senders": _create_map(
-            PostfixLookupTableType.HASH,
-            "restricted_senders",
-            "\n".join(
-                [f"{key} {value.value}" for key, value in charm_state.restrict_senders.items()]
-            ),
-        ),
-        "sender_access": _create_map(
-            PostfixLookupTableType.HASH,
-            "access",
-            "".join([f"{domain:35} OK\n" for domain in charm_state.restrict_sender_access]),
-        ),
-        "sender_login_maps": _create_map(
-            PostfixLookupTableType.HASH,
-            "sender_login",
-            "\n".join([f"{key} {value}" for key, value in charm_state.sender_login_maps.items()]),
         ),
         "smtp_header_checks": _create_map(
             PostfixLookupTableType.REGEXP,
@@ -223,16 +182,6 @@ def build_postfix_maps(postfix_conf_dir: str, charm_state: "State") -> dict[str,
             PostfixLookupTableType.HASH,
             "tls_policy",
             "\n".join([f"{key} {value}" for key, value in charm_state.tls_policy_maps.items()]),
-        ),
-        "transport_maps": _create_map(
-            PostfixLookupTableType.HASH,
-            "transport",
-            "\n".join([f"{key} {value}" for key, value in charm_state.transport_maps.items()]),
-        ),
-        "virtual_alias_maps": _create_map(
-            charm_state.virtual_alias_maps_type.value,
-            "virtual_alias",
-            "\n".join([f"{key} {value}" for key, value in charm_state.virtual_alias_maps.items()]),
         ),
     }
 

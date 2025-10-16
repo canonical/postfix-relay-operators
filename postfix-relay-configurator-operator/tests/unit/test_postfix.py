@@ -32,11 +32,6 @@ def test_build_postfix_maps_returns_correct_data() -> None:
 
     conf_path = Path(postfix_conf_dir)
     expected_maps = {
-        "append_envelope_to_header": postfix.PostfixMap(
-            type=state.PostfixLookupTableType.REGEXP,
-            path=conf_path / "append_envelope_to_header",
-            content=f"{utils.JUJU_HEADER}\n/^(.*)$/ PREPEND X-Envelope-To: $1\n",
-        ),
         "relay_access_sources": postfix.PostfixMap(
             type=state.PostfixLookupTableType.CIDR,
             path=conf_path / "relay_access",

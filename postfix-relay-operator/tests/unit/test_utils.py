@@ -24,30 +24,12 @@ class TestLibUtils(unittest.TestCase):
         got = utils.update_logrotate_conf("tests/unit/files/logrotate")
         self.assertEqual(got, want.strip())
 
-    def test__copy_file(self):
-        source = os.path.join(self.charm_dir, "templates/postfix_main_cf.tmpl")
-        dest = os.path.join(self.tmpdir, os.path.basename(source))
-
-        self.assertTrue(utils.copy_file(source, dest))
-        # Write again, should return False and not True per above.
-        self.assertFalse(utils.copy_file(source, dest))
-
-        # Check contents
-        with open(source, "r") as f:
-            want = f.read()
-        with open(dest, "r") as f:
-            got = f.read()
-        self.assertEqual(got, want)
-
     def test__write_file(self):
         source = "# User-provided config added here"
         dest = os.path.join(self.tmpdir, "my-test-file")
 
-        self.assertTrue(utils.write_file(source, dest))
-        # Write again, should return False and not True per above.
-        self.assertFalse(utils.write_file(source, dest))
+        utils.write_file(source, dest)
 
-        # Check contents
         with open(dest, "r") as f:
             got = f.read()
         self.assertEqual(got, source)

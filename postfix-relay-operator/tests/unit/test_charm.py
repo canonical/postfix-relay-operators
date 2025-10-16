@@ -30,7 +30,6 @@ DEFAULT_TLS_CONFIG_PATHS = tls.TLSConfigPaths(
 )
 
 
-@patch("charm.utils.copy_file", Mock())
 @patch("charm.apt.add_package")
 def test_install(
     mock_add_package: Mock,
@@ -254,6 +253,7 @@ def test_configure_relay(
             call(["postmap", "hash:/etc/postfix/tls_policy"]),
             call(["postmap", "hash:/etc/postfix/transport"]),
             call(["postmap", "hash:/etc/postfix/virtual_alias"]),
+            call(["newaliases"]),
         ],
     )
     expected_systemd_call = call("postfix")
@@ -269,30 +269,21 @@ def test_configure_relay(
 
 
 class TestUpdateAliases:
-    @pytest.mark.parametrize(
-        ("changed"),
-        [pytest.param(True, id="change"), pytest.param(False, id="no_change")],
-    )
     @patch("charm.utils.write_file")
     @patch("charm.subprocess.check_call")
-    def test_update_aliases_calls_newaliases(
+    def testupdate_aliases_calls_newaliases(
         self,
         mock_check_call: Mock,
-        mock_write_file: Mock,
-        changed: bool,
+        _: Mock,
     ) -> None:
         """
-        arrange: Parameterize whether the aliases file content has changed.
-        act: Call the internal _update_aliases method.
+        arrange: do nothing.
+        act: Call the internal update_aliases method.
         assert: The 'newaliases' command is executed only if the file content changed.
         """
-        mock_write_file.return_value = changed
+        charm.PostfixRelayCharm.update_aliases("admin@email.com")
 
-        charm.PostfixRelayCharm._update_aliases("admin@email.com")
-        if changed:
-            mock_check_call.assert_called_once_with(["newaliases"])
-        else:
-            mock_check_call.assert_not_called()
+        mock_check_call.assert_called_once_with(["newaliases"])
 
     @pytest.mark.parametrize(
         "initial_content, expected_content",
@@ -332,7 +323,7 @@ class TestUpdateAliases:
         ],
     )
     @patch("charm.subprocess.check_call", Mock())
-    def test_update_aliases_content(
+    def testupdate_aliases_content(
         self,
         admin_email_address: str | None,
         initial_content: str,
@@ -342,7 +333,7 @@ class TestUpdateAliases:
     ) -> None:
         """
         arrange: Parametrize different initial contents.
-        act: Call the internal _update_aliases method.
+        act: Call the internal update_aliases method.
         assert: The content of the aliases file is updated to the expected state.
         """
         aliases_path = tmp_path / "aliases"
@@ -350,7 +341,7 @@ class TestUpdateAliases:
 
         monkeypatch.setattr(charm, "ALIASES_FILEPATH", aliases_path)
 
-        charm.PostfixRelayCharm._update_aliases(admin_email_address)
+        charm.PostfixRelayCharm.update_aliases(admin_email_address)
 
         if not admin_email_address:
             expected_content = "\n".join(
@@ -360,20 +351,20 @@ class TestUpdateAliases:
         assert aliases_path.read_text() == expected_content
 
     @patch("charm.subprocess.check_call", Mock())
-    def test_update_aliases_no_file(
+    def testupdate_aliases_no_file(
         self,
         tmp_path: "Path",
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """
         arrange: Define a path for an aliases file that does not exist.
-        act: Call the internal _update_aliases method.
+        act: Call the internal update_aliases method.
         assert: The method creates the aliases file with the correct default content.
         """
         non_existing_path = tmp_path / "aliases"
         monkeypatch.setattr(charm, "ALIASES_FILEPATH", non_existing_path)
 
-        charm.PostfixRelayCharm._update_aliases(None)
+        charm.PostfixRelayCharm.update_aliases(None)
 
         assert non_existing_path.is_file()
         assert non_existing_path.read_text() == "devnull:       /dev/null\n"
