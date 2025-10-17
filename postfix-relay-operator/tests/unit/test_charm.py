@@ -187,13 +187,21 @@ class TestConfigureAuth:
     [pytest.param(True, id="postfix_running"), pytest.param(False, id="postfix_not_running")],
 )
 @patch.object(
-    charm,
-    "postfix.construct_postfix_config_params",
+    charm.postfix,
+    "construct_postfix_config_params",
     wraps=charm.postfix.construct_postfix_config_params,
 )
 @patch.object(charm, "get_tls_config_paths", Mock(return_value=DEFAULT_TLS_CONFIG_PATHS))
 @patch("charm.systemd")
 @patch("charm.utils.write_file", Mock())
+@patch("charm.postfix.fetch_relay_access_sources", Mock(return_value={}))
+@patch("charm.postfix.fetch_relay_recipient_maps", Mock(return_value={}))
+@patch("charm.postfix.fetch_restrict_recipients", Mock(return_value={}))
+@patch("charm.postfix.fetch_sender_access", Mock(return_value=[]))
+@patch("charm.postfix.fetch_restrict_senders", Mock(return_value={}))
+@patch("charm.postfix.fetch_sender_login_maps", Mock(return_value={}))
+@patch("charm.postfix.fetch_transport_maps", Mock(return_value={}))
+@patch("charm.postfix.fetch_virtual_alias_maps", Mock(return_value={}))
 @patch("charm.subprocess.check_call")
 def test_configure_relay(
     mock_subprocess_check_call: Mock,
