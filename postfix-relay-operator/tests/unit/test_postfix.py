@@ -119,7 +119,17 @@ def test_smtpd_relay_restrictions(
         "enable_smtp_auth": True,
         "virtual_alias_maps_type": "hash",
     }
-    charm_state = state.State.from_charm(config=charm_config)
+    charm_state = state.State.from_charm(
+        config=charm_config,
+        relay_access_sources=relay_access_sources,
+        restrict_recipients={},
+        restrict_senders=restrict_senders,
+        relay_recipient_maps={},
+        restrict_sender_access=[],
+        sender_login_maps=sender_login_maps,
+        transport_maps={},
+        virtual_alias_maps={},
+    )
     charm_state.relay_access_sources = relay_access_sources
     charm_state.enable_smtp_auth = enable_smtp_auth
     charm_state.sender_login_maps = sender_login_maps
@@ -186,7 +196,17 @@ def test_smtpd_sender_restrictions(
         "enable_smtp_auth": True,
         "virtual_alias_maps_type": "hash",
     }
-    charm_state = state.State.from_charm(config=charm_config)
+    charm_state = state.State.from_charm(
+        config=charm_config,
+        relay_access_sources={},
+        restrict_recipients={},
+        restrict_senders={},
+        relay_recipient_maps={},
+        restrict_sender_access=restrict_sender_access,
+        sender_login_maps={},
+        transport_maps={},
+        virtual_alias_maps={},
+    )
     charm_state.enable_reject_unknown_sender_domain = enable_reject_unknown_sender
     charm_state.restrict_sender_access = restrict_sender_access
 
@@ -215,7 +235,7 @@ def test_smtpd_sender_restrictions(
         ),
         pytest.param(
             False,
-            {"sender": "value"},
+            {"sender": "OK"},
             [],
             False,
             ["check_sender_access hash:/etc/postfix/restricted_senders"],
@@ -239,7 +259,7 @@ def test_smtpd_sender_restrictions(
         ),
         pytest.param(
             True,
-            {"sender": "value"},
+            {"sender": "OK"},
             ["custom_restriction_1", "custom_restriction_2"],
             True,
             [
@@ -255,7 +275,7 @@ def test_smtpd_sender_restrictions(
 )
 def test_smtpd_recipient_restrictions(
     append_x_envelope_to: bool,
-    restrict_senders: dict,
+    restrict_senders: dict[str, str],
     additional_restrictions: list[str],
     enable_spf: bool,
     expected: list[str],
@@ -275,7 +295,17 @@ def test_smtpd_recipient_restrictions(
         "enable_smtp_auth": True,
         "virtual_alias_maps_type": "hash",
     }
-    charm_state = state.State.from_charm(config=charm_config)
+    charm_state = state.State.from_charm(
+        config=charm_config,
+        relay_access_sources={},
+        restrict_recipients={},
+        restrict_senders=restrict_senders,
+        relay_recipient_maps={},
+        restrict_sender_access=[],
+        sender_login_maps={},
+        transport_maps={},
+        virtual_alias_maps={},
+    )
     charm_state.append_x_envelope_to = append_x_envelope_to
     charm_state.restrict_senders = restrict_senders
     charm_state.additional_smtpd_recipient_restrictions = additional_restrictions
@@ -326,7 +356,17 @@ def test_build_postfix_maps_returns_correct_data() -> None:
         "enable_spf": False,
         "connection_limit": 0,
     }
-    charm_state = state.State.from_charm(config=charm_config)
+    charm_state = state.State.from_charm(
+        config=charm_config,
+        relay_access_sources={},
+        restrict_recipients={},
+        restrict_senders={},
+        relay_recipient_maps={},
+        restrict_sender_access=[],
+        sender_login_maps={},
+        transport_maps={},
+        virtual_alias_maps={},
+    )
 
     expected_maps = {
         "header_checks": postfix.PostfixMap(

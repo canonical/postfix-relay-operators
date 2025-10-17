@@ -70,28 +70,36 @@ def test_state():
         """,
         "virtual_alias_maps_type": "hash",
     }
+    relay_access_sources = {
+        "10.10.10.5": "REJECT",
+        "10.10.10.0/24": "OK",
+    }
+    restrict_recipients = {"mydomain.local": "OK"}
+    restrict_senders = {"mydomain.local": "REJECT"}
+    relay_recipient_maps = {"noreply@mydomain.local": "noreply@mydomain.local"}
+    restrict_sender_access = ["canonical.com", "ubuntu.com"]
+    sender_login_maps = {
+        "group@example.com": "group",
+        "group2@example.com": "group2",
+    }
+    transport_maps = {
+        "example.com": "smtp:[mx.example.com]",
+        "admin.example1.com": "smtp:[mx.example.com]",
+    }
+    virtual_alias_maps = {
+        "/^group@example.net/": "group@example.com",
+        "/^group2@example.net/": "group2@example.com",
+    }
     charm_state = state.State.from_charm(
         config=charm_config,
-        relay_access_sources={
-            "10.10.10.5": "REJECT",
-            "10.10.10.0/24": "OK",
-        },
-        relay_recipient_maps={"noreply@mydomain.local": "noreply@mydomain.local"},
-        restrict_recipients={"mydomain.local": "OK"},
-        restrict_sender_access=["canonical.com", "ubuntu.com"],
-        restrict_senders={"mydomain.local": "REJECT"},
-        sender_login_maps={
-            "group@example.com": "group",
-            "group2@example.com": "group2",
-        },
-        transport_maps={
-            "example.com": "smtp:[mx.example.com]",
-            "admin.example1.com": "smtp:[mx.example.com]",
-        },
-        virtual_alias_maps={
-            "/^group@example.net/": "group@example.com",
-            "/^group2@example.net/": "group2@example.com",
-        },
+        relay_access_sources=relay_access_sources,
+        restrict_recipients=restrict_recipients,
+        restrict_senders=restrict_senders,
+        relay_recipient_maps=relay_recipient_maps,
+        restrict_sender_access=restrict_sender_access,
+        sender_login_maps=sender_login_maps,
+        transport_maps=transport_maps,
+        virtual_alias_maps=virtual_alias_maps,
     )
 
     assert charm_state.additional_smtpd_recipient_restrictions == (
@@ -110,27 +118,19 @@ def test_state():
     assert charm_state.enable_spf
     assert not charm_state.enable_smtp_auth
     assert charm_state.header_checks == yaml.safe_load(cast("str", charm_config["header_checks"]))
-    assert charm_state.relay_access_sources == yaml.safe_load(
-        cast("str", charm_config["relay_access_sources"])
-    )
+    assert charm_state.relay_access_sources == {
+        key: state.AccessMapValue(value) for key, value in relay_access_sources.items()
+    }
     assert charm_state.relay_domains == yaml.safe_load(cast("str", charm_config["relay_domains"]))
     assert charm_state.relay_host == charm_config["relay_host"]
-    restrict_recipients_raw = yaml.safe_load(cast("str", charm_config["restrict_recipients"]))
-    restrict_recipients = {
-        key: state.AccessMapValue(value) for key, value in restrict_recipients_raw.items()
+    assert charm_state.restrict_recipients == {
+        key: state.AccessMapValue(value) for key, value in restrict_recipients.items()
     }
-    assert charm_state.restrict_recipients == restrict_recipients
-    restrict_sender_raw = yaml.safe_load(cast("str", charm_config["restrict_senders"]))
-    restrict_senders = {
-        key: state.AccessMapValue(value) for key, value in restrict_sender_raw.items()
+    assert charm_state.restrict_senders == {
+        key: state.AccessMapValue(value) for key, value in restrict_senders.items()
     }
-    assert charm_state.restrict_senders == restrict_senders
-    assert charm_state.restrict_sender_access == yaml.safe_load(
-        cast("str", charm_config["restrict_sender_access"])
-    )
-    assert charm_state.sender_login_maps == yaml.safe_load(
-        cast("str", charm_config["sender_login_maps"])
-    )
+    assert charm_state.restrict_sender_access == restrict_sender_access
+    assert charm_state.sender_login_maps == sender_login_maps
     assert charm_state.smtp_auth_users == yaml.safe_load(
         cast("str", charm_config["smtp_auth_users"])
     )
@@ -150,15 +150,11 @@ def test_state():
     )
     assert charm_state.tls_protocols == yaml.safe_load(cast("str", charm_config["tls_protocols"]))
     assert charm_state.tls_security_level == state.SmtpTlsSecurityLevel.MAY
-    assert charm_state.transport_maps == yaml.safe_load(
-        cast("str", charm_config["transport_maps"])
-    )
+    assert charm_state.transport_maps == transport_maps
     assert charm_state.virtual_alias_domains == yaml.safe_load(
         cast("str", charm_config["virtual_alias_domains"])
     )
-    assert charm_state.virtual_alias_maps == yaml.safe_load(
-        cast("str", charm_config["virtual_alias_maps"])
-    )
+    assert charm_state.virtual_alias_maps == virtual_alias_maps
     assert charm_state.virtual_alias_maps_type == state.PostfixLookupTableType.HASH
 
 
@@ -193,7 +189,17 @@ def test_state_defaults():
         "tls_security_level": "may",
         "virtual_alias_maps_type": "hash",
     }
-    charm_state = state.State.from_charm(config=charm_config)
+    charm_state = state.State.from_charm(
+        config=charm_config,
+        relay_access_sources={},
+        restrict_recipients={},
+        restrict_senders={},
+        relay_recipient_maps={},
+        restrict_sender_access=[],
+        sender_login_maps={},
+        transport_maps={},
+        virtual_alias_maps={},
+    )
 
     assert charm_state.additional_smtpd_recipient_restrictions == []
     assert charm_state.admin_email is None
@@ -206,7 +212,7 @@ def test_state_defaults():
     assert not charm_state.enable_spf
     assert charm_state.enable_smtp_auth
     assert charm_state.header_checks == []
-    assert charm_state.relay_access_sources == []
+    assert charm_state.relay_access_sources == {}
     assert charm_state.relay_domains == []
     assert charm_state.relay_host is None
     assert charm_state.restrict_recipients == {}
@@ -268,7 +274,17 @@ def test_state_with_invalid_admin_email():
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
+        state.State.from_charm(
+            config=charm_config,
+            relay_access_sources={},
+            restrict_recipients={},
+            restrict_senders={},
+            relay_recipient_maps={},
+            restrict_sender_access=[],
+            sender_login_maps={},
+            transport_maps={},
+            virtual_alias_maps={},
+        )
 
 
 def test_state_with_invalid_allowed_relay_networks():
@@ -304,7 +320,17 @@ def test_state_with_invalid_allowed_relay_networks():
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
+        state.State.from_charm(
+            config=charm_config,
+            relay_access_sources={},
+            restrict_recipients={},
+            restrict_senders={},
+            relay_recipient_maps={},
+            restrict_sender_access=[],
+            sender_login_maps={},
+            transport_maps={},
+            virtual_alias_maps={},
+        )
 
 
 def test_state_with_invalid_connection_limit():
@@ -339,7 +365,17 @@ def test_state_with_invalid_connection_limit():
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
+        state.State.from_charm(
+            config=charm_config,
+            relay_access_sources={},
+            restrict_recipients={},
+            restrict_senders={},
+            relay_recipient_maps={},
+            restrict_sender_access=[],
+            sender_login_maps={},
+            transport_maps={},
+            virtual_alias_maps={},
+        )
 
 
 def test_state_with_invalid_restrict_recipients():
@@ -375,7 +411,17 @@ def test_state_with_invalid_restrict_recipients():
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
+        state.State.from_charm(
+            config=charm_config,
+            relay_access_sources={},
+            restrict_recipients={},
+            restrict_senders={},
+            relay_recipient_maps={},
+            restrict_sender_access=[],
+            sender_login_maps={},
+            transport_maps={},
+            virtual_alias_maps={},
+        )
 
 
 def test_state_with_invalid_restrict_senders():
@@ -411,7 +457,17 @@ def test_state_with_invalid_restrict_senders():
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
+        state.State.from_charm(
+            config=charm_config,
+            relay_access_sources={},
+            restrict_recipients={},
+            restrict_senders={},
+            relay_recipient_maps={},
+            restrict_sender_access=[],
+            sender_login_maps={},
+            transport_maps={},
+            virtual_alias_maps={},
+        )
 
 
 def test_state_with_invalid_spf_skip_addresses():
@@ -447,7 +503,17 @@ def test_state_with_invalid_spf_skip_addresses():
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
+        state.State.from_charm(
+            config=charm_config,
+            relay_access_sources={},
+            restrict_recipients={},
+            restrict_senders={},
+            relay_recipient_maps={},
+            restrict_sender_access=[],
+            sender_login_maps={},
+            transport_maps={},
+            virtual_alias_maps={},
+        )
 
 
 def test_state_with_invalid_tls_ciphers():
@@ -482,7 +548,17 @@ def test_state_with_invalid_tls_ciphers():
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
+        state.State.from_charm(
+            config=charm_config,
+            relay_access_sources={},
+            restrict_recipients={},
+            restrict_senders={},
+            relay_recipient_maps={},
+            restrict_sender_access=[],
+            sender_login_maps={},
+            transport_maps={},
+            virtual_alias_maps={},
+        )
 
 
 def test_state_with_invalid_tls_security_level():
@@ -517,7 +593,17 @@ def test_state_with_invalid_tls_security_level():
         "virtual_alias_maps_type": "hash",
     }
     with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
+        state.State.from_charm(
+            config=charm_config,
+            relay_access_sources={},
+            restrict_recipients={},
+            restrict_senders={},
+            relay_recipient_maps={},
+            restrict_sender_access=[],
+            sender_login_maps={},
+            transport_maps={},
+            virtual_alias_maps={},
+        )
 
 
 def test_state_with_invalid_virtual_alias_maps_type():
@@ -552,4 +638,14 @@ def test_state_with_invalid_virtual_alias_maps_type():
         "virtual_alias_maps_type": "invalid",
     }
     with pytest.raises(state.ConfigurationError):
-        state.State.from_charm(config=charm_config)
+        state.State.from_charm(
+            config=charm_config,
+            relay_access_sources={},
+            restrict_recipients={},
+            restrict_senders={},
+            relay_recipient_maps={},
+            restrict_sender_access=[],
+            sender_login_maps={},
+            transport_maps={},
+            virtual_alias_maps={},
+        )
