@@ -327,27 +327,25 @@ def test_build_postfix_maps_returns_correct_data() -> None:
         "connection_limit": 0,
     }
     charm_state = state.State.from_charm(config=charm_config)
-    postfix_conf_dir = "/etc/postfix"
 
-    conf_path = Path(postfix_conf_dir)
     expected_maps = {
         "header_checks": postfix.PostfixMap(
             type=state.PostfixLookupTableType.REGEXP,
-            path=conf_path / "header_checks",
+            path=postfix.POSTFIX_CONF_DIRPATH / "header_checks",
             content=f"{utils.JUJU_HEADER}\n/^Subject:/ WARN\n",
         ),
         "smtp_header_checks": postfix.PostfixMap(
             type=state.PostfixLookupTableType.REGEXP,
-            path=conf_path / "smtp_header_checks",
+            path=postfix.POSTFIX_CONF_DIRPATH / "smtp_header_checks",
             content=f"{utils.JUJU_HEADER}\n/^Received:/ IGNORE\n",
         ),
         "tls_policy_maps": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,
-            path=conf_path / "tls_policy",
+            path=postfix.POSTFIX_CONF_DIRPATH / "tls_policy",
             content=f"{utils.JUJU_HEADER}\nexample.com secure\n",
         ),
     }
 
-    maps = postfix.build_postfix_maps(postfix_conf_dir, charm_state)
+    maps = postfix.build_postfix_maps(charm_state)
 
     assert maps == expected_maps

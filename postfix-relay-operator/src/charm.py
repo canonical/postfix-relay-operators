@@ -16,16 +16,11 @@ import ops
 from charmlibs import apt
 from charms.operator_libs_linux.v1 import systemd
 
+import postfix
 import utils
 from dovecot import (
     construct_dovecot_config_file_content,
     construct_dovecot_user_file_content,
-)
-from postfix import (
-    PostfixMap,
-    build_postfix_maps,
-    construct_policyd_spf_config_file_content,
-    construct_postfix_config_params,
 )
 from state import ConfigurationError, State
 from tls import get_tls_config_paths
@@ -44,7 +39,6 @@ FILES_DIRPATH = Path("files")
 
 POSTFIX_NAME = "postfix"
 POSTFIX_PORT = ops.Port("tcp", 25)
-POSTFIX_CONF_DIRPATH = Path("/etc/postfix")
 ALIASES_FILEPATH = Path("/etc/aliases")
 POLICYD_SPF_FILEPATH = Path("/etc/postfix-policyd-spf-python/policyd-spf.conf")
 TLS_DH_PARAMS_FILEPATH = Path("/etc/ssl/private/dhparams.pem")
@@ -61,17 +55,6 @@ DOVECOT_USERS_FILEPATH = Path("/etc/dovecot/users")
 
 MILTER_RELATION_NAME = "milter"
 PEER_RELATION_NAME = "peer"
-
-POSTFIX_MAP_FILES = [
-    "hash:/etc/postfix/relay_recipient",
-    "hash:/etc/postfix/restricted_recipients",
-    "hash:/etc/postfix/restricted_senders",
-    "hash:/etc/postfix/access",
-    "hash:/etc/postfix/sender_login",
-    "hash:/etc/postfix/tls_policy",
-    "hash:/etc/postfix/transport",
-    "hash:/etc/postfix/virtual_alias",
-]
 
 
 class PostfixRelayCharm(ops.CharmBase):
@@ -96,8 +79,15 @@ class PostfixRelayCharm(ops.CharmBase):
         self.unit.status = ops.MaintenanceStatus("Reconciling SMTP relay")
         try:
             charm_state = State.from_charm(
-                self.config,
-                # parse files here
+                config=self.config,
+                relay_access_sources=postfix.fetch_relay_access_sources(),
+                relay_recipient_maps=postfix.fetch_relay_recipient_maps(),
+                restrict_recipients=postfix.fetch_restrict_recipients(),
+                restrict_sender_access=postfix.fetch_sender_access(),
+                restrict_senders=postfix.fetch_restrict_senders(),
+                sender_login_maps=postfix.fetch_sender_login_maps(),
+                transport_maps=postfix.fetch_transport_maps(),
+                virtual_alias_maps=postfix.fetch_virtual_alias_maps(),
             )
         except ConfigurationError:
             logger.exception("Error validating the charm configuration.")
@@ -151,7 +141,7 @@ class PostfixRelayCharm(ops.CharmBase):
         hostname = socket.gethostname()
         milters = self._get_milters()
 
-        context = construct_postfix_config_params(
+        context = postfix.construct_postfix_config_params(
             charm_state=charm_state,
             tls_dh_params_path=tls_config_paths.tls_dh_params,
             tls_cert_path=tls_config_paths.tls_cert,
@@ -162,11 +152,11 @@ class PostfixRelayCharm(ops.CharmBase):
             milters=milters,
         )
         contents = utils.render_jinja2_template(context, TEMPLATES_DIRPATH / MAIN_CF_TMPL)
-        utils.write_file(contents, POSTFIX_CONF_DIRPATH / MAIN_CF)
+        utils.write_file(contents, postfix.POSTFIX_CONF_DIRPATH / MAIN_CF)
         contents = utils.render_jinja2_template(context, TEMPLATES_DIRPATH / MASTER_CF_TMPL)
-        utils.write_file(contents, POSTFIX_CONF_DIRPATH / MASTER_CF)
+        utils.write_file(contents, postfix.POSTFIX_CONF_DIRPATH / MASTER_CF)
 
-        postfix_maps = build_postfix_maps(POSTFIX_CONF_DIRPATH, charm_state)
+        postfix_maps = postfix.build_postfix_maps(charm_state)
         self._apply_postfix_maps(list(postfix_maps.values()))
 
         logger.info("Updating aliases")
@@ -181,11 +171,11 @@ class PostfixRelayCharm(ops.CharmBase):
         systemd.service_reload(POSTFIX_NAME)
 
     @staticmethod
-    def _apply_postfix_maps(postfix_maps: list[PostfixMap]) -> None:
+    def _apply_postfix_maps(postfix_maps: list[postfix.PostfixMap]) -> None:
         logger.info("Applying postfix maps")
         for postfix_map in postfix_maps:
             utils.write_file(postfix_map.content, postfix_map.path)
-        for map_file in POSTFIX_MAP_FILES:
+        for map_file in postfix.POSTFIX_MAP_FILES:
             subprocess.check_call(["postmap", map_file])  # nosec
 
     @staticmethod
@@ -274,7 +264,9 @@ class PostfixRelayCharm(ops.CharmBase):
 
         logger.info("Setting up Postfix policy server for SPF checking (policyd-spf)")
 
-        contents = construct_policyd_spf_config_file_content(charm_state.spf_skip_addresses)
+        contents = postfix.construct_policyd_spf_config_file_content(
+            charm_state.spf_skip_addresses
+        )
         utils.write_file(contents, POLICYD_SPF_FILEPATH)
 
 
