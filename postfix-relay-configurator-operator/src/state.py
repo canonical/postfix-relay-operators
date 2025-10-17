@@ -118,9 +118,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         virtual_alias_maps: Map of aliases of mail addresses or domains to other local or
             remote addresses.
     """
-
-    model_config = ConfigDict(regex_engine="python-re")  # noqa: DCO063
-
     relay_access_sources: list[str]
     restrict_recipients: dict[str, AccessMapValue]
     restrict_senders: dict[str, AccessMapValue]
