@@ -5,7 +5,6 @@ import os
 import shutil
 import tempfile
 import unittest
-from pathlib import Path
 
 import utils
 
@@ -18,11 +17,6 @@ class TestLibUtils(unittest.TestCase):
             os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         )
         self.addCleanup(shutil.rmtree, self.tmpdir)
-
-    def test_logrotate_frequency(self):
-        want = Path("tests/unit/files/logrotate_frequency").read_text(encoding="utf-8")
-        got = utils.update_logrotate_conf("tests/unit/files/logrotate")
-        self.assertEqual(got, want.strip())
 
     def test__write_file(self):
         source = "# User-provided config added here"

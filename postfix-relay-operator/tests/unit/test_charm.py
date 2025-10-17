@@ -34,19 +34,12 @@ DEFAULT_TLS_CONFIG_PATHS = tls.TLSConfigPaths(
 def test_install(
     mock_add_package: Mock,
     context: Context[charm.PostfixRelayCharm],
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """
     arrange: Set up a charm state.
     act: Run the install event hook on the charm.
     assert: The unit status is set to maintenance and the correct packages are installed.
     """
-    log_rotate_syslog = tmp_path / "rsyslog"
-    log_rotate_syslog.write_text((FILES_PATH / "logrotate").read_text())
-    monkeypatch.setattr(charm, "LOG_ROTATE_SYSLOG", log_rotate_syslog)
-    expected_path = FILES_PATH / "logrotate_frequency"
-
     charm_state = State(config={}, leader=True)
 
     out = context.run(context.on.install(), charm_state)
@@ -56,7 +49,6 @@ def test_install(
         ["dovecot-core", "postfix", "postfix-policyd-spf-python"],
         update_cache=True,
     )
-    assert log_rotate_syslog.read_text() == expected_path.read_text()
 
 
 @patch("charm.State.from_charm", Mock(side_effect=ConfigurationError("Invalid configuration")))

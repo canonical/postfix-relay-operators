@@ -27,7 +27,7 @@ from postfix import (
     construct_policyd_spf_config_file_content,
     construct_postfix_config_params,
 )
-from state import ConfigurationError, PostfixLookupTableType, State
+from state import ConfigurationError, State
 from tls import get_tls_config_paths
 
 logger = logging.getLogger(__name__)
@@ -59,10 +59,19 @@ DOVECOT_PORTS = (ops.Port("tcp", 465), ops.Port("tcp", 587))
 DOVECOT_CONFIG_FILEPATH = Path("/etc/dovecot/dovecot.conf")
 DOVECOT_USERS_FILEPATH = Path("/etc/dovecot/users")
 
-LOG_ROTATE_SYSLOG = Path("/etc/logrotate.d/rsyslog")
-
 MILTER_RELATION_NAME = "milter"
 PEER_RELATION_NAME = "peer"
+
+POSTFIX_MAP_FILES = [
+    "hash:/etc/postfix/relay_recipient",
+    "hash:/etc/postfix/restricted_recipients",
+    "hash:/etc/postfix/restricted_senders",
+    "hash:/etc/postfix/access",
+    "hash:/etc/postfix/sender_login",
+    "hash:/etc/postfix/tls_policy",
+    "hash:/etc/postfix/transport",
+    "hash:/etc/postfix/virtual_alias",
+]
 
 
 class PostfixRelayCharm(ops.CharmBase):
@@ -81,10 +90,6 @@ class PostfixRelayCharm(ops.CharmBase):
         """Handle the install event."""
         self.unit.status = ops.MaintenanceStatus("Installing packages")
         apt.add_package(APT_PACKAGES, update_cache=True)
-
-        contents = utils.update_logrotate_conf(LOG_ROTATE_SYSLOG)
-        utils.write_file(contents, LOG_ROTATE_SYSLOG)
-
         self.unit.status = ops.WaitingStatus()
 
     def _reconcile(self, _: ops.EventBase) -> None:
@@ -180,8 +185,8 @@ class PostfixRelayCharm(ops.CharmBase):
         logger.info("Applying postfix maps")
         for postfix_map in postfix_maps:
             utils.write_file(postfix_map.content, postfix_map.path)
-            if postfix_map.type == PostfixLookupTableType.HASH:
-                subprocess.check_call(["postmap", postfix_map.source])  # nosec
+        for map_file in POSTFIX_MAP_FILES:
+            subprocess.check_call(["postmap", map_file])  # nosec
 
     @staticmethod
     def _calculate_offset(seed: str, length: int = 2) -> int:

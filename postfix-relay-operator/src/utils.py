@@ -6,7 +6,6 @@
 import grp
 import os
 import pwd
-import re
 import shutil
 from pathlib import Path
 from typing import Any
@@ -14,43 +13,6 @@ from typing import Any
 import jinja2
 
 JUJU_HEADER = "# This file is Juju managed - do not edit by hand #\n\n"
-
-
-def update_logrotate_conf(logrotate_path: str | os.PathLike) -> str:
-    """Update existing logrotate config with log retention settings.
-
-    Args:
-        logrotate_path: path to the logrotate configuration.
-    """
-    path = Path(logrotate_path)
-
-    if not path.is_file():
-        return ""
-
-    config = path.read_text(encoding="utf-8")
-    new = []
-    regex = re.compile(r"^(\s+)(daily|weekly|monthly|rotate|dateext)")
-    for line in config.splitlines():
-        m = regex.match(line)
-        if not m:
-            new.append(line)
-            continue
-
-        conf = m.group(2)
-        indent = m.group(1)
-
-        # Rotation frequency.
-        if conf in ("daily", "weekly", "monthly"):
-            new.append(f"{indent}daily")
-        elif conf == "dateext":
-            # Ignore 'dateext', we'll put it back on updating 'rotate'.
-            continue
-        elif conf == "rotate":
-            new.append(f"{indent}dateext")
-            new.append(f"{indent}rotate 730")
-        else:
-            new.append(line)
-    return "\n".join(new)
 
 
 def write_file(
