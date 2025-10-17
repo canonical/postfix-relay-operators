@@ -13,8 +13,8 @@ from ops.testing import Context, State
 from scenario import TCPPort
 
 import charm
+import state
 import tls
-from state import ConfigurationError
 
 if TYPE_CHECKING:
     from charms.operator_libs_linux.v1 import systemd
@@ -51,7 +51,17 @@ def test_install(
     )
 
 
-@patch("charm.State.from_charm", Mock(side_effect=ConfigurationError("Invalid configuration")))
+@patch(
+    "charm.State.from_charm", Mock(side_effect=state.ConfigurationError("Invalid configuration"))
+)
+@patch("charm.postfix.fetch_relay_access_sources", Mock(return_value={}))
+@patch("charm.postfix.fetch_relay_recipient_maps", Mock(return_value={}))
+@patch("charm.postfix.fetch_restrict_recipients", Mock(return_value={}))
+@patch("charm.postfix.fetch_sender_access", Mock(return_value=[]))
+@patch("charm.postfix.fetch_restrict_senders", Mock(return_value={}))
+@patch("charm.postfix.fetch_sender_login_maps", Mock(return_value={}))
+@patch("charm.postfix.fetch_transport_maps", Mock(return_value={}))
+@patch("charm.postfix.fetch_virtual_alias_maps", Mock(return_value={}))
 def test_invalid_config(context: Context[charm.PostfixRelayCharm]) -> None:
     """
     arrange: Invalid charm config.
@@ -66,6 +76,14 @@ def test_invalid_config(context: Context[charm.PostfixRelayCharm]) -> None:
 
 
 @patch("charm.subprocess.check_call", Mock())
+@patch("charm.postfix.fetch_relay_access_sources", Mock(return_value={}))
+@patch("charm.postfix.fetch_relay_recipient_maps", Mock(return_value={}))
+@patch("charm.postfix.fetch_restrict_recipients", Mock(return_value={}))
+@patch("charm.postfix.fetch_sender_access", Mock(return_value=[]))
+@patch("charm.postfix.fetch_restrict_senders", Mock(return_value={}))
+@patch("charm.postfix.fetch_sender_login_maps", Mock(return_value={}))
+@patch("charm.postfix.fetch_transport_maps", Mock(return_value={}))
+@patch("charm.postfix.fetch_virtual_alias_maps", Mock(return_value={}))
 class TestConfigureAuth:
     """Unit tests for _configure_auth."""
 
@@ -119,6 +137,14 @@ class TestConfigureAuth:
         "dovecot_running",
         [pytest.param(True, id="dovecot_running"), pytest.param(False, id="dovecot_not_running")],
     )
+    @patch("charm.postfix.fetch_relay_access_sources", Mock(return_value={}))
+    @patch("charm.postfix.fetch_relay_recipient_maps", Mock(return_value={}))
+    @patch("charm.postfix.fetch_restrict_recipients", Mock(return_value={}))
+    @patch("charm.postfix.fetch_sender_access", Mock(return_value=[]))
+    @patch("charm.postfix.fetch_restrict_senders", Mock(return_value={}))
+    @patch("charm.postfix.fetch_sender_login_maps", Mock(return_value={}))
+    @patch("charm.postfix.fetch_transport_maps", Mock(return_value={}))
+    @patch("charm.postfix.fetch_virtual_alias_maps", Mock(return_value={}))
     @patch("charm.systemd")
     @patch("charm.utils.write_file")
     def test_with_auth_dovecot(
@@ -368,6 +394,14 @@ class TestUpdateAliases:
     "enable_spf",
     [pytest.param(True, id="enable_spf"), pytest.param(False, id="disable_spf")],
 )
+@patch("charm.postfix.fetch_relay_access_sources", Mock(return_value={}))
+@patch("charm.postfix.fetch_relay_recipient_maps", Mock(return_value={}))
+@patch("charm.postfix.fetch_restrict_recipients", Mock(return_value={}))
+@patch("charm.postfix.fetch_sender_access", Mock(return_value=[]))
+@patch("charm.postfix.fetch_restrict_senders", Mock(return_value={}))
+@patch("charm.postfix.fetch_sender_login_maps", Mock(return_value={}))
+@patch("charm.postfix.fetch_transport_maps", Mock(return_value={}))
+@patch("charm.postfix.fetch_virtual_alias_maps", Mock(return_value={}))
 @patch("charm.systemd", Mock())
 @patch("charm.subprocess.check_call", Mock())
 @patch("charm.utils.write_file")
