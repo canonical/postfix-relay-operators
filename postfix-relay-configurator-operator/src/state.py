@@ -106,11 +106,10 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     """The Postfix Relay operator charm state.
 
     Attributes:
-        relay_access_sources: List of  entries to restrict access based on CIDR source.
+        relay_access_sources: Map of entries to restrict access based on CIDR source.
         restrict_recipients: Access map for restrictions by recipient address or domain.
         restrict_senders: Access map for restrictions by sender address or domain.
-        relay_recipient_maps: Map that alias mail addresses or domains to
-            addresses.
+        relay_recipient_maps: Map that alias mail addresses or domains to addresses.
         restrict_sender_access: List of domains, addresses or hosts to restrict relay from.
         sender_login_maps: List of authenticated users that can send mail.
         transport_maps: Map from recipient address to message delivery transport
@@ -118,7 +117,7 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         virtual_alias_maps: Map of aliases of mail addresses or domains to other local or
             remote addresses.
     """
-    relay_access_sources: list[str]
+    relay_access_sources: dict[str, AccessMapValue]
     restrict_recipients: dict[str, AccessMapValue]
     restrict_senders: dict[str, AccessMapValue]
     relay_recipient_maps: dict[str, str]
@@ -141,7 +140,7 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             ConfigurationError: if invalid state values were encountered.
         """
         try:
-            relay_access_sources = _parse_list(config.get("relay_access_sources"))
+            relay_access_sources = _parse_access_map(config.get("relay_access_sources"))
             relay_recipient_maps = _parse_map(config.get("relay_recipient_maps"))
             restrict_sender_access = _parse_list(config.get("restrict_sender_access"))
             restrict_recipients = _parse_access_map(config.get("restrict_recipients"))

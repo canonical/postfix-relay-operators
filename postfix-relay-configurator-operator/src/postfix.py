@@ -13,6 +13,9 @@ if TYPE_CHECKING:
     from state import State
 
 
+POSTFIX_CONF_DIRPATH = Path("/etc/postfix")
+
+
 class PostfixMap(NamedTuple):
     """Represents a Postfix lookup table and its source file content.
 
@@ -27,17 +30,15 @@ class PostfixMap(NamedTuple):
     content: str
 
 
-def build_postfix_maps(postfix_conf_dir: str, charm_state: "State") -> dict[str, PostfixMap]:
+def build_postfix_maps(charm_state: "State") -> dict[str, PostfixMap]:
     """Ensure various postfix files exist and are up-to-date with the current charm state.
 
     Args:
-        postfix_conf_dir: directory where postfix config files are stored.
         charm_state: current charm state.
 
     Returns:
         A dictionary mapping map names to the generated PostfixMap objects.
     """
-    postfix_conf_dir_path = Path(postfix_conf_dir)
 
     def _create_map(type_: str | PostfixLookupTableType, name: str, content: str) -> PostfixMap:
         type_ = (
@@ -45,7 +46,7 @@ def build_postfix_maps(postfix_conf_dir: str, charm_state: "State") -> dict[str,
         )
         return PostfixMap(
             type=type_,
-            path=postfix_conf_dir_path / name,
+            path=POSTFIX_CONF_DIRPATH / name,
             content=f"{utils.JUJU_HEADER}\n{content}\n",
         )
 
@@ -54,7 +55,9 @@ def build_postfix_maps(postfix_conf_dir: str, charm_state: "State") -> dict[str,
         "relay_access_sources": _create_map(
             PostfixLookupTableType.CIDR,
             "relay_access",
-            "\n".join(charm_state.relay_access_sources),
+            "\n".join(
+                [f"{key} {value.value}" for key, value in charm_state.relay_access_sources.items()]
+            ),
         ),
         "relay_recipient_maps": _create_map(
             PostfixLookupTableType.HASH,
@@ -80,7 +83,7 @@ def build_postfix_maps(postfix_conf_dir: str, charm_state: "State") -> dict[str,
         "sender_access": _create_map(
             PostfixLookupTableType.HASH,
             "access",
-            "".join([f"{domain:35} OK\n" for domain in charm_state.restrict_sender_access]),
+            "\n".join([f"{domain:35} OK" for domain in charm_state.restrict_sender_access]),
         ),
         "sender_login_maps": _create_map(
             PostfixLookupTableType.HASH,

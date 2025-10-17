@@ -6,18 +6,15 @@
 """Postfix Relay Configurator charm."""
 
 import logging
-from pathlib import Path
 from typing import Any
 
 import ops
 
 import utils
-from postfix import PostfixMap, build_postfix_maps
+from postfix import PostfixMap, build_postfix_maps, POSTFIX_CONF_DIRPATH
 from state import ConfigurationError, State
 
 logger = logging.getLogger(__name__)
-
-POSTFIX_CONF_DIRPATH = Path("/etc/postfix")
 
 
 class PostfixRelayConfiguratorCharm(ops.CharmBase):
@@ -43,7 +40,7 @@ class PostfixRelayConfiguratorCharm(ops.CharmBase):
 
     def _configure_relay(self, charm_state: State) -> None:
         """Generate and apply Postfix configuration."""
-        postfix_maps = build_postfix_maps(POSTFIX_CONF_DIRPATH, charm_state)
+        postfix_maps = build_postfix_maps(charm_state)
         self._apply_postfix_maps(list(postfix_maps.values()))
 
     @staticmethod

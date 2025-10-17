@@ -36,29 +36,11 @@ def test_state():
         "enable_spf": True,
         "enable_smtp_auth": False,
         "header_checks": "- /^Received:/ HOLD",
-        "relay_access_sources": """
-            # Reject some made user.
-            - 10.10.10.5    REJECT
-            - 10.10.10.0/24 OK
-        """,
         "relay_domains": """
             - domain.example.com
             - domain2.example.com
         """,
         "relay_host": "smtp.relay",
-        "relay_recipient_maps": """
-            noreply@mydomain.local: noreply@mydomain.local
-        """,
-        "restrict_recipients": "mydomain.local: OK",
-        "restrict_senders": "mydomain.local: REJECT",
-        "restrict_sender_access": """
-            - canonical.com
-            - ubuntu.com
-        """,
-        "sender_login_maps": """
-            group@example.com: group
-            group2@example.com: group2
-        """,
         "smtp_auth_users": """
             - myuser1:$1$bPb0IPiM$kmrSMZkZvICKKHXu66daQ.
             - myuser2:$6$3r//F36qLB/J8rUfIIndaDtkxeb5iR3gs1uBn9fNyJDD1
@@ -82,21 +64,35 @@ def test_state():
             - '!SSLv3'
         """,
         "tls_security_level": "may",
-        "transport_maps": """
-            example.com: 'smtp:[mx.example.com]'
-            admin.example1.com: 'smtp:[mx.example.com]'
-        """,
         "virtual_alias_domains": """
             - mydomain.local
             - mydomain2.local
         """,
-        "virtual_alias_maps": """
-            /^group@example.net/: group@example.com
-            /^group2@example.net/: group2@example.com
-        """,
         "virtual_alias_maps_type": "hash",
     }
-    charm_state = state.State.from_charm(config=charm_config)
+    charm_state = state.State.from_charm(
+        config=charm_config,
+        relay_access_sources={
+            "10.10.10.5": "REJECT",
+            "10.10.10.0/24": "OK",
+        },
+        relay_recipient_maps={"noreply@mydomain.local": "noreply@mydomain.local"},
+        restrict_recipients={"mydomain.local": "OK"},
+        restrict_sender_access=["canonical.com", "ubuntu.com"],
+        restrict_senders={"mydomain.local": "REJECT"},
+        sender_login_maps={
+            "group@example.com": "group",
+            "group2@example.com": "group2",
+        },
+        transport_maps={
+            "example.com": "smtp:[mx.example.com]",
+            "admin.example1.com": "smtp:[mx.example.com]",
+        },
+        virtual_alias_maps={
+            "/^group@example.net/": "group@example.com",
+            "/^group2@example.net/": "group2@example.com",
+        },
+    )
 
     assert charm_state.additional_smtpd_recipient_restrictions == (
         yaml.safe_load(cast("str", charm_config["additional_smtpd_recipient_restrictions"]))

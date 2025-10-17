@@ -23,7 +23,7 @@ import utils
     ),
     [
         pytest.param(
-            [],
+            {},
             False,
             {},
             {},
@@ -31,7 +31,7 @@ import utils
             id="no_access_sources_no_auth",
         ),
         pytest.param(
-            ["source1, source2"],
+            {"source1": "OK", "source2": "OK"},
             False,
             {},
             {},
@@ -43,7 +43,7 @@ import utils
             id="has_access_sources_no_auth",
         ),
         pytest.param(
-            ["source1, source2"],
+            {"source1": "OK", "source2": "OK"},
             True,
             {},
             {},
@@ -56,7 +56,7 @@ import utils
             id="has_auth",
         ),
         pytest.param(
-            [],
+            {},
             True,
             {"group@example.com": "group"},
             {},
@@ -69,7 +69,7 @@ import utils
             id="has_auth_and_sender_login_maps",
         ),
         pytest.param(
-            [],
+            {},
             True,
             {},
             {"sender": state.AccessMapValue.OK},
@@ -82,7 +82,7 @@ import utils
             id="has_auth_and_restrict_senders",
         ),
         pytest.param(
-            [],
+            {},
             True,
             {"group@example.com": "group"},
             {"sender": state.AccessMapValue.OK},
@@ -98,7 +98,7 @@ import utils
     ],
 )
 def test_smtpd_relay_restrictions(
-    relay_access_sources: list[str],
+    relay_access_sources: dict[str, state.AccessMapValue],
     enable_smtp_auth: bool,
     sender_login_maps: dict[str, str],
     restrict_senders: dict[str, state.AccessMapValue],

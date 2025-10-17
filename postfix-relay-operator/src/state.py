@@ -148,7 +148,7 @@ class State(
         enable_smtp_auth: If SMTP authentication is enabled.
         enable_spf: If SPF checks are enabled.
         header_checks: Header checks to perform on inbound email.
-        relay_access_sources: List of  entries to restrict access based on CIDR source.
+        relay_access_sources: Map of entries to restrict access based on CIDR source.
         relay_domains: List of destination domains to relay mail to.
         restrict_recipients: Access map for restrictions by recipient address or domain.
         restrict_senders: Access map for restrictions by sender address or domain.
@@ -185,7 +185,7 @@ class State(
     enable_smtp_auth: bool
     enable_spf: bool
     header_checks: list[str]
-    relay_access_sources: list[str]
+    relay_access_sources: dict[str, AccessMapValue]
     relay_domains: list[Annotated[str, Field(min_length=1)]]
     restrict_recipients: dict[str, AccessMapValue]
     restrict_senders: dict[str, AccessMapValue]
@@ -211,7 +211,7 @@ class State(
     def from_charm(
         cls,
         config: Mapping[str, Any],
-        relay_access_sources: list[str],
+        relay_access_sources: dict[str, AccessMapValue],
         restrict_recipients: dict[str, AccessMapValue],
         restrict_senders: dict[str, AccessMapValue],
         relay_recipient_maps: dict[str, str],
@@ -224,7 +224,7 @@ class State(
 
         Args:
             config: the charm configuration.
-            relay_access_sources: List of  entries to restrict access based on CIDR source.
+            relay_access_sources: Map of entries to restrict access based on CIDR source.
             restrict_recipients: Access map for restrictions by recipient address or domain.
             restrict_senders: Access map for restrictions by sender address or domain.
             relay_recipient_maps: Map that alias mail addresses or domains to addresses.

@@ -20,8 +20,8 @@ def test_state():
     charm_config = {
         "relay_access_sources": """
             # Reject some made user.
-            - 10.10.10.5    REJECT
-            - 10.10.10.0/24 OK
+            10.10.10.5: REJECT
+            10.10.10.0/24: OK
         """,
         "relay_recipient_maps": """
             noreply@mydomain.local: noreply@mydomain.local
@@ -47,9 +47,11 @@ def test_state():
     }
     charm_state = state.State.from_charm(config=charm_config)
 
-    assert charm_state.relay_access_sources == yaml.safe_load(
-        cast("str", charm_config["relay_access_sources"])
-    )
+    raw_relay_access_sources = cast("str", charm_config["relay_access_sources"])
+    relay_access_sources = {
+        key: state.AccessMapValue(value) for key, value in raw_relay_access_sources.items()
+    }
+    assert charm_state.relay_access_sources == relay_access_sources
     restrict_recipients_raw = yaml.safe_load(cast("str", charm_config["restrict_recipients"]))
     restrict_recipients = {
         key: state.AccessMapValue(value) for key, value in restrict_recipients_raw.items()
@@ -82,7 +84,7 @@ def test_state_defaults():
     """
     charm_state = state.State.from_charm(config={})
 
-    assert charm_state.relay_access_sources == []
+    assert charm_state.relay_access_sources == {}
     assert charm_state.restrict_recipients == {}
     assert charm_state.restrict_senders == {}
     assert charm_state.restrict_sender_access == []

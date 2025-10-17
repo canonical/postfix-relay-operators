@@ -227,14 +227,14 @@ def _parse_list(raw_content: str) -> list[str]:
     return raw_content.split("\n")
 
 
-def fetch_relay_access_sources() -> list[str]:
+def fetch_relay_access_sources() -> dict[str, AccessMapValue]:
     """Parse relay access sources from the configuration files.
 
     Returns:
-        the list of access sources.
+        the map of access sources.
     """
     path = POSTFIX_CONF_DIRPATH / "relay_access"
-    return _parse_list(path.read_text("utf-8"))
+    return _parse_access_map(path.read_text("utf-8"))
 
 
 def fetch_relay_recipient_maps() -> dict[str, str]:

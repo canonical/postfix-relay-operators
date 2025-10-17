@@ -161,7 +161,7 @@ class TestConfigureAuth:
     [pytest.param(True, id="postfix_running"), pytest.param(False, id="postfix_not_running")],
 )
 @patch.object(
-    charm, "construct_postfix_config_params", wraps=charm.construct_postfix_config_params
+    charm, "postfix.construct_postfix_config_params", wraps=charm.postfix.construct_postfix_config_params
 )
 @patch.object(charm, "get_tls_config_paths", Mock(return_value=DEFAULT_TLS_CONFIG_PATHS))
 @patch("charm.systemd")
