@@ -31,10 +31,7 @@ DEFAULT_TLS_CONFIG_PATHS = tls.TLSConfigPaths(
 
 
 @patch("charm.apt.add_package")
-def test_install(
-    mock_add_package: Mock,
-    context: Context[charm.PostfixRelayCharm],
-) -> None:
+def test_install(mock_add_package: Mock) -> None:
     """
     arrange: Set up a charm state.
     act: Run the install event hook on the charm.
@@ -42,6 +39,7 @@ def test_install(
     """
     charm_state = State(config={}, leader=True)
 
+    context = Context(charm.PostfixRelayCharm)
     out = context.run(context.on.install(), charm_state)
 
     assert out.unit_status == ops.testing.WaitingStatus()
@@ -62,7 +60,7 @@ def test_install(
 @patch("charm.postfix.fetch_sender_login_maps", Mock(return_value={}))
 @patch("charm.postfix.fetch_transport_maps", Mock(return_value={}))
 @patch("charm.postfix.fetch_virtual_alias_maps", Mock(return_value={}))
-def test_invalid_config(context: Context[charm.PostfixRelayCharm]) -> None:
+def test_invalid_config() -> None:
     """
     arrange: Invalid charm config.
     act: Run the config-changed event hook on the charm.
@@ -70,6 +68,7 @@ def test_invalid_config(context: Context[charm.PostfixRelayCharm]) -> None:
     """
     charm_state = State(config={}, leader=True)
 
+    context = Context(charm.PostfixRelayCharm)
     out = context.run(context.on.config_changed(), charm_state)
 
     assert out.unit_status == ops.testing.BlockedStatus("Invalid config")
@@ -98,7 +97,6 @@ class TestConfigureAuth:
         mock_write_file: Mock,
         mock_systemd: "systemd",
         smtp_auth_users: str,
-        context: Context[charm.PostfixRelayCharm],
     ) -> None:
         """
         arrange: Charm with SMTP auth disabled.
@@ -114,6 +112,7 @@ class TestConfigureAuth:
             leader=True,
         )
 
+        context = Context(charm.PostfixRelayCharm)
         out = context.run(context.on.config_changed(), charm_state)
 
         assert {TCPPort(465), TCPPort(587)}.isdisjoint(out.opened_ports)
@@ -152,7 +151,6 @@ class TestConfigureAuth:
         mock_write_file: Mock,
         mock_systemd: "systemd",
         dovecot_running: bool,
-        context: Context[charm.PostfixRelayCharm],
     ) -> None:
         """
         arrange: Charm with SMTP auth enabled and dovecot not running.
@@ -163,6 +161,7 @@ class TestConfigureAuth:
         charm_state = State(config={"enable_smtp_auth": True}, leader=True)
         mock_systemd.service_running.return_value = dovecot_running
 
+        context = Context(charm.PostfixRelayCharm)
         out = context.run(context.on.config_changed(), charm_state)
 
         assert {TCPPort(465), TCPPort(587)}.issubset(out.opened_ports)
@@ -208,7 +207,6 @@ def test_configure_relay(
     mock_systemd: "systemd",
     mock_construct_postfix_config_params: Mock,
     postfix_running: bool,
-    context: Context[charm.PostfixRelayCharm],
 ) -> None:
     """
     arrange: Configure the charm with a specific domain.
@@ -258,6 +256,7 @@ def test_configure_relay(
     )
     mock_systemd.service_running.return_value = postfix_running
 
+    context = Context(charm.PostfixRelayCharm)
     out = context.run(context.on.config_changed(), charm_state)
 
     mock_construct_postfix_config_params.assert_called_once_with(
@@ -416,7 +415,6 @@ class TestUpdateAliases:
 def test_configure_policyd_spf(
     mock_write_file: Mock,
     enable_spf: bool,
-    context: Context[charm.PostfixRelayCharm],
 ) -> None:
     """
     arrange: Configure the charm state with SPF enabled or disabled.
@@ -430,6 +428,7 @@ def test_configure_policyd_spf(
         }
     )
 
+    context = Context(charm.PostfixRelayCharm)
     out = context.run(context.on.config_changed(), charm_state)
 
     investigated_call = call(ANY, charm.POLICYD_SPF_FILEPATH)
