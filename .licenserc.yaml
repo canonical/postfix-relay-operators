@@ -21,7 +21,7 @@ header:
     - 'LICENSE'
     - 'trivy.yaml'
     - 'postfix-relay-operator/templates/*'
-    - 'postfix-relay-operator/files/50-default.conf'
+    - 'postfix-relay-operator/files/**'
     - 'postfix-relay-operator/lib/**'
     - 'pyproject.toml'
     - 'zap_rules.tsv'
