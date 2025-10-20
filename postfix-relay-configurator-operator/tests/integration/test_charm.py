@@ -37,7 +37,9 @@ def machine_ip_address_fixture() -> str:
 
 
 @pytest.mark.abort_on_fail
-def test_simple_relay_configurator(juju: jubilant.Juju, postfix_relay_configurator_app, machine_ip_address):
+def test_simple_relay_configurator(
+    juju: jubilant.Juju, postfix_relay_configurator_app, machine_ip_address
+):
     """
     arrange: Deploy postfix-relay charm with the testrelay.internal domain in relay domains.
     act: Send an email to an address with the testrelay.internal domain.
