@@ -45,7 +45,6 @@ def test_simple_relay_configurator(juju: jubilant.Juju, postfix_relay_configurat
     """
     status = juju.status()
     unit = list(status.apps[postfix_relay_configurator_app].units.values())[0]
-    unit_ip = unit.public_address
 
     command_to_put_domain = (
         f"echo {machine_ip_address} testrelay.internal | sudo tee -a /etc/hosts"

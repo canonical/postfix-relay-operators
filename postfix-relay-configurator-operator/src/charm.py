@@ -11,7 +11,7 @@ from typing import Any
 import ops
 
 import utils
-from postfix import PostfixMap, build_postfix_maps, POSTFIX_CONF_DIRPATH
+from postfix import PostfixMap, build_postfix_maps
 from state import ConfigurationError, State
 
 logger = logging.getLogger(__name__)

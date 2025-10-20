@@ -9,12 +9,7 @@ from enum import Enum
 from typing import Any
 
 import yaml
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    Field,
-    ValidationError,
-)
+from pydantic import BaseModel, Field, ValidationError
 from typing_extensions import Annotated
 
 logger = logging.getLogger(__name__)
@@ -117,6 +112,7 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         virtual_alias_maps: Map of aliases of mail addresses or domains to other local or
             remote addresses.
     """
+
     relay_access_sources: dict[str, AccessMapValue]
     restrict_recipients: dict[str, AccessMapValue]
     restrict_senders: dict[str, AccessMapValue]
