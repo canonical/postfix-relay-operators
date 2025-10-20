@@ -47,7 +47,7 @@ def test_state():
     }
     charm_state = state.State.from_charm(config=charm_config)
 
-    raw_relay_access_sources = cast("str", charm_config["relay_access_sources"])
+    raw_relay_access_sources = yaml.safe_load(cast("str", charm_config["relay_access_sources"]))
     relay_access_sources = {
         key: state.AccessMapValue(value) for key, value in raw_relay_access_sources.items()
     }

@@ -51,7 +51,7 @@ def test_build_postfix_maps_returns_correct_data() -> None:
         "sender_access": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,
             path=postfix.POSTFIX_CONF_DIRPATH / "access",
-            content=f"{utils.JUJU_HEADER}\n{'unwanted.com':35} OK\n\n",
+            content=f"{utils.JUJU_HEADER}\n{'unwanted.com':35} OK\n",
         ),
         "sender_login_maps": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,
