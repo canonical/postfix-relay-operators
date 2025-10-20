@@ -32,9 +32,9 @@ parts:
       - libffi-dev
       - libssl-dev
       - pkg-config
-    copy-config:
-      plugin: dump
-      source: files
+  files:
+    plugin: dump
+    source: files
 
 charm-libs:
   - lib: operator_libs_linux.apt
