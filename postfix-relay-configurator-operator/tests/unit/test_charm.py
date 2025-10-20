@@ -13,7 +13,7 @@ from state import ConfigurationError
 
 
 @patch("charm.State.from_charm", Mock(side_effect=ConfigurationError("Invalid configuration")))
-def test_invalid_config(context: Context[charm.PostfixRelayConfiguratorCharm]) -> None:
+def test_invalid_config() -> None:
     """
     arrange: Invalid charm config.
     act: Run the config-changed event hook on the charm.
@@ -21,15 +21,14 @@ def test_invalid_config(context: Context[charm.PostfixRelayConfiguratorCharm]) -
     """
     charm_state = State(config={}, leader=True)
 
+    context = Context(charm.PostfixRelayConfiguratorCharm)
     out = context.run(context.on.config_changed(), charm_state)
 
     assert out.unit_status == ops.testing.BlockedStatus("Invalid config")
 
 
 @patch("charm.utils.write_file", Mock())
-def test_configure_relay(
-    context: Context[charm.PostfixRelayConfiguratorCharm],
-) -> None:
+def test_configure_relay() -> None:
     """
     arrange: Configure the charm with defaults.
     act: Run the config-changed event hook.
@@ -41,6 +40,7 @@ def test_configure_relay(
         leader=True,
     )
 
+    context = Context(charm.PostfixRelayConfiguratorCharm)
     out = context.run(context.on.config_changed(), charm_state)
 
     assert out.unit_status == ops.testing.ActiveStatus()
