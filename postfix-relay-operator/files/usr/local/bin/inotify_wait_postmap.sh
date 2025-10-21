@@ -1,6 +1,8 @@
 #!/bin/bash
 
 lock=/tmp/inofity.lock
+# The script is copied into the charm and executed as a service
+# shellcheck disable=SC2034
 inotifywait -mr /etc/postfix --exclude /etc/postfix/main.cf --exclude /etc/postfix/master.cf -e close_write -e create -e delete -e move --format '%w%f %e' | while read -r file event; do
     : >> $lock #create a file if it doesn't exist
     {
