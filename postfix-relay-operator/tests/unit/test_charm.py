@@ -43,6 +43,13 @@ def test_install(
     act: Run the install event hook on the charm.
     assert: The unit status is set to maintenance and the correct packages are installed.
     """
+
+    monkeypatch.setattr(charm, "subprocess", Mock())
+
+    monkeypatch.setattr(charm.snap, "add", Mock())
+    telegraf_conf = tmp_path / "telegraf.conf"
+    monkeypatch.setattr(charm, "TELEGRAF_CONF_DST", telegraf_conf)
+
     log_rotate_syslog = tmp_path / "rsyslog"
     log_rotate_syslog.write_text((FILES_PATH / "logrotate").read_text())
     monkeypatch.setattr(charm, "LOG_ROTATE_SYSLOG", log_rotate_syslog)
@@ -54,7 +61,7 @@ def test_install(
 
     assert out.unit_status == ops.testing.WaitingStatus()
     mock_add_package.assert_called_once_with(
-        ["dovecot-core", "postfix", "postfix-policyd-spf-python"],
+        ["dovecot-core", "postfix", "postfix-policyd-spf-python", "acl"],
         update_cache=True,
     )
     assert log_rotate_syslog.read_text() == expected_path.read_text()

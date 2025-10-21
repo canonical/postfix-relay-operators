@@ -14,6 +14,8 @@ from typing import Any
 
 import ops
 from charmlibs import apt
+from charmlibs import snap
+from charms.grafana_agent.v0.cos_agent import COSAgentProvider
 from charms.operator_libs_linux.v1 import systemd
 
 import utils
@@ -37,6 +39,7 @@ APT_PACKAGES = [
     "dovecot-core",
     "postfix",
     "postfix-policyd-spf-python",
+    "acl",
 ]
 
 TEMPLATES_DIRPATH = Path("templates")
@@ -59,6 +62,10 @@ DOVECOT_PORTS = (ops.Port("tcp", 465), ops.Port("tcp", 587))
 DOVECOT_CONFIG_FILEPATH = Path("/etc/dovecot/dovecot.conf")
 DOVECOT_USERS_FILEPATH = Path("/etc/dovecot/users")
 
+TELEGRAF_CONF_SRC = FILES_DIRPATH / "telegraf.conf"
+TELEGRAF_CONF_DST = Path("/var/snap/telegraf/current/telegraf.conf")
+
+
 LOG_ROTATE_SYSLOG = Path("/etc/logrotate.d/rsyslog")
 RSYSLOG_CONF_SRC = FILES_DIRPATH / "50-default.conf"
 RSYSLOG_CONF_DST = Path("/etc/rsyslog.d/50-default.conf")
@@ -74,7 +81,15 @@ class PostfixRelayCharm(ops.CharmBase):
         """Postfix Relay."""
         super().__init__(*args)
 
+        self._grafana_agent = COSAgentProvider(
+            self,
+            metrics_endpoints=[
+                {"path": "/metrics", "port": 9103},
+            ],
+            # dashboard_dirs=["./src/grafana_dashboards"],
+        )
         self.framework.observe(self.on.install, self._on_install)
+        self.framework.observe(self.on.upgrade_charm, self._on_install)
         self.framework.observe(self.on.config_changed, self._reconcile)
         self.framework.observe(self.on[PEER_RELATION_NAME].relation_changed, self._reconcile)
         self.framework.observe(self.on[MILTER_RELATION_NAME].relation_changed, self._reconcile)
@@ -83,6 +98,21 @@ class PostfixRelayCharm(ops.CharmBase):
         """Handle the install event."""
         self.unit.status = ops.MaintenanceStatus("Installing packages")
         apt.add_package(APT_PACKAGES, update_cache=True)
+
+        try:
+            telegraf_snap = snap.add(["telegraf"])
+            TELEGRAF_CONF_DST.touch()
+            utils.write_file(TELEGRAF_CONF_SRC.read_text(), TELEGRAF_CONF_DST)
+            spool="/var/spool/postfix"
+            # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/postfix/README.md#permissions
+            SNAP_GROUP = "snap_daemon"
+            cmd = ["setfacl", "-Rm", "g:{}:rX".format(SNAP_GROUP), spool]
+            subprocess.call(cmd)
+            cmd = ["setfacl", "-dm", "g:{}:rX".format(SNAP_GROUP), spool]
+            subprocess.call(cmd)
+            telegraf_snap.restart()
+        except snap.SnapError as e:
+            logger.error("An exception occurred when installing snaps. Reason: %s" % e.message)
 
         utils.copy_file(RSYSLOG_CONF_SRC, RSYSLOG_CONF_DST, perms=0o644)
         contents = utils.update_logrotate_conf(LOG_ROTATE_SYSLOG)

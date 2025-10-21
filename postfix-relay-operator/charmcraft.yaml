@@ -38,6 +38,8 @@ charm-libs:
     version: "0"
   - lib: operator_libs_linux.systemd
     version: "1"
+  - lib: grafana_agent.cos_agent
+    version: "0"
 
 peers:
   peer:
@@ -45,9 +47,12 @@ peers:
 provides:
   metrics:
     interface: postfix-metrics
+  cos-agent:
+    interface: cos_agent
 requires:
   milter:
     interface: milter
+
 
 config:
   options:
