@@ -52,14 +52,6 @@ def test_install(mock_add_package: Mock) -> None:
 @patch(
     "charm.State.from_charm", Mock(side_effect=state.ConfigurationError("Invalid configuration"))
 )
-@patch("charm.postfix.fetch_relay_access_sources", Mock(return_value={}))
-@patch("charm.postfix.fetch_relay_recipient_maps", Mock(return_value={}))
-@patch("charm.postfix.fetch_restrict_recipients", Mock(return_value={}))
-@patch("charm.postfix.fetch_sender_access", Mock(return_value=[]))
-@patch("charm.postfix.fetch_restrict_senders", Mock(return_value={}))
-@patch("charm.postfix.fetch_sender_login_maps", Mock(return_value={}))
-@patch("charm.postfix.fetch_transport_maps", Mock(return_value={}))
-@patch("charm.postfix.fetch_virtual_alias_maps", Mock(return_value={}))
 def test_invalid_config() -> None:
     """
     arrange: Invalid charm config.
@@ -75,14 +67,6 @@ def test_invalid_config() -> None:
 
 
 @patch("charm.subprocess.check_call", Mock())
-@patch("charm.postfix.fetch_relay_access_sources", Mock(return_value={}))
-@patch("charm.postfix.fetch_relay_recipient_maps", Mock(return_value={}))
-@patch("charm.postfix.fetch_restrict_recipients", Mock(return_value={}))
-@patch("charm.postfix.fetch_sender_access", Mock(return_value=[]))
-@patch("charm.postfix.fetch_restrict_senders", Mock(return_value={}))
-@patch("charm.postfix.fetch_sender_login_maps", Mock(return_value={}))
-@patch("charm.postfix.fetch_transport_maps", Mock(return_value={}))
-@patch("charm.postfix.fetch_virtual_alias_maps", Mock(return_value={}))
 class TestConfigureAuth:
     """Unit tests for _configure_auth."""
 
@@ -136,14 +120,6 @@ class TestConfigureAuth:
         "dovecot_running",
         [pytest.param(True, id="dovecot_running"), pytest.param(False, id="dovecot_not_running")],
     )
-    @patch("charm.postfix.fetch_relay_access_sources", Mock(return_value={}))
-    @patch("charm.postfix.fetch_relay_recipient_maps", Mock(return_value={}))
-    @patch("charm.postfix.fetch_restrict_recipients", Mock(return_value={}))
-    @patch("charm.postfix.fetch_sender_access", Mock(return_value=[]))
-    @patch("charm.postfix.fetch_restrict_senders", Mock(return_value={}))
-    @patch("charm.postfix.fetch_sender_login_maps", Mock(return_value={}))
-    @patch("charm.postfix.fetch_transport_maps", Mock(return_value={}))
-    @patch("charm.postfix.fetch_virtual_alias_maps", Mock(return_value={}))
     @patch("charm.systemd")
     @patch("charm.utils.write_file")
     def test_with_auth_dovecot(
@@ -193,14 +169,6 @@ class TestConfigureAuth:
 @patch.object(charm, "get_tls_config_paths", Mock(return_value=DEFAULT_TLS_CONFIG_PATHS))
 @patch("charm.systemd")
 @patch("charm.utils.write_file", Mock())
-@patch("charm.postfix.fetch_relay_access_sources", Mock(return_value={}))
-@patch("charm.postfix.fetch_relay_recipient_maps", Mock(return_value={}))
-@patch("charm.postfix.fetch_restrict_recipients", Mock(return_value={}))
-@patch("charm.postfix.fetch_sender_access", Mock(return_value=[]))
-@patch("charm.postfix.fetch_restrict_senders", Mock(return_value={}))
-@patch("charm.postfix.fetch_sender_login_maps", Mock(return_value={}))
-@patch("charm.postfix.fetch_transport_maps", Mock(return_value={}))
-@patch("charm.postfix.fetch_virtual_alias_maps", Mock(return_value={}))
 @patch("charm.subprocess.check_call")
 def test_configure_relay(
     mock_subprocess_check_call: Mock,
@@ -401,14 +369,6 @@ class TestUpdateAliases:
     "enable_spf",
     [pytest.param(True, id="enable_spf"), pytest.param(False, id="disable_spf")],
 )
-@patch("charm.postfix.fetch_relay_access_sources", Mock(return_value={}))
-@patch("charm.postfix.fetch_relay_recipient_maps", Mock(return_value={}))
-@patch("charm.postfix.fetch_restrict_recipients", Mock(return_value={}))
-@patch("charm.postfix.fetch_sender_access", Mock(return_value=[]))
-@patch("charm.postfix.fetch_restrict_senders", Mock(return_value={}))
-@patch("charm.postfix.fetch_sender_login_maps", Mock(return_value={}))
-@patch("charm.postfix.fetch_transport_maps", Mock(return_value={}))
-@patch("charm.postfix.fetch_virtual_alias_maps", Mock(return_value={}))
 @patch("charm.systemd", Mock())
 @patch("charm.subprocess.check_call", Mock())
 @patch("charm.utils.write_file")

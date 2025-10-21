@@ -215,16 +215,25 @@ def construct_policyd_spf_config_file_content(spf_skip_addresses: "list[IPvAnyNe
     return utils.render_jinja2_template(context, "templates/policyd_spf_conf.tmpl")
 
 
-def _parse_access_map(raw_content: str) -> dict[str, AccessMapValue]:
-    return {key: AccessMapValue(value) for key, value in _parse_map(raw_content).items()}
+def _parse_access_map(path: Path) -> dict[str, AccessMapValue]:
+    if path.exists():
+        raw_content = path.read_text("utf-8")
+        return {key: AccessMapValue(value) for key, value in _parse_map(raw_content).items()}
+    return {}
 
 
-def _parse_map(raw_content: str) -> dict[str, str]:
-    return {line.split(" ")[0]: line.split(" ")[1] for line in raw_content.split("\n")}
+def _parse_map(path: Path) -> dict[str, str]:
+    if path.exists():
+        raw_content = path.read_text("utf-8")
+        return {line.split(" ")[0]: line.split(" ")[1] for line in raw_content.split("\n")}
+    return {}
 
 
-def _parse_list(raw_content: str) -> list[str]:
-    return raw_content.split("\n")
+def _parse_list(path: Path) -> list[str]:
+    if path.exists():
+        raw_content = path.read_text("utf-8")
+        return raw_content.split("\n")
+    return []
 
 
 def fetch_relay_access_sources() -> dict[str, AccessMapValue]:
@@ -233,8 +242,7 @@ def fetch_relay_access_sources() -> dict[str, AccessMapValue]:
     Returns:
         the map of access sources.
     """
-    path = POSTFIX_CONF_DIRPATH / "relay_access"
-    return _parse_access_map(path.read_text("utf-8"))
+    return _parse_access_map(POSTFIX_CONF_DIRPATH / "relay_access")
 
 
 def fetch_relay_recipient_maps() -> dict[str, str]:
@@ -243,8 +251,7 @@ def fetch_relay_recipient_maps() -> dict[str, str]:
     Returns:
         the relay recipient maps.
     """
-    path = POSTFIX_CONF_DIRPATH / "relay_recipient"
-    return _parse_map(path.read_text("utf-8"))
+    return _parse_map(POSTFIX_CONF_DIRPATH / "relay_recipient")
 
 
 def fetch_restrict_recipients() -> dict[str, AccessMapValue]:
@@ -253,8 +260,7 @@ def fetch_restrict_recipients() -> dict[str, AccessMapValue]:
     Returns:
         the restricted recipients maps.
     """
-    path = POSTFIX_CONF_DIRPATH / "restricted_recipients"
-    return _parse_access_map(path.read_text("utf-8"))
+    return _parse_access_map(POSTFIX_CONF_DIRPATH / "restricted_recipients")
 
 
 def fetch_restrict_senders() -> dict[str, AccessMapValue]:
@@ -263,8 +269,7 @@ def fetch_restrict_senders() -> dict[str, AccessMapValue]:
     Returns:
         the restricted senders maps.
     """
-    path = POSTFIX_CONF_DIRPATH / "restricted_senders"
-    return _parse_access_map(path.read_text("utf-8"))
+    return _parse_access_map(POSTFIX_CONF_DIRPATH / "restricted_senders")
 
 
 def fetch_sender_access() -> list[str]:
@@ -273,8 +278,9 @@ def fetch_sender_access() -> list[str]:
     Returns:
         the list of sender access addresses.
     """
-    path = POSTFIX_CONF_DIRPATH / "access"
-    return [line.replace(" OK", "").strip() for line in _parse_list(path.read_text("utf-8"))]
+    return [
+        line.replace(" OK", "").strip() for line in _parse_list(POSTFIX_CONF_DIRPATH / "access")
+    ]
 
 
 def fetch_sender_login_maps() -> dict[str, str]:
@@ -283,8 +289,7 @@ def fetch_sender_login_maps() -> dict[str, str]:
     Returns:
         the sender login maps.
     """
-    path = POSTFIX_CONF_DIRPATH / "sender_login"
-    return _parse_map(path.read_text("utf-8"))
+    return _parse_map(POSTFIX_CONF_DIRPATH / "sender_login")
 
 
 def fetch_transport_maps() -> dict[str, str]:
@@ -293,8 +298,7 @@ def fetch_transport_maps() -> dict[str, str]:
     Returns:
         the transport maps.
     """
-    path = POSTFIX_CONF_DIRPATH / "transport_maps"
-    return _parse_map(path.read_text("utf-8"))
+    return _parse_map(POSTFIX_CONF_DIRPATH / "transport_maps")
 
 
 def fetch_virtual_alias_maps() -> dict[str, str]:
@@ -303,5 +307,4 @@ def fetch_virtual_alias_maps() -> dict[str, str]:
     Returns:
         the virtual alias maps.
     """
-    path = POSTFIX_CONF_DIRPATH / "virtual_alias_maps"
-    return _parse_map(path.read_text("utf-8"))
+    return _parse_map(POSTFIX_CONF_DIRPATH / "virtual_alias_maps")
