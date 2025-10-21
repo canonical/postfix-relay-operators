@@ -238,7 +238,17 @@ def test_configure_relay(
         milters="inet:10.0.0.11:9999 inet:10.0.1.10:8892",
     )
 
-    mock_subprocess_check_call.assert_has_calls([call(["newaliases"])])
+    mock_subprocess_check_call.assert_has_calls([
+        call(["postmap", "hash:/etc/postfix/relay_recipient"]),
+        call(["postmap", "hash:/etc/postfix/restricted_recipients"]),
+        call(["postmap", "hash:/etc/postfix/restricted_senders"]),
+        call(["postmap", "hash:/etc/postfix/access"]),
+        call(["postmap", "hash:/etc/postfix/sender_login"]),
+        call(["postmap", "hash:/etc/postfix/tls_policy"]),
+        call(["postmap", "hash:/etc/postfix/transport"]),
+        call(["postmap", "hash:/etc/postfix/virtual_alias"]),
+        call(["newaliases"])
+    ])
     expected_systemd_call = call("postfix")
     if postfix_running:
         assert expected_systemd_call in mock_systemd.service_reload.mock_calls
