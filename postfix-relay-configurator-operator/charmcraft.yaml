@@ -34,6 +34,11 @@ parts:
       - libssl-dev
       - pkg-config
 
+requires:
+  juju-info:
+    interface: juju-info
+    scope: container
+
 config:
   options:
     relay_access_sources:
