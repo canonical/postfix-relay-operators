@@ -10,7 +10,7 @@ import jubilant
 import pytest
 
 
-@pytest.fixture(scope="module", name="postfix_relay_charm")
+@pytest.fixture(scope="module", name="postfix_relay_charm_configurator_app")
 def postfix_relay_charm_fixture(pytestconfig: pytest.Config):
     """Get value from parameter charm-file."""
     charm = pytestconfig.getoption("--charm-file")
@@ -20,25 +20,25 @@ def postfix_relay_charm_fixture(pytestconfig: pytest.Config):
     return charm
 
 
-@pytest.fixture(scope="module", name="postfix_relay_app")
+@pytest.fixture(scope="module", name="postfix_relay_configurator_app")
 def deploy_postfix_relay_fixture(
-    postfix_relay_charm: str,
+    postfix_relay_configurator_charm: str,
     juju: jubilant.Juju,
 ) -> str:
-    """Deploy postfix-relay."""
-    postfix_relay_app_name = "postfix-relay"
+    """Deploy postfix-relay-configurator."""
+    postfix_relay_configurator_app_name = "postfix-relay-configurator"
 
-    if not juju.status().apps.get(postfix_relay_app_name):
+    if not juju.status().apps.get(postfix_relay_configurator_app_name):
         juju.deploy(
-            f"./{postfix_relay_charm}",
-            postfix_relay_app_name,
+            f"./{postfix_relay_configurator_charm}",
+            postfix_relay_configurator_app_name,
         )
     juju.wait(
-        lambda status: status.apps[postfix_relay_app_name].is_active,
+        lambda status: status.apps[postfix_relay_configurator_app_name].is_active,
         error=jubilant.any_blocked,
         timeout=6 * 60,
     )
-    return postfix_relay_app_name
+    return postfix_relay_configurator_app_name
 
 
 @pytest.fixture(scope="session")
