@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 APT_PACKAGES = [
     "dovecot-core",
+    "inotify-tools",
     "postfix",
     "postfix-policyd-spf-python",
 ]

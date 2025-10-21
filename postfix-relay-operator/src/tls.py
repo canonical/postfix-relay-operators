@@ -51,9 +51,9 @@ def get_tls_config_paths(tls_dh_params: str) -> TLSConfigPaths:
     tls_cn = _get_autocert_cn()
     if tls_cn:
         # autocert currently bundles certs with the key at the end which postfix doesn't like:
-        # `warning: error loading chain from /etc/postfix/ssl/{...}.pem: key not first`
+        # `warning: error loading chain from /etc/ssl/{...}.pem: key not first`
         # Let's not use the newer `smtpd_tls_chain_files` postfix config for now.
-        # tls_cert_key = f"/etc/postfix/ssl/{tls_cn}.pem"
+        # tls_cert_key = f"/etc/ssl/{tls_cn}.pem"
         tls_cert = f"/etc/ssl/{tls_cn}.crt"
         tls_key = f"/etc/ssl/{tls_cn}.key"
         tls_dh_params = "/etc/ssl/dhparams.pem"
