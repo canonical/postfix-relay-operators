@@ -54,9 +54,9 @@ def get_tls_config_paths(tls_dh_params: str) -> TLSConfigPaths:
         # `warning: error loading chain from /etc/postfix/ssl/{...}.pem: key not first`
         # Let's not use the newer `smtpd_tls_chain_files` postfix config for now.
         # tls_cert_key = f"/etc/postfix/ssl/{tls_cn}.pem"
-        tls_cert = f"/etc/postfix/ssl/{tls_cn}.crt"
-        tls_key = f"/etc/postfix/ssl/{tls_cn}.key"
-        tls_dh_params = "/etc/postfix/ssl/dhparams.pem"
+        tls_cert = f"/etc/ssl/{tls_cn}.crt"
+        tls_key = f"/etc/ssl/{tls_cn}.key"
+        tls_dh_params = "/etc/ssl/dhparams.pem"
     if not os.path.exists(tls_dh_params):
         subprocess.check_call(["openssl", "dhparam", "-out", tls_dh_params, "2048"])  # nosec
 

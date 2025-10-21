@@ -130,6 +130,6 @@ class TestGetTlsConfigPaths:
         mock_subprocess_call.assert_called_with(
             ["openssl", "dhparam", "-out", "/etc/postfix/ssl/dhparams.pem", "2048"]
         )
-        assert result.tls_cert == "/etc/postfix/ssl/smtp.example.com.crt"
-        assert result.tls_key == "/etc/postfix/ssl/smtp.example.com.key"
-        assert result.tls_dh_params == "/etc/postfix/ssl/dhparams.pem"
+        assert result.tls_cert == "/etc/ssl/smtp.example.com.crt"
+        assert result.tls_key == "/etc/ssl/smtp.example.com.key"
+        assert result.tls_dh_params == "/etc/ssl/dhparams.pem"
