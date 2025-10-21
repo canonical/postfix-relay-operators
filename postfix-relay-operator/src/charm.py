@@ -10,11 +10,10 @@ import logging
 import socket
 import subprocess  # nosec
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import ops
-from charmlibs import apt
-from charmlibs import snap
+from charmlibs import apt, snap
 from charms.grafana_agent.v0.cos_agent import COSAgentProvider
 from charms.operator_libs_linux.v1 import systemd
 
@@ -44,6 +43,7 @@ APT_PACKAGES = [
 
 TEMPLATES_DIRPATH = Path("templates")
 FILES_DIRPATH = Path("files")
+COS_DIRPATH = Path("cos")
 
 POSTFIX_NAME = "postfix"
 POSTFIX_PORT = ops.Port("tcp", 25)
@@ -73,6 +73,8 @@ RSYSLOG_CONF_DST = Path("/etc/rsyslog.d/50-default.conf")
 MILTER_RELATION_NAME = "milter"
 PEER_RELATION_NAME = "peer"
 
+SNAP_GROUP = "snap_daemon"
+
 
 class PostfixRelayCharm(ops.CharmBase):
     """Postfix Relay."""
@@ -86,7 +88,9 @@ class PostfixRelayCharm(ops.CharmBase):
             metrics_endpoints=[
                 {"path": "/metrics", "port": 9103},
             ],
-            # dashboard_dirs=["./src/grafana_dashboards"],
+            dashboard_dirs=[COS_DIRPATH / "grafana_dashboards"],
+            metrics_rules_dir=COS_DIRPATH / "prometheus_alert_rules",
+            logs_rules_dir=COS_DIRPATH / "loki_alert_rules",
         )
         self.framework.observe(self.on.install, self._on_install)
         self.framework.observe(self.on.upgrade_charm, self._on_install)
@@ -100,19 +104,18 @@ class PostfixRelayCharm(ops.CharmBase):
         apt.add_package(APT_PACKAGES, update_cache=True)
 
         try:
-            telegraf_snap = snap.add(["telegraf"])
+            telegraf_snap = cast(snap.Snap, snap.add(["telegraf"]))
             TELEGRAF_CONF_DST.touch()
             utils.write_file(TELEGRAF_CONF_SRC.read_text(), TELEGRAF_CONF_DST)
-            spool="/var/spool/postfix"
+            spool = "/var/spool/postfix"
             # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/postfix/README.md#permissions
-            SNAP_GROUP = "snap_daemon"
-            cmd = ["setfacl", "-Rm", "g:{}:rX".format(SNAP_GROUP), spool]
+            cmd = ["setfacl", "-Rm", f"g:{SNAP_GROUP}:rX", spool]
             subprocess.call(cmd)
-            cmd = ["setfacl", "-dm", "g:{}:rX".format(SNAP_GROUP), spool]
+            cmd = ["setfacl", "-dm", f"g:{SNAP_GROUP}:rX", spool]
             subprocess.call(cmd)
             telegraf_snap.restart()
         except snap.SnapError as e:
-            logger.error("An exception occurred when installing snaps. Reason: %s" % e.message)
+            logger.error("An exception occurred when installing snaps. Reason: %s", e.message)
 
         utils.copy_file(RSYSLOG_CONF_SRC, RSYSLOG_CONF_DST, perms=0o644)
         contents = utils.update_logrotate_conf(LOG_ROTATE_SYSLOG)

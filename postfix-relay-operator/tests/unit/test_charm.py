@@ -43,7 +43,6 @@ def test_install(
     act: Run the install event hook on the charm.
     assert: The unit status is set to maintenance and the correct packages are installed.
     """
-
     monkeypatch.setattr(charm, "subprocess", Mock())
 
     monkeypatch.setattr(charm.snap, "add", Mock())
