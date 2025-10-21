@@ -10,8 +10,8 @@ import jubilant
 import pytest
 
 
-@pytest.fixture(scope="module", name="postfix_relay_charm_configurator_app")
-def postfix_relay_charm_fixture(pytestconfig: pytest.Config):
+@pytest.fixture(scope="module", name="postfix_relay_configurator_charm")
+def postfix_configurator_relay_charm_fixture(pytestconfig: pytest.Config):
     """Get value from parameter charm-file."""
     charm = pytestconfig.getoption("--charm-file")
     use_existing = pytestconfig.getoption("--use-existing", default=False)
