@@ -217,8 +217,7 @@ def construct_policyd_spf_config_file_content(spf_skip_addresses: "list[IPvAnyNe
 
 def _parse_access_map(path: Path) -> dict[str, AccessMapValue]:
     if path.exists():
-        raw_content = path.read_text("utf-8")
-        return {key: AccessMapValue(value) for key, value in _parse_map(raw_content).items()}
+        return {key: AccessMapValue(value) for key, value in _parse_map(path).items()}
     return {}
 
 
