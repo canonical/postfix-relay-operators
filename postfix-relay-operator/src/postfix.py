@@ -22,6 +22,7 @@ POSTFIX_MAP_FILES = [
     "hash:/etc/postfix/restricted_senders",
     "hash:/etc/postfix/access",
     "hash:/etc/postfix/sender_login",
+    "hash:/etc/postfix/tls_policy",
     "hash:/etc/postfix/transport_maps",
     "hash:/etc/postfix/virtual_alias",
 ]
