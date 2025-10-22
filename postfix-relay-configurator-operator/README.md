@@ -1,4 +1,4 @@
-[![CharmHub Badge](https://charmhub.io/postfix-relay/badge.svg)](https://charmhub.io/postfix-relay)
+[![CharmHub Badge](https://charmhub.io/postfix-relay-configurator/badge.svg)](https://charmhub.io/postfix-relay-configurator)
 [![Publish to edge](https://github.com/canonical/postfix-relay-operators/actions/workflows/publish_charm.yaml/badge.svg)](https://github.com/canonical/postfix-relay-operators/actions/workflows/publish_charm.yaml)
 [![Promote charm](https://github.com/canonical/postfix-relay-operators/actions/workflows/promote_charm.yaml/badge.svg)](https://github.com/canonical/postfix-relay-operators/actions/workflows/promote_charm.yaml)
 [![Discourse Status](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscourse.charmhub.io&style=flat&label=CharmHub%20Discourse)](https://discourse.charmhub.io)
