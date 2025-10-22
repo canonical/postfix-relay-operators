@@ -30,8 +30,9 @@ DEFAULT_TLS_CONFIG_PATHS = tls.TLSConfigPaths(
 )
 
 
+@patch("charm.subprocess.check_call")
 @patch("charm.apt.add_package")
-def test_install(mock_add_package: Mock) -> None:
+def test_install(mock_add_package: Mock, mock_check_call: Mock) -> None:
     """
     arrange: Set up a charm state.
     act: Run the install event hook on the charm.
@@ -47,6 +48,7 @@ def test_install(mock_add_package: Mock) -> None:
         ["dovecot-core", "inotify-tools", "postfix", "postfix-policyd-spf-python"],
         update_cache=True,
     )
+    mock_check_call.assert_called_once_with(["cp", "-R", "files/*", "/"])
 
 
 @patch(

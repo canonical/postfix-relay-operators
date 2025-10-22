@@ -74,6 +74,7 @@ class PostfixRelayCharm(ops.CharmBase):
         """Handle the install event."""
         self.unit.status = ops.MaintenanceStatus("Installing packages")
         apt.add_package(APT_PACKAGES, update_cache=True)
+        subprocess.check_call(["cp", "-R", f"{FILES_DIRPATH.name}/*", "/"])  # nosec
         self.unit.status = ops.WaitingStatus()
 
     def _reconcile(self, _: ops.EventBase) -> None:
