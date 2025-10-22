@@ -167,7 +167,7 @@ def test_metrics_configuredd(juju: jubilant.Juju, postfix_relay_app, machine_ip_
     metrics_output = requests.get(f"http://{unit_ip}:9103/metrics", timeout=5).text
     # Some of the most important metrics used in the dashboard and alerts.
     expected_metrics = [
-        "cpu_usage_idlee",
+        "cpu_usage_idle",
         "postfix_queue_length",
         "procstat_lookup_running",
         "netstat_tcp_established",
