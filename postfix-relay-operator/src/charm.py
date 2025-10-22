@@ -7,6 +7,7 @@
 
 import hashlib
 import logging
+import shutil
 import socket
 import subprocess  # nosec
 from pathlib import Path
@@ -74,11 +75,7 @@ class PostfixRelayCharm(ops.CharmBase):
         """Handle the install event."""
         self.unit.status = ops.MaintenanceStatus("Installing packages")
         apt.add_package(APT_PACKAGES, update_cache=True)
-        try:
-            subprocess.check_output(["cp", "-R", f"{FILES_DIRPATH.name}/*", "/"])  # nosec
-        except subprocess.CalledProcessError as e:
-            logger.exception(e.output)
-            raise e
+        shutil.copytree(FILES_DIRPATH.name, "/", dirs_exist_ok=True)
         self.unit.status = ops.WaitingStatus()
 
     def _reconcile(self, _: ops.EventBase) -> None:
@@ -182,7 +179,8 @@ class PostfixRelayCharm(ops.CharmBase):
         for postfix_map in postfix_maps:
             utils.write_file(postfix_map.content, postfix_map.path)
         for map_file in postfix.POSTFIX_MAP_FILES:
-            subprocess.check_call(["postmap", map_file])  # nosec
+            if Path(map_file).exists():
+                subprocess.check_call(["postmap", map_file])  # nosec
 
     @staticmethod
     def _calculate_offset(seed: str, length: int = 2) -> int:

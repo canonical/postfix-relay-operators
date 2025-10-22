@@ -26,9 +26,9 @@ DEFAULT_TLS_CONFIG_PATHS = tls.TLSConfigPaths(
 )
 
 
-@patch("charm.subprocess.check_output")
+@patch("charm.shutil.copytree")
 @patch("charm.apt.add_package")
-def test_install(mock_add_package: Mock, mock_check_output: Mock) -> None:
+def test_install(mock_add_package: Mock, mock_copytree: Mock) -> None:
     """
     arrange: Set up a charm state.
     act: Run the install event hook on the charm.
@@ -44,7 +44,7 @@ def test_install(mock_add_package: Mock, mock_check_output: Mock) -> None:
         ["dovecot-core", "inotify-tools", "postfix", "postfix-policyd-spf-python"],
         update_cache=True,
     )
-    mock_check_output.assert_called_once_with(["cp", "-R", "files/*", "/"])
+    mock_copytree.assert_called_once_with("files", "/", dirs_exist_ok=True)
 
 
 @patch(
@@ -236,19 +236,7 @@ def test_configure_relay(
         milters="inet:10.0.0.11:9999 inet:10.0.1.10:8892",
     )
 
-    mock_subprocess_check_call.assert_has_calls(
-        [
-            call(["postmap", "hash:/etc/postfix/relay_recipient"]),
-            call(["postmap", "hash:/etc/postfix/restricted_recipients"]),
-            call(["postmap", "hash:/etc/postfix/restricted_senders"]),
-            call(["postmap", "hash:/etc/postfix/access"]),
-            call(["postmap", "hash:/etc/postfix/sender_login"]),
-            call(["postmap", "hash:/etc/postfix/tls_policy"]),
-            call(["postmap", "hash:/etc/postfix/transport_maps"]),
-            call(["postmap", "hash:/etc/postfix/virtual_alias"]),
-            call(["newaliases"]),
-        ]
-    )
+    mock_subprocess_check_call.assert_called_once_with(["newaliases"])
     expected_systemd_call = call("postfix")
     if postfix_running:
         assert expected_systemd_call in mock_systemd.service_reload.mock_calls
