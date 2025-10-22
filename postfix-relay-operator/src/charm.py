@@ -61,6 +61,10 @@ MILTER_RELATION_NAME = "milter"
 PEER_RELATION_NAME = "peer"
 
 
+class ReconcileEvent(ops.EventBase):
+    """Event representing a preconcile event."""
+
+
 class PostfixRelayCharm(ops.CharmBase):
     """Postfix Relay."""
 
@@ -68,8 +72,11 @@ class PostfixRelayCharm(ops.CharmBase):
         """Postfix Relay."""
         super().__init__(*args)
 
+        self.on.define_event("reconcile", ReconcileEvent)
+
         self.framework.observe(self.on.install, self._on_install)
         self.framework.observe(self.on.config_changed, self._reconcile)
+        self.framework.observe(self.on.reconcile, self._reconcile)
         self.framework.observe(self.on[PEER_RELATION_NAME].relation_changed, self._reconcile)
         self.framework.observe(self.on[MILTER_RELATION_NAME].relation_changed, self._reconcile)
 
