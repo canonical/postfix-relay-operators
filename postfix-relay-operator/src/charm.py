@@ -120,9 +120,9 @@ class PostfixRelayCharm(ops.CharmBase):
             # It is necessary to set permissions for the telegraf process to access
             # the queue directory.
             # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/postfix/README.md#permissions
-            sef_acl_cmd = ["setfacl", "-Rm", f"g:{SNAP_GROUP}:rX", POSTFIX_SPOOL_DIR]
-            sef_default_acl_cmd = ["setfacl", "-dm", f"g:{SNAP_GROUP}:rX", POSTFIX_SPOOL_DIR]
-            for cmd in (sef_acl_cmd, sef_default_acl_cmd):
+            set_acl_cmd = ["setfacl", "-Rm", f"g:{SNAP_GROUP}:rX", POSTFIX_SPOOL_DIR]
+            set_default_acl_cmd = ["setfacl", "-dm", f"g:{SNAP_GROUP}:rX", POSTFIX_SPOOL_DIR]
+            for cmd in (set_acl_cmd, set_default_acl_cmd):
                 subprocess.check_call(cmd, timeout=5)  # nosec
             telegraf_snap.restart()
         except snap.SnapError:
