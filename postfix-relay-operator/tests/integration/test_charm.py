@@ -154,7 +154,7 @@ def test_authentication(juju: jubilant.Juju, postfix_relay_app, machine_ip_addre
 
 
 @pytest.mark.abort_on_fail
-def test_metrics_configuredd(juju: jubilant.Juju, postfix_relay_app, machine_ip_address):
+def test_metrics_configured(juju: jubilant.Juju, postfix_relay_app, machine_ip_address):
     """
     arrange: Deploy postfix-relay.
     act: Get the metrics from the unit.
