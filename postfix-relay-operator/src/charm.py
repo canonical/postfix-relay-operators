@@ -85,6 +85,10 @@ class PostfixRelayCharm(ops.CharmBase):
         self.unit.status = ops.MaintenanceStatus("Installing packages")
         apt.add_package(APT_PACKAGES, update_cache=True)
         shutil.copytree(FILES_DIRPATH.name, "/", dirs_exist_ok=True)
+        contents = utils.render_jinja2_template(
+            {"unit_name": self.unit.name}, TEMPLATES_DIRPATH / "inotify-config-change.sh.tmpl"
+        )
+        utils.write_file(contents, "/etc/systemd/system/inotify-config-change.sh")
         systemd.service_start(INOTIFY_SERVICE_NAME)
         self.unit.status = ops.WaitingStatus()
 
