@@ -21,7 +21,7 @@ def write_file(
     perms: int = 0o644,
     group: str | None = None,
 ) -> None:
-    """Write file only on changes and return True if changes written.
+    """Write fileand return True if changes written.
 
     Args:
         content: file content.
