@@ -14,7 +14,7 @@ module "postifx_relay" {
 }
 
 module "opendkim" {
-  source      = "git::ssh://git@github.com/canonical/opendkim//terraform?depth=1&ref=rev254"
+  source      = "git::ssh://git@github.com/canonical/opendkim//terraform?depth=1&ref=rev7"
   app_name    = var.opendkim.app_name
   channel     = var.opendkim.channel
   config      = var.opendkim.config
