@@ -151,3 +151,26 @@ def test_authentication(juju: jubilant.Juju, postfix_relay_app, machine_ip_addre
 
     # Clean up mailcatcher
     requests.delete(f"{mailcatcher_url}/messages/{messages[0]['id']}", timeout=5)
+
+
+@pytest.mark.abort_on_fail
+def test_metrics_configuredd(juju: jubilant.Juju, postfix_relay_app, machine_ip_address):
+    """
+    arrange: Deploy postfix-relay.
+    act: Get the metrics from the unit.
+    assert: The metrics can be scraped and there are metrics.
+    """
+    status = juju.status()
+    unit = list(status.apps[postfix_relay_app].units.values())[0]
+    unit_ip = unit.public_address
+
+    metrics_output = requests.get(f"http://{unit_ip}:9103/metrics", timeout=5).text
+    # Some of the most important metrics used in the dashboard and alerts.
+    expected_metrics = [
+        "cpu_usage_idlee",
+        "postfix_queue_length",
+        "procstat_lookup_running",
+        "netstat_tcp_established",
+    ]
+    for expected_metric in expected_metrics:
+        assert expected_metric in metrics_output
