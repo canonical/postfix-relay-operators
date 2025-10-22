@@ -49,7 +49,9 @@ def test_install(
         update_cache=True,
     )
     mock_copytree.assert_called_once_with("files", "/", dirs_exist_ok=True)
-    mock_write_file.assert_called_once_with(ANY, "/etc/systemd/system/inotify-config-change.sh")
+    mock_write_file.assert_called_once_with(
+        ANY, "/etc/systemd/system/inotify-config-change.sh", perms=555
+    )
     mock_service_start.assert_called_once_with(charm.INOTIFY_SERVICE_NAME)
 
 
