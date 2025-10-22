@@ -55,6 +55,8 @@ DOVECOT_PORTS = (ops.Port("tcp", 465), ops.Port("tcp", 587))
 DOVECOT_CONFIG_FILEPATH = Path("/etc/dovecot/dovecot.conf")
 DOVECOT_USERS_FILEPATH = Path("/etc/dovecot/users")
 
+INOTIFY_SERVICE_NAME = "inotify-config-change"
+
 MILTER_RELATION_NAME = "milter"
 PEER_RELATION_NAME = "peer"
 
@@ -76,6 +78,7 @@ class PostfixRelayCharm(ops.CharmBase):
         self.unit.status = ops.MaintenanceStatus("Installing packages")
         apt.add_package(APT_PACKAGES, update_cache=True)
         shutil.copytree(FILES_DIRPATH.name, "/", dirs_exist_ok=True)
+        systemd.service_start(INOTIFY_SERVICE_NAME)
         self.unit.status = ops.WaitingStatus()
 
     def _reconcile(self, _: ops.EventBase) -> None:

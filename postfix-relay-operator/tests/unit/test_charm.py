@@ -26,9 +26,10 @@ DEFAULT_TLS_CONFIG_PATHS = tls.TLSConfigPaths(
 )
 
 
+@patch("charm.systemd.service_start")
 @patch("charm.shutil.copytree")
 @patch("charm.apt.add_package")
-def test_install(mock_add_package: Mock, mock_copytree: Mock) -> None:
+def test_install(mock_add_package: Mock, mock_copytree: Mock, mock_service_start: Mock) -> None:
     """
     arrange: Set up a charm state.
     act: Run the install event hook on the charm.
@@ -45,6 +46,7 @@ def test_install(mock_add_package: Mock, mock_copytree: Mock) -> None:
         update_cache=True,
     )
     mock_copytree.assert_called_once_with("files", "/", dirs_exist_ok=True)
+    mock_service_start.assert_called_once_with(charm.INOTIFY_SERVICE_NAME)
 
 
 @patch(
