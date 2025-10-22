@@ -4,14 +4,10 @@
 """Postfix Service Layer."""
 
 from pathlib import Path
-from typing import TYPE_CHECKING, NamedTuple
+from typing import NamedTuple
 
 import utils
-from state import PostfixLookupTableType
-
-if TYPE_CHECKING:
-    from state import State
-
+from state import PostfixLookupTableType, State
 
 POSTFIX_CONF_DIRPATH = Path("/etc/postfix")
 
@@ -30,7 +26,7 @@ class PostfixMap(NamedTuple):
     content: str
 
 
-def build_postfix_maps(charm_state: "State") -> dict[str, PostfixMap]:
+def build_postfix_maps(charm_state: State) -> dict[str, PostfixMap]:
     """Ensure various postfix files exist and are up-to-date with the current charm state.
 
     Args:

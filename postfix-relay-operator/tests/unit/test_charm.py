@@ -4,21 +4,17 @@
 """Unit tests for the Postfix Relay charm."""
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 from unittest.mock import ANY, Mock, call, patch
 
 import ops.testing
 import pytest
+from charms.operator_libs_linux.v1 import systemd
 from ops.testing import Context, State
 from scenario import TCPPort
 
 import charm
 import state
 import tls
-
-if TYPE_CHECKING:
-    from charms.operator_libs_linux.v1 import systemd
-
 
 FILES_PATH = Path(__file__).parent / "files"
 
@@ -30,9 +26,9 @@ DEFAULT_TLS_CONFIG_PATHS = tls.TLSConfigPaths(
 )
 
 
-@patch("charm.subprocess.check_call")
+@patch("charm.subprocess.check_output")
 @patch("charm.apt.add_package")
-def test_install(mock_add_package: Mock, mock_check_call: Mock) -> None:
+def test_install(mock_add_package: Mock, mock_check_output: Mock) -> None:
     """
     arrange: Set up a charm state.
     act: Run the install event hook on the charm.
@@ -48,7 +44,7 @@ def test_install(mock_add_package: Mock, mock_check_call: Mock) -> None:
         ["dovecot-core", "inotify-tools", "postfix", "postfix-policyd-spf-python"],
         update_cache=True,
     )
-    mock_check_call.assert_called_once_with(["cp", "-R", "files/*", "/"])
+    mock_check_output.assert_called_once_with(["cp", "-R", "files/*", "/"])
 
 
 @patch(
@@ -325,7 +321,7 @@ class TestUpdateAliases:
         admin_email_address: str | None,
         initial_content: str,
         expected_content: str,
-        tmp_path: "Path",
+        tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """
@@ -350,7 +346,7 @@ class TestUpdateAliases:
     @patch("charm.subprocess.check_call", Mock())
     def testupdate_aliases_no_file(
         self,
-        tmp_path: "Path",
+        tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """

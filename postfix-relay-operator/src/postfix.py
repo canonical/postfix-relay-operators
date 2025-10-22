@@ -4,16 +4,12 @@
 """Postfix Service Layer."""
 
 from pathlib import Path
-from typing import TYPE_CHECKING, NamedTuple
+from typing import NamedTuple
+
+from pydantic import IPvAnyNetwork
 
 import utils
-from state import AccessMapValue, PostfixLookupTableType
-
-if TYPE_CHECKING:
-    from pydantic import IPvAnyNetwork
-
-    from state import State
-
+from state import AccessMapValue, PostfixLookupTableType, State
 
 POSTFIX_CONF_DIRPATH = Path("/etc/postfix")
 POSTFIX_MAP_FILES = [
@@ -28,7 +24,7 @@ POSTFIX_MAP_FILES = [
 ]
 
 
-def _smtpd_relay_restrictions(charm_state: "State") -> list[str]:
+def _smtpd_relay_restrictions(charm_state: State) -> list[str]:
     smtpd_relay_restrictions = ["permit_mynetworks"]
     if bool(charm_state.relay_access_sources):
         smtpd_relay_restrictions.append("check_client_access cidr:/etc/postfix/relay_access")
@@ -45,7 +41,7 @@ def _smtpd_relay_restrictions(charm_state: "State") -> list[str]:
     return smtpd_relay_restrictions
 
 
-def _smtpd_sender_restrictions(charm_state: "State") -> list[str]:
+def _smtpd_sender_restrictions(charm_state: State) -> list[str]:
     smtpd_sender_restrictions = []
     if charm_state.enable_reject_unknown_sender_domain:
         smtpd_sender_restrictions.append("reject_unknown_sender_domain")
@@ -56,7 +52,7 @@ def _smtpd_sender_restrictions(charm_state: "State") -> list[str]:
     return smtpd_sender_restrictions
 
 
-def _smtpd_recipient_restrictions(charm_state: "State") -> list[str]:
+def _smtpd_recipient_restrictions(charm_state: State) -> list[str]:
     smtpd_recipient_restrictions = []
     if charm_state.append_x_envelope_to:
         smtpd_recipient_restrictions.append(
@@ -77,7 +73,7 @@ def _smtpd_recipient_restrictions(charm_state: "State") -> list[str]:
 
 def construct_postfix_config_params(  # pylint: disable=too-many-arguments
     *,
-    charm_state: "State",
+    charm_state: State,
     tls_dh_params_path: str,
     tls_cert_path: str,
     tls_key_path: str,
@@ -157,7 +153,7 @@ class PostfixMap(NamedTuple):
         return f"{self.type.value}:{self.path}"
 
 
-def build_postfix_maps(charm_state: "State") -> dict[str, PostfixMap]:
+def build_postfix_maps(charm_state: State) -> dict[str, PostfixMap]:
     """Ensure various postfix files exist and are up-to-date with the current charm state.
 
     Args:

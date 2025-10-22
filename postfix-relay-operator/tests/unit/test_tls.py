@@ -3,19 +3,16 @@
 
 """TLS service unit tests."""
 
-from typing import TYPE_CHECKING
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
 
 import tls
 
-if TYPE_CHECKING:
-    from pathlib import Path
-
 
 class TestGetAutocertCn:
-    def test_no_autocert_dir(self, tmp_path: "Path") -> None:
+    def test_no_autocert_dir(self, tmp_path: Path) -> None:
         """
         arrange: Define a path to a non-existent autocert directory.
         act: Call _get_autocert_cn.
@@ -27,7 +24,7 @@ class TestGetAutocertCn:
 
         assert result == ""
 
-    def test_empty_autocert_dir(self, tmp_path: "Path") -> None:
+    def test_empty_autocert_dir(self, tmp_path: Path) -> None:
         """
         arrange: Create an empty autocert directory.
         act: Call _get_autocert_cn.
@@ -40,7 +37,7 @@ class TestGetAutocertCn:
 
         assert result == ""
 
-    def test_single_config_file(self, tmp_path: "Path") -> None:
+    def test_single_config_file(self, tmp_path: Path) -> None:
         """
         arrange: Create an autocert directory with one .ini file.
         act: Call _get_autocert_cn.
@@ -54,7 +51,7 @@ class TestGetAutocertCn:
 
         assert result == "smtp.mydomain.local"
 
-    def test_multiple_files_sorted(self, tmp_path: "Path") -> None:
+    def test_multiple_files_sorted(self, tmp_path: Path) -> None:
         """
         arrange: Create an autocert directory with multiple files.
         act: Call _get_autocert_cn.
@@ -85,7 +82,7 @@ class TestGetTlsConfigPaths:
         self,
         mock_subprocess_call: Mock,
         dhparams_exist: bool,
-        tmp_path: "Path",
+        tmp_path: Path,
     ) -> None:
         """
         arrange: Given no autocert certificate, check behavior based on DH file existence.
@@ -115,7 +112,7 @@ class TestGetTlsConfigPaths:
     def test_path_logic_with_autocert(
         self,
         mock_subprocess_call: Mock,
-        tmp_path: "Path",
+        tmp_path: Path,
     ) -> None:
         """
         arrange: Given an autocert certificate is present and its DH file is missing.
