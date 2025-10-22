@@ -35,10 +35,10 @@ logger = logging.getLogger(__name__)
 
 
 APT_PACKAGES = [
+    "acl",
     "dovecot-core",
     "postfix",
     "postfix-policyd-spf-python",
-    "acl",
 ]
 
 TEMPLATES_DIRPATH = Path("templates")

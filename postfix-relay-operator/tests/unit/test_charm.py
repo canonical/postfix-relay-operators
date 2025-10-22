@@ -63,7 +63,7 @@ def test_install(
 
     assert out.unit_status == ops.testing.WaitingStatus()
     mock_add_package.assert_called_once_with(
-        ["dovecot-core", "postfix", "postfix-policyd-spf-python", "acl"],
+        ["acl", "dovecot-core", "postfix", "postfix-policyd-spf-python"],
         update_cache=True,
     )
     assert log_rotate_syslog.read_text() == expected_path.read_text()
