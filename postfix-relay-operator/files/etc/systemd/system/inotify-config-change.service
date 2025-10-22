@@ -2,7 +2,7 @@
 Description=Dispatch a config changed event on inotify
 
 [Service]
-ExecStart=bash -c "/etc/systemd/system/inotify-config-change.sh"
+ExecStart=/etc/systemd/system/inotify-config-change.sh
 Restart=on-failure
 
 [Install]
