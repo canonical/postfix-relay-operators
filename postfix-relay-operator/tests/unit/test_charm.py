@@ -43,9 +43,12 @@ def test_install(
     act: Run the install event hook on the charm.
     assert: The unit status is set to maintenance and the correct packages are installed.
     """
-    monkeypatch.setattr(charm, "subprocess", Mock())
+    subprocess_mock = Mock()
+    monkeypatch.setattr(charm, "subprocess", subprocess_mock)
 
-    monkeypatch.setattr(charm.snap, "add", Mock())
+    telegraf_snap_mock = Mock()
+    snap_add_mock = Mock(return_value=telegraf_snap_mock)
+    monkeypatch.setattr(charm.snap, "add", snap_add_mock)
     telegraf_conf = tmp_path / "telegraf.conf"
     monkeypatch.setattr(charm, "TELEGRAF_CONF_DST", telegraf_conf)
 
@@ -64,6 +67,16 @@ def test_install(
         update_cache=True,
     )
     assert log_rotate_syslog.read_text() == expected_path.read_text()
+    # Telegraf configuration
+    snap_add_mock.assert_called_once_with(["telegraf"])
+    assert "[[outputs.prometheus_client]]" in telegraf_conf.read_text()
+    subprocess_mock.check_call.assert_any_call(
+        ["setfacl", "-Rm", "g:snap_daemon:rX", "/var/spool/postfix"], timeout=5
+    )
+    subprocess_mock.check_call.assert_any_call(
+        ["setfacl", "-dm", "g:snap_daemon:rX", "/var/spool/postfix"], timeout=5
+    )
+    telegraf_snap_mock.restart.assert_called_once()
 
 
 @patch("charm.State.from_charm", Mock(side_effect=ConfigurationError("Invalid configuration")))

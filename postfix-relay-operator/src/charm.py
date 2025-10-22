@@ -56,6 +56,7 @@ MAIN_CF = "main.cf"
 MAIN_CF_TMPL = "postfix_main_cf.tmpl"
 MASTER_CF = "master.cf"
 MASTER_CF_TMPL = "postfix_master_cf.tmpl"
+POSTFIX_SPOOL_DIR = "/var/spool/postfix"
 
 DOVECOT_NAME = "dovecot"
 DOVECOT_PORTS = (ops.Port("tcp", 465), ops.Port("tcp", 587))
@@ -64,7 +65,6 @@ DOVECOT_USERS_FILEPATH = Path("/etc/dovecot/users")
 
 TELEGRAF_CONF_SRC = FILES_DIRPATH / "telegraf.conf"
 TELEGRAF_CONF_DST = Path("/var/snap/telegraf/current/telegraf.conf")
-
 
 LOG_ROTATE_SYSLOG = Path("/etc/logrotate.d/rsyslog")
 RSYSLOG_CONF_SRC = FILES_DIRPATH / "50-default.conf"
@@ -103,25 +103,32 @@ class PostfixRelayCharm(ops.CharmBase):
         self.unit.status = ops.MaintenanceStatus("Installing packages")
         apt.add_package(APT_PACKAGES, update_cache=True)
 
-        try:
-            telegraf_snap = cast(snap.Snap, snap.add(["telegraf"]))
-            TELEGRAF_CONF_DST.touch()
-            utils.write_file(TELEGRAF_CONF_SRC.read_text(), TELEGRAF_CONF_DST)
-            spool = "/var/spool/postfix"
-            # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/postfix/README.md#permissions
-            cmd = ["setfacl", "-Rm", f"g:{SNAP_GROUP}:rX", spool]
-            subprocess.call(cmd)
-            cmd = ["setfacl", "-dm", f"g:{SNAP_GROUP}:rX", spool]
-            subprocess.call(cmd)
-            telegraf_snap.restart()
-        except snap.SnapError as e:
-            logger.error("An exception occurred when installing snaps. Reason: %s", e.message)
+        self._install_telegraf()
 
         utils.copy_file(RSYSLOG_CONF_SRC, RSYSLOG_CONF_DST, perms=0o644)
         contents = utils.update_logrotate_conf(LOG_ROTATE_SYSLOG)
         utils.write_file(contents, LOG_ROTATE_SYSLOG)
 
         self.unit.status = ops.WaitingStatus()
+
+    def _install_telegraf(self) -> None:
+        """Install telegraf."""
+        try:
+            telegraf_snap = cast(snap.Snap, snap.add(["telegraf"]))
+            TELEGRAF_CONF_DST.touch()
+            utils.write_file(TELEGRAF_CONF_SRC.read_text(), TELEGRAF_CONF_DST)
+            # It is necessary to set permissions for the telegraf process to access
+            # the queue directory.
+            # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/postfix/README.md#permissions
+            sef_acl_cmd = ["setfacl", "-Rm", f"g:{SNAP_GROUP}:rX", POSTFIX_SPOOL_DIR]
+            sef_default_acl_cmd = ["setfacl", "-dm", f"g:{SNAP_GROUP}:rX", POSTFIX_SPOOL_DIR]
+            for cmd in (sef_acl_cmd, sef_default_acl_cmd):
+                subprocess.check_call(cmd, timeout=5)  # nosec
+            telegraf_snap.restart()
+        except snap.SnapError:
+            logger.exception("An exception occurred when installing Telegraf snap")
+        except subprocess.SubprocessError:
+            logger.exception("Error setting ACL commands for Telegraf")
 
     def _reconcile(self, _: ops.EventBase) -> None:
         self.unit.status = ops.MaintenanceStatus("Reconciling SMTP relay")

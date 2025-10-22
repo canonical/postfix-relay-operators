@@ -3,7 +3,7 @@
 
 ---
 groups:
-  - name: is/smtp-relay
+  - name: postfix-relay
     rules:
       - alert: SMTPRelayPostfixMasterProcess
         expr: procstat_lookup_running{pattern="/usr/lib/postfix/sbin/master"} == 0
