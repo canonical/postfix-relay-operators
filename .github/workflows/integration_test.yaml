@@ -18,3 +18,4 @@ jobs:
       working-directory: ./${{ matrix.charm }}-operator
       identifier: ${{ matrix.charm }}
       pre-run-script: ./postfix-relay-operator/tests/integration/mailcatcher-installation.sh
+      tmate-debug: true
