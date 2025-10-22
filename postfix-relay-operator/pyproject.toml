@@ -49,8 +49,6 @@ disable = [
     "import-error",
     "missing-function-docstring",
     "too-many-locals",
-    "wrong-import-order",
-    "wrong-import-position",
 ]
 
 [tool.pytest.ini_options]
