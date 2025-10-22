@@ -641,7 +641,7 @@
             "uid": "${prometheusds}"
           },
           "exemplar": true,
-          "expr": "sum by(juju_demol, juju_unit, queue, host) (postfix_queue_age{host=~\"$juju_smtp_relay_unit\",juju_application=~\"$juju_application\",juju_model=~\"$juju_model\",juju_model_uuid=~\"$juju_model_uuid\",juju_unit=~\"$juju_unit\"})",
+          "expr": "sum by(juju_model, juju_unit, queue, host) (postfix_queue_age{host=~\"$juju_smtp_relay_unit\",juju_application=~\"$juju_application\",juju_model=~\"$juju_model\",juju_model_uuid=~\"$juju_model_uuid\",juju_unit=~\"$juju_unit\"})",
           "interval": "",
           "legendFormat": " {{host}} {{queue}}",
           "refId": "A"
