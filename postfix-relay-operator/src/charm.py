@@ -11,10 +11,11 @@ import shutil
 import socket
 import subprocess  # nosec
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import ops
-from charmlibs import apt
+from charmlibs import apt, snap
+from charms.grafana_agent.v0.cos_agent import COSAgentProvider
 from charms.operator_libs_linux.v1 import systemd
 
 import postfix
@@ -30,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 APT_PACKAGES = [
+    "acl",
     "dovecot-core",
     "inotify-tools",
     "postfix",
@@ -38,6 +40,7 @@ APT_PACKAGES = [
 
 TEMPLATES_DIRPATH = Path("templates")
 FILES_DIRPATH = Path("files")
+COS_DIRPATH = Path("cos")
 
 POSTFIX_NAME = "postfix"
 POSTFIX_PORT = ops.Port("tcp", 25)
@@ -49,6 +52,7 @@ MAIN_CF = "main.cf"
 MAIN_CF_TMPL = "postfix_main_cf.tmpl"
 MASTER_CF = "master.cf"
 MASTER_CF_TMPL = "postfix_master_cf.tmpl"
+POSTFIX_SPOOL_DIR = "/var/spool/postfix"
 
 DOVECOT_NAME = "dovecot"
 DOVECOT_PORTS = (ops.Port("tcp", 465), ops.Port("tcp", 587))
@@ -57,8 +61,14 @@ DOVECOT_USERS_FILEPATH = Path("/etc/dovecot/users")
 
 INOTIFY_SERVICE_NAME = "inotify-config-change"
 
+TELEGRAF_CONF_SRC = FILES_DIRPATH / "telegraf.conf"
+TELEGRAF_CONF_DST = Path("/var/snap/telegraf/current/telegraf.conf")
+
+
 MILTER_RELATION_NAME = "milter"
 PEER_RELATION_NAME = "peer"
+
+SNAP_GROUP = "snap_daemon"
 
 
 class ReconcileEvent(ops.EventBase):
@@ -74,7 +84,17 @@ class PostfixRelayCharm(ops.CharmBase):
 
         self.on.define_event("reconcile", ReconcileEvent)
 
+        self._grafana_agent = COSAgentProvider(
+            self,
+            metrics_endpoints=[
+                {"path": "/metrics", "port": 9103},
+            ],
+            dashboard_dirs=[COS_DIRPATH / "grafana_dashboards"],
+            metrics_rules_dir=COS_DIRPATH / "prometheus_alert_rules",
+            logs_rules_dir=COS_DIRPATH / "loki_alert_rules",
+        )
         self.framework.observe(self.on.install, self._on_install)
+        self.framework.observe(self.on.upgrade_charm, self._on_install)
         self.framework.observe(self.on.config_changed, self._reconcile)
         self.framework.observe(self.on.reconcile, self._reconcile)
         self.framework.observe(self.on[PEER_RELATION_NAME].relation_changed, self._reconcile)
@@ -90,7 +110,29 @@ class PostfixRelayCharm(ops.CharmBase):
         )
         utils.write_file(contents, "/etc/systemd/system/inotify-config-change.sh", perms=555)
         systemd.service_start(INOTIFY_SERVICE_NAME)
+
+        self._install_telegraf()
+
         self.unit.status = ops.WaitingStatus()
+
+    def _install_telegraf(self) -> None:
+        """Install telegraf."""
+        try:
+            telegraf_snap = cast(snap.Snap, snap.add(["telegraf"]))
+            TELEGRAF_CONF_DST.touch()
+            utils.write_file(TELEGRAF_CONF_SRC.read_text(), TELEGRAF_CONF_DST)
+            # It is necessary to set permissions for the telegraf process to access
+            # the queue directory.
+            # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/postfix/README.md#permissions
+            set_acl_cmd = ["setfacl", "-Rm", f"g:{SNAP_GROUP}:rX", POSTFIX_SPOOL_DIR]
+            set_default_acl_cmd = ["setfacl", "-dm", f"g:{SNAP_GROUP}:rX", POSTFIX_SPOOL_DIR]
+            for cmd in (set_acl_cmd, set_default_acl_cmd):
+                subprocess.check_call(cmd, timeout=5)  # nosec
+            telegraf_snap.restart()
+        except snap.SnapError:
+            logger.exception("An exception occurred when installing Telegraf snap")
+        except subprocess.SubprocessError:
+            logger.exception("Error setting ACL commands for Telegraf")
 
     def _reconcile(self, _: ops.EventBase) -> None:
         self.unit.status = ops.MaintenanceStatus("Reconciling SMTP relay")
