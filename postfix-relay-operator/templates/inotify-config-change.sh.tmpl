@@ -1,15 +1,7 @@
 #!/bin/bash
 
-lock=/tmp/inofity.lock
 # The script is copied into the charm and executed as a service
 # shellcheck disable=SC2034
 inotifywait -mr /etc/postfix --exclude /etc/postfix/header_checks --exclude /etc/postfix/main.cf --exclude /etc/postfix/master.cf --exclude /etc/postfix/smtp_header_checks --exclude /etc/postfix/tls_policy -e close_write -e create -e delete -e move --format '%w%f %e' | while read -r file event; do
-    : >> $lock #create a file if it doesn't exist
-    {
-    flock 3 -n -E 0  # Lock file by filedescriptor. Return 0 if the lock has been acquired.
-    sleep 1
-    # variable will be set by Juju
-    # shellcheck disable=SC2154
-    } 3<$lock
     juju-exec {{unit_name}} JUJU_DISPATCH_PATH='hooks/config-changed' ./dispatch
 done
