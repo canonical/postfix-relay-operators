@@ -119,7 +119,6 @@ class PostfixRelayCharm(ops.CharmBase):
         """Install telegraf."""
         try:
             telegraf_snap = cast(snap.Snap, snap.add(["telegraf"]))
-            TELEGRAF_CONF_DST.touch()
             utils.write_file(TELEGRAF_CONF_SRC.read_text(), TELEGRAF_CONF_DST)
             # It is necessary to set permissions for the telegraf process to access
             # the queue directory.

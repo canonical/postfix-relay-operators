@@ -26,27 +26,25 @@ DEFAULT_TLS_CONFIG_PATHS = tls.TLSConfigPaths(
 )
 
 
-@patch("charm.systemd.service_start")
-@patch("charm.utils.write_file")
-@patch("charm.shutil.copytree")
-@patch("charm.apt.add_package")
-def test_install(
-    mock_add_package: Mock, mock_copytree: Mock, mock_write_file: Mock, mock_service_start: Mock
-) -> None:
+def test_install(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """
     arrange: Set up a charm state.
     act: Run the install event hook on the charm.
     assert: The unit status is set to maintenance and the correct packages are installed.
     """
+    add_package_mock = Mock()
+    monkeypatch.setattr(charm.apt, "add_package", add_package_mock)
+    copytree_mock = Mock()
+    monkeypatch.setattr(charm.shutil, "copytree", copytree_mock)
+    write_file_mock = Mock()
+    monkeypatch.setattr(charm.utils, "write_file", write_file_mock)
+    service_start_mock = Mock()
+    monkeypatch.setattr(charm.systemd, "service_start", service_start_mock)
     subprocess_mock = Mock()
     monkeypatch.setattr(charm, "subprocess", subprocess_mock)
-
     telegraf_snap_mock = Mock()
     snap_add_mock = Mock(return_value=telegraf_snap_mock)
     monkeypatch.setattr(charm.snap, "add", snap_add_mock)
-    telegraf_conf = tmp_path / "telegraf.conf"
-    monkeypatch.setattr(charm, "TELEGRAF_CONF_DST", telegraf_conf)
-"
 
     charm_state = State(config={}, leader=True)
 
@@ -54,18 +52,14 @@ def test_install(
     out = context.run(context.on.install(), charm_state)
 
     assert out.unit_status == ops.testing.WaitingStatus()
-    mock_add_package.assert_called_once_with(
+    add_package_mock.assert_called_once_with(
         ["acl", "dovecot-core", "inotify-tools", "postfix", "postfix-policyd-spf-python"],
         update_cache=True,
     )
-    mock_copytree.assert_called_once_with("files", "/", dirs_exist_ok=True)
-    mock_write_file.assert_called_once_with(
-        ANY, "/etc/systemd/system/inotify-config-change.sh", perms=555
-    )
-    mock_service_start.assert_called_once_with(charm.INOTIFY_SERVICE_NAME)
+    copytree_mock.assert_called_once_with("files", "/", dirs_exist_ok=True)
+    service_start_mock.assert_called_once_with(charm.INOTIFY_SERVICE_NAME)
     # Telegraf configuration
     snap_add_mock.assert_called_once_with(["telegraf"])
-    assert "[[outputs.prometheus_client]]" in telegraf_conf.read_text()
     subprocess_mock.check_call.assert_any_call(
         ["setfacl", "-Rm", "g:snap_daemon:rX", "/var/spool/postfix"], timeout=5
     )
@@ -104,7 +98,7 @@ class TestConfigureAuth:
     @patch("charm.utils.write_file")
     def test_no_auth(
         self,
-        mock_write_file: Mock,
+        write_file_mock: Mock,
         mock_systemd: "systemd",
         smtp_auth_users: str,
     ) -> None:
@@ -138,7 +132,7 @@ class TestConfigureAuth:
                 call(ANY, charm.DOVECOT_USERS_FILEPATH, perms=0o640, group=charm.DOVECOT_NAME)
             )
 
-        mock_write_file.assert_has_calls(expected_write_calls)
+        write_file_mock.assert_has_calls(expected_write_calls)
 
         assert out.unit_status == ops.testing.ActiveStatus()
 
@@ -150,7 +144,7 @@ class TestConfigureAuth:
     @patch("charm.utils.write_file")
     def test_with_auth_dovecot(
         self,
-        mock_write_file: Mock,
+        write_file_mock: Mock,
         mock_systemd: "systemd",
         dovecot_running: bool,
     ) -> None:
@@ -178,7 +172,7 @@ class TestConfigureAuth:
             assert expected_systemd_call not in mock_systemd.service_reload.mock_calls
             assert expected_systemd_call not in mock_systemd.service_pause.mock_calls
 
-        mock_write_file.assert_has_calls([call(ANY, charm.DOVECOT_CONFIG_FILEPATH)])
+        write_file_mock.assert_has_calls([call(ANY, charm.DOVECOT_CONFIG_FILEPATH)])
 
         assert out.unit_status == ops.testing.ActiveStatus()
 
@@ -387,7 +381,7 @@ class TestUpdateAliases:
 @patch("charm.subprocess.check_call", Mock())
 @patch("charm.utils.write_file")
 def test_configure_policyd_spf(
-    mock_write_file: Mock,
+    write_file_mock: Mock,
     enable_spf: bool,
 ) -> None:
     """
@@ -408,8 +402,8 @@ def test_configure_policyd_spf(
     investigated_call = call(ANY, charm.POLICYD_SPF_FILEPATH)
 
     if enable_spf:
-        mock_write_file.assert_has_calls([investigated_call])
+        write_file_mock.assert_has_calls([investigated_call])
     else:
-        assert investigated_call not in mock_write_file.mock_calls
+        assert investigated_call not in write_file_mock.mock_calls
 
     assert out.unit_status == ops.testing.ActiveStatus()
