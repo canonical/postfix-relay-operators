@@ -41,15 +41,22 @@ def _smtpd_relay_restrictions(charm_state: State) -> list[str]:
     return smtpd_relay_restrictions
 
 
-def _smtpd_sender_restrictions(charm_state: State) -> list[str]:
-    smtpd_sender_restrictions = []
-    if charm_state.enable_reject_unknown_sender_domain:
-        smtpd_sender_restrictions.append("reject_unknown_sender_domain")
-    smtpd_sender_restrictions.append("check_sender_access hash:/etc/postfix/access")
-    if charm_state.restrict_sender_access:
-        smtpd_sender_restrictions.append("reject")
+def smtpd_sender_restrictions(charm_state: State) -> list[str]:
+    """Generate the smtpd_sender_restrictions.
 
-    return smtpd_sender_restrictions
+    Args:
+        charm_state: the charm state.
+
+    Returns: the list of restrictions.
+    """
+    restrictions = []
+    if charm_state.enable_reject_unknown_sender_domain:
+        restrictions.append("reject_unknown_sender_domain")
+    restrictions.append("check_sender_access hash:/etc/postfix/access")
+    if charm_state.restrict_sender_access:
+        restrictions.append("reject")
+
+    return restrictions
 
 
 def _smtpd_recipient_restrictions(charm_state: State) -> list[str]:
@@ -114,7 +121,7 @@ def construct_postfix_config_params(  # pylint: disable=too-many-arguments
         "smtp_header_checks": bool(charm_state.smtp_header_checks),
         "smtpd_recipient_restrictions": ", ".join(_smtpd_recipient_restrictions(charm_state)),
         "smtpd_relay_restrictions": ", ".join(_smtpd_relay_restrictions(charm_state)),
-        "smtpd_sender_restrictions": ", ".join(_smtpd_sender_restrictions(charm_state)),
+        "smtpd_sender_restrictions": ", ".join(smtpd_sender_restrictions(charm_state)),
         "tls_cert_key": tls_cert_key_path,
         "tls_cert": tls_cert_path,
         "tls_key": tls_key_path,
@@ -176,6 +183,11 @@ def build_postfix_maps(charm_state: State) -> dict[str, PostfixMap]:
             PostfixLookupTableType.REGEXP,
             "header_checks",
             ";".join(charm_state.header_checks),
+        ),
+        "sender_access": _create_map(
+            PostfixLookupTableType.HASH,
+            "access",
+            "\n".join([f"{domain:35} OK" for domain in charm_state.restrict_sender_access]),
         ),
         "smtp_header_checks": _create_map(
             PostfixLookupTableType.REGEXP,

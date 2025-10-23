@@ -134,7 +134,6 @@ class PostfixRelayCharm(ops.CharmBase):
                 relay_access_sources=postfix.fetch_relay_access_sources(),
                 relay_recipient_maps=postfix.fetch_relay_recipient_maps(),
                 restrict_recipients=postfix.fetch_restrict_recipients(),
-                restrict_sender_access=postfix.fetch_sender_access(),
                 restrict_senders=postfix.fetch_restrict_senders(),
                 sender_login_maps=postfix.fetch_sender_login_maps(),
                 transport_maps=postfix.fetch_transport_maps(),

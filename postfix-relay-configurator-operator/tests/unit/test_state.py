@@ -28,10 +28,6 @@ def test_state():
         """,
         "restrict_recipients": "mydomain.local: OK",
         "restrict_senders": "mydomain.local: REJECT",
-        "restrict_sender_access": """
-            - canonical.com
-            - ubuntu.com
-        """,
         "sender_login_maps": """
             group@example.com: group
             group2@example.com: group2
@@ -62,9 +58,6 @@ def test_state():
         key: state.AccessMapValue(value) for key, value in restrict_sender_raw.items()
     }
     assert charm_state.restrict_senders == restrict_senders
-    assert charm_state.restrict_sender_access == yaml.safe_load(
-        cast("str", charm_config["restrict_sender_access"])
-    )
     assert charm_state.sender_login_maps == yaml.safe_load(
         cast("str", charm_config["sender_login_maps"])
     )
@@ -87,7 +80,6 @@ def test_state_defaults():
     assert charm_state.relay_access_sources == {}
     assert charm_state.restrict_recipients == {}
     assert charm_state.restrict_senders == {}
-    assert charm_state.restrict_sender_access == []
     assert charm_state.sender_login_maps == {}
     assert charm_state.transport_maps == {}
     assert charm_state.virtual_alias_maps == {}

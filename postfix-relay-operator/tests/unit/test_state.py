@@ -36,6 +36,10 @@ def test_state():
         "enable_spf": True,
         "enable_smtp_auth": False,
         "header_checks": "- /^Received:/ HOLD",
+        "restrict_sender_access": """
+            - canonical.com
+            - ubuntu.com
+        """,
         "relay_domains": """
             - domain.example.com
             - domain2.example.com
@@ -77,7 +81,6 @@ def test_state():
     restrict_recipients = {"mydomain.local": "OK"}
     restrict_senders = {"mydomain.local": "REJECT"}
     relay_recipient_maps = {"noreply@mydomain.local": "noreply@mydomain.local"}
-    restrict_sender_access = ["canonical.com", "ubuntu.com"]
     sender_login_maps = {
         "group@example.com": "group",
         "group2@example.com": "group2",
@@ -96,7 +99,6 @@ def test_state():
         restrict_recipients=restrict_recipients,
         restrict_senders=restrict_senders,
         relay_recipient_maps=relay_recipient_maps,
-        restrict_sender_access=restrict_sender_access,
         sender_login_maps=sender_login_maps,
         transport_maps=transport_maps,
         virtual_alias_maps=virtual_alias_maps,
@@ -129,7 +131,7 @@ def test_state():
     assert charm_state.restrict_senders == {
         key: state.AccessMapValue(value) for key, value in restrict_senders.items()
     }
-    assert charm_state.restrict_sender_access == restrict_sender_access
+    assert charm_state.restrict_sender_access == ["canonical.com", "ubuntu.com"]
     assert charm_state.sender_login_maps == sender_login_maps
     assert charm_state.smtp_auth_users == yaml.safe_load(
         cast("str", charm_config["smtp_auth_users"])
@@ -195,7 +197,6 @@ def test_state_defaults():
         restrict_recipients={},
         restrict_senders={},
         relay_recipient_maps={},
-        restrict_sender_access=[],
         sender_login_maps={},
         transport_maps={},
         virtual_alias_maps={},
@@ -280,7 +281,6 @@ def test_state_with_invalid_admin_email():
             restrict_recipients={},
             restrict_senders={},
             relay_recipient_maps={},
-            restrict_sender_access=[],
             sender_login_maps={},
             transport_maps={},
             virtual_alias_maps={},
@@ -326,7 +326,6 @@ def test_state_with_invalid_allowed_relay_networks():
             restrict_recipients={},
             restrict_senders={},
             relay_recipient_maps={},
-            restrict_sender_access=[],
             sender_login_maps={},
             transport_maps={},
             virtual_alias_maps={},
@@ -371,7 +370,6 @@ def test_state_with_invalid_connection_limit():
             restrict_recipients={},
             restrict_senders={},
             relay_recipient_maps={},
-            restrict_sender_access=[],
             sender_login_maps={},
             transport_maps={},
             virtual_alias_maps={},
@@ -417,7 +415,6 @@ def test_state_with_invalid_restrict_recipients():
             restrict_recipients={},
             restrict_senders={},
             relay_recipient_maps={},
-            restrict_sender_access=[],
             sender_login_maps={},
             transport_maps={},
             virtual_alias_maps={},
@@ -463,7 +460,6 @@ def test_state_with_invalid_restrict_senders():
             restrict_recipients={},
             restrict_senders={},
             relay_recipient_maps={},
-            restrict_sender_access=[],
             sender_login_maps={},
             transport_maps={},
             virtual_alias_maps={},
@@ -509,7 +505,6 @@ def test_state_with_invalid_spf_skip_addresses():
             restrict_recipients={},
             restrict_senders={},
             relay_recipient_maps={},
-            restrict_sender_access=[],
             sender_login_maps={},
             transport_maps={},
             virtual_alias_maps={},
@@ -554,7 +549,6 @@ def test_state_with_invalid_tls_ciphers():
             restrict_recipients={},
             restrict_senders={},
             relay_recipient_maps={},
-            restrict_sender_access=[],
             sender_login_maps={},
             transport_maps={},
             virtual_alias_maps={},
@@ -599,7 +593,6 @@ def test_state_with_invalid_tls_security_level():
             restrict_recipients={},
             restrict_senders={},
             relay_recipient_maps={},
-            restrict_sender_access=[],
             sender_login_maps={},
             transport_maps={},
             virtual_alias_maps={},
@@ -644,7 +637,6 @@ def test_state_with_invalid_virtual_alias_maps_type():
             restrict_recipients={},
             restrict_senders={},
             relay_recipient_maps={},
-            restrict_sender_access=[],
             sender_login_maps={},
             transport_maps={},
             virtual_alias_maps={},

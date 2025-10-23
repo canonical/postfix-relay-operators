@@ -63,10 +63,6 @@ config:
     restrict_senders:
       type: string
       description: YAML map for restrictions by sender address or domain.
-    restrict_sender_access:
-      type: string
-      description: |
-        YAML list of domains, addresses, or hosts senders to restrict relay from.
     sender_login_maps:
       type: string
       description: |

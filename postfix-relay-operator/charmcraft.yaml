@@ -125,6 +125,10 @@ config:
     relay_host:
       type: string
       description: SMTP relay host (or smart host) to forward mail to.
+    restrict_sender_access:
+      type: string
+      description: |
+        YAML list of domains, addresses, or hosts senders to restrict relay from.
     smtp_auth_users:
       type: string
       description: |

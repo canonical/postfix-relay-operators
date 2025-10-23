@@ -9,8 +9,7 @@ from enum import Enum
 from typing import Any
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError
-from typing_extensions import Annotated
+from pydantic import BaseModel, ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +104,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         restrict_recipients: Access map for restrictions by recipient address or domain.
         restrict_senders: Access map for restrictions by sender address or domain.
         relay_recipient_maps: Map that alias mail addresses or domains to addresses.
-        restrict_sender_access: List of domains, addresses or hosts to restrict relay from.
         sender_login_maps: List of authenticated users that can send mail.
         transport_maps: Map from recipient address to message delivery transport
             or next-hop destination.
@@ -117,7 +115,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     restrict_recipients: dict[str, AccessMapValue]
     restrict_senders: dict[str, AccessMapValue]
     relay_recipient_maps: dict[str, str]
-    restrict_sender_access: list[Annotated[str, Field(min_length=1)]]
     sender_login_maps: dict[str, str]
     transport_maps: dict[str, str]
     virtual_alias_maps: dict[str, str]
@@ -138,7 +135,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         try:
             relay_access_sources = _parse_access_map(config.get("relay_access_sources"))
             relay_recipient_maps = _parse_map(config.get("relay_recipient_maps"))
-            restrict_sender_access = _parse_list(config.get("restrict_sender_access"))
             restrict_recipients = _parse_access_map(config.get("restrict_recipients"))
             restrict_senders = _parse_access_map(config.get("restrict_senders"))
             sender_login_maps = _parse_map(config.get("sender_login_maps"))
@@ -150,7 +146,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
                 relay_recipient_maps=relay_recipient_maps,
                 restrict_recipients=restrict_recipients,
                 restrict_senders=restrict_senders,
-                restrict_sender_access=restrict_sender_access,
                 sender_login_maps=sender_login_maps,
                 transport_maps=transport_maps,
                 virtual_alias_maps=virtual_alias_maps,

@@ -73,11 +73,6 @@ def build_postfix_maps(charm_state: State) -> dict[str, PostfixMap]:
                 [f"{key} {value.value}" for key, value in charm_state.restrict_senders.items()]
             ),
         ),
-        "sender_access": _create_map(
-            PostfixLookupTableType.HASH,
-            "access",
-            "\n".join([f"{domain:35} OK" for domain in charm_state.restrict_sender_access]),
-        ),
         "sender_login_maps": _create_map(
             PostfixLookupTableType.HASH,
             "sender_login",

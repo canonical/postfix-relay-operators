@@ -215,7 +215,6 @@ class State(
         restrict_recipients: dict[str, AccessMapValue],
         restrict_senders: dict[str, AccessMapValue],
         relay_recipient_maps: dict[str, str],
-        restrict_sender_access: list[str],
         sender_login_maps: dict[str, str],
         transport_maps: dict[str, str],
         virtual_alias_maps: dict[str, str],
@@ -228,7 +227,6 @@ class State(
             restrict_recipients: Access map for restrictions by recipient address or domain.
             restrict_senders: Access map for restrictions by sender address or domain.
             relay_recipient_maps: Map that alias mail addresses or domains to addresses.
-            restrict_sender_access: List of domains, addresses or hosts to restrict relay from.
             sender_login_maps: List of authenticated users that can send mail.
             transport_maps: Map from recipient address to message delivery transport
                 or next-hop destination.
@@ -269,7 +267,7 @@ class State(
                 relay_recipient_maps=relay_recipient_maps,
                 restrict_recipients=restrict_recipients,
                 restrict_senders=restrict_senders,
-                restrict_sender_access=restrict_sender_access,
+                restrict_sender_access=_parse_list(config.get("restrict_sender_access")),
                 sender_login_maps=sender_login_maps,
                 smtp_auth_users=_parse_list(config.get("smtp_auth_users")),
                 smtp_header_checks=_parse_list(config.get("smtp_header_checks")),

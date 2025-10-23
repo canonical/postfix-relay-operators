@@ -19,7 +19,6 @@ def test_build_postfix_maps_returns_correct_data() -> None:
         "relay_recipient_maps": "user@example.com: OK",
         "restrict_recipients": "bad@example.com: REJECT",
         "restrict_senders": "spammer@example.com: REJECT",
-        "restrict_sender_access": "- unwanted.com",
         "sender_login_maps": "sender@example.com: user@example.com",
         "transport_maps": "domain.com: smtp:relay.example.com",
         "virtual_alias_maps": "alias@example.com: real@example.com",
@@ -46,11 +45,6 @@ def test_build_postfix_maps_returns_correct_data() -> None:
             type=state.PostfixLookupTableType.HASH,
             path=postfix.POSTFIX_CONF_DIRPATH / "restricted_senders",
             content="spammer@example.com REJECT\n",
-        ),
-        "sender_access": postfix.PostfixMap(
-            type=state.PostfixLookupTableType.HASH,
-            path=postfix.POSTFIX_CONF_DIRPATH / "access",
-            content=f"{'unwanted.com':35} OK\n",
         ),
         "sender_login_maps": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,

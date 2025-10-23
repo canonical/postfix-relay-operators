@@ -124,7 +124,6 @@ def test_smtpd_relay_restrictions(
         restrict_recipients={},
         restrict_senders=restrict_senders,
         relay_recipient_maps={},
-        restrict_sender_access=[],
         sender_login_maps=sender_login_maps,
         transport_maps={},
         virtual_alias_maps={},
@@ -144,13 +143,13 @@ def test_smtpd_relay_restrictions(
     [
         pytest.param(
             False,
-            [],
+            None,
             ["check_sender_access hash:/etc/postfix/access"],
             id="neither_enabled",
         ),
         pytest.param(
             True,
-            [],
+            None,
             [
                 "reject_unknown_sender_domain",
                 "check_sender_access hash:/etc/postfix/access",
@@ -159,13 +158,16 @@ def test_smtpd_relay_restrictions(
         ),
         pytest.param(
             False,
-            ["example.com"],
-            ["check_sender_access hash:/etc/postfix/access", "reject"],
+            "- example.com",
+            [
+                "check_sender_access hash:/etc/postfix/access",
+                "reject",
+            ],
             id="restrict_access_enabled",
         ),
         pytest.param(
             True,
-            ["example.com"],
+            "- example.com",
             [
                 "reject_unknown_sender_domain",
                 "check_sender_access hash:/etc/postfix/access",
@@ -177,7 +179,7 @@ def test_smtpd_relay_restrictions(
 )
 def test_smtpd_sender_restrictions(
     enable_reject_unknown_sender: bool,
-    restrict_sender_access: list[str],
+    restrict_sender_access: str,
     expected: list[str],
 ) -> None:
     """
@@ -190,9 +192,10 @@ def test_smtpd_sender_restrictions(
         "connection_limit": 100,
         "domain": "example.domain.com",
         "enable_rate_limits": False,
-        "enable_reject_unknown_sender_domain": True,
+        "enable_reject_unknown_sender_domain": enable_reject_unknown_sender,
         "enable_spf": False,
         "enable_smtp_auth": True,
+        "restrict_sender_access": restrict_sender_access,
         "virtual_alias_maps_type": "hash",
     }
     charm_state = state.State.from_charm(
@@ -201,15 +204,12 @@ def test_smtpd_sender_restrictions(
         restrict_recipients={},
         restrict_senders={},
         relay_recipient_maps={},
-        restrict_sender_access=restrict_sender_access,
         sender_login_maps={},
         transport_maps={},
         virtual_alias_maps={},
     )
-    charm_state.enable_reject_unknown_sender_domain = enable_reject_unknown_sender
-    charm_state.restrict_sender_access = restrict_sender_access
 
-    result = postfix._smtpd_sender_restrictions(charm_state)
+    result = postfix.smtpd_sender_restrictions(charm_state)
 
     assert result == expected
 
@@ -300,7 +300,6 @@ def test_smtpd_recipient_restrictions(
         restrict_recipients={},
         restrict_senders=restrict_senders,
         relay_recipient_maps={},
-        restrict_sender_access=[],
         sender_login_maps={},
         transport_maps={},
         virtual_alias_maps={},
@@ -343,6 +342,7 @@ def test_build_postfix_maps_returns_correct_data() -> None:
     charm_config = {
         # Values directly used by the function under test
         "header_checks": "- '/^Subject:/ WARN'",
+        "restrict_sender_access": "- unwanted.com",
         "smtp_header_checks": "- '/^Received:/ IGNORE'",
         "tls_policy_maps": "example.com: secure",
         "virtual_alias_maps_type": "hash",
@@ -361,7 +361,6 @@ def test_build_postfix_maps_returns_correct_data() -> None:
         restrict_recipients={},
         restrict_senders={},
         relay_recipient_maps={},
-        restrict_sender_access=[],
         sender_login_maps={},
         transport_maps={},
         virtual_alias_maps={},
@@ -372,6 +371,11 @@ def test_build_postfix_maps_returns_correct_data() -> None:
             type=state.PostfixLookupTableType.REGEXP,
             path=postfix.POSTFIX_CONF_DIRPATH / "header_checks",
             content="/^Subject:/ WARN\n",
+        ),
+        "sender_access": postfix.PostfixMap(
+            type=state.PostfixLookupTableType.HASH,
+            path=postfix.POSTFIX_CONF_DIRPATH / "access",
+            content=f"{'unwanted.com':35} OK\n",
         ),
         "smtp_header_checks": postfix.PostfixMap(
             type=state.PostfixLookupTableType.REGEXP,
