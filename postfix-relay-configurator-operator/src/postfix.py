@@ -26,17 +26,7 @@ class PostfixMap(NamedTuple):
     content: str
 
 
-def build_postfix_maps(charm_state: State) -> dict[str, PostfixMap]:
-    """Ensure various postfix files exist and are up-to-date with the current charm state.
-
-    Args:
-        charm_state: current charm state.
-
-    Returns:
-        A dictionary mapping map names to the generated PostfixMap objects.
-    """
-
-    def _create_map(type_: str | PostfixLookupTableType, name: str, content: str) -> PostfixMap:
+def _create_map(type_: str | PostfixLookupTableType, name: str, content: str) -> PostfixMap:
         type_ = (
             type_ if isinstance(type_, PostfixLookupTableType) else PostfixLookupTableType(type_)
         )
@@ -46,6 +36,16 @@ def build_postfix_maps(charm_state: State) -> dict[str, PostfixMap]:
             content=f"{utils.JUJU_HEADER}\n{content}\n",
         )
 
+
+def build_postfix_maps(charm_state: State) -> dict[str, PostfixMap]:
+    """Ensure various postfix files exist and are up-to-date with the current charm state.
+
+    Args:
+        charm_state: current charm state.
+
+    Returns:
+        A dictionary mapping map names to the generated PostfixMap objects.
+    """
     # Create a map of all the maps we may need to create/update from the charm state.
     maps = {
         "relay_access_sources": _create_map(

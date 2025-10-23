@@ -15,12 +15,12 @@ def test_write_file():
     act: write in a file.
     assert: the file content matches what was intended.
     """
-    source = "# User-provided config added here"
-    tmpdir = tempfile.mkdtemp(prefix="charm-unittests-")
-    dest = os.path.join(tmpdir, "my-test-file")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        source = "# User-provided config added here"
+        dest = os.path.join(tmpdir, "my-test-file")
 
-    utils.write_file(source, dest)
+        utils.write_file(source, dest)
 
-    with open(dest, "r", encoding="utf-8") as f:
-        got = f.read()
-    assert got == source
+        with open(dest, "r", encoding="utf-8") as f:
+            got = f.read()
+        assert got == source
