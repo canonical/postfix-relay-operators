@@ -3,16 +3,13 @@
 
 """Dovecot Service Layer."""
 
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import utils
 
-if TYPE_CHECKING:
-    from pathlib import Path
-
 
 def construct_dovecot_config_file_content(
-    dovecot_users_path: "str | Path", enable_smtp_auth: bool
+    dovecot_users_path: str | Path, enable_smtp_auth: bool
 ) -> str:
     """Prepare the context and render the dovecot.conf file content.
 
@@ -24,8 +21,6 @@ def construct_dovecot_config_file_content(
         str: The rendered content of the `dovecot.conf` file.
     """
     context = {
-        "JUJU_HEADER": utils.JUJU_HEADER,
-        # TODO: Allow overriding passdb driver.
         "passdb_driver": "passwd-file",
         "passdb_args": f"scheme=CRYPT username_format=%u {dovecot_users_path}",
         # We need to use /var/spool/postfix/private/auth because
@@ -45,4 +40,4 @@ def construct_dovecot_user_file_content(smtp_auth_users: list[str]) -> str:
     Returns:
         str: The formatted content for the Dovecot users file.
     """
-    return utils.JUJU_HEADER + "\n".join(smtp_auth_users) + "\n"
+    return "\n".join(smtp_auth_users) + "\n"

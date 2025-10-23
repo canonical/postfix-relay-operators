@@ -43,16 +43,6 @@ namespace_packages = true
 disallow_untyped_defs = false
 module = "tests.*"
 
-[tool.pylint]
-disable = [
-    "fixme",
-    "import-error",
-    "missing-function-docstring",
-    "too-many-locals",
-    "wrong-import-order",
-    "wrong-import-position",
-]
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 log_cli_level = "INFO"
