@@ -10,6 +10,11 @@ import utils
 
 
 def test_write_file():
+    """
+    arrange: do nothing.
+    act: write in a file.
+    assert: the file content matches what was intended.
+    """
     source = "# User-provided config added here"
     tmpdir = tempfile.mkdtemp(prefix="charm-unittests-")
     dest = os.path.join(tmpdir, "my-test-file")
