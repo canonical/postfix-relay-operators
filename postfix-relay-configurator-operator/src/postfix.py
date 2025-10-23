@@ -27,14 +27,14 @@ class PostfixMap(NamedTuple):
 
 
 def _create_map(type_: str | PostfixLookupTableType, name: str, content: str) -> PostfixMap:
-        type_ = (
-            type_ if isinstance(type_, PostfixLookupTableType) else PostfixLookupTableType(type_)
-        )
-        return PostfixMap(
-            type=type_,
-            path=POSTFIX_CONF_DIRPATH / name,
-            content=f"{utils.JUJU_HEADER}\n{content}\n",
-        )
+    type_ = (
+        type_ if isinstance(type_, PostfixLookupTableType) else PostfixLookupTableType(type_)
+    )
+    return PostfixMap(
+        type=type_,
+        path=POSTFIX_CONF_DIRPATH / name,
+        content=f"{utils.JUJU_HEADER}\n{content}\n",
+    )
 
 
 def build_postfix_maps(charm_state: State) -> dict[str, PostfixMap]:
