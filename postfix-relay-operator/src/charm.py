@@ -10,10 +10,11 @@ import logging
 import socket
 import subprocess  # nosec
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import ops
-from charmlibs import apt
+from charmlibs import apt, snap
+from charms.grafana_agent.v0.cos_agent import COSAgentProvider
 from charms.operator_libs_linux.v1 import systemd
 
 import utils
@@ -34,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 APT_PACKAGES = [
+    "acl",
     "dovecot-core",
     "postfix",
     "postfix-policyd-spf-python",
@@ -41,6 +43,7 @@ APT_PACKAGES = [
 
 TEMPLATES_DIRPATH = Path("templates")
 FILES_DIRPATH = Path("files")
+COS_DIRPATH = Path("cos")
 
 POSTFIX_NAME = "postfix"
 POSTFIX_PORT = ops.Port("tcp", 25)
@@ -53,11 +56,15 @@ MAIN_CF = "main.cf"
 MAIN_CF_TMPL = "postfix_main_cf.tmpl"
 MASTER_CF = "master.cf"
 MASTER_CF_TMPL = "postfix_master_cf.tmpl"
+POSTFIX_SPOOL_DIR = "/var/spool/postfix"
 
 DOVECOT_NAME = "dovecot"
 DOVECOT_PORTS = (ops.Port("tcp", 465), ops.Port("tcp", 587))
 DOVECOT_CONFIG_FILEPATH = Path("/etc/dovecot/dovecot.conf")
 DOVECOT_USERS_FILEPATH = Path("/etc/dovecot/users")
+
+TELEGRAF_CONF_SRC = FILES_DIRPATH / "telegraf.conf"
+TELEGRAF_CONF_DST = Path("/var/snap/telegraf/current/telegraf.conf")
 
 LOG_ROTATE_SYSLOG = Path("/etc/logrotate.d/rsyslog")
 RSYSLOG_CONF_SRC = FILES_DIRPATH / "50-default.conf"
@@ -65,6 +72,8 @@ RSYSLOG_CONF_DST = Path("/etc/rsyslog.d/50-default.conf")
 
 MILTER_RELATION_NAME = "milter"
 PEER_RELATION_NAME = "peer"
+
+SNAP_GROUP = "snap_daemon"
 
 
 class PostfixRelayCharm(ops.CharmBase):
@@ -74,7 +83,17 @@ class PostfixRelayCharm(ops.CharmBase):
         """Postfix Relay."""
         super().__init__(*args)
 
+        self._grafana_agent = COSAgentProvider(
+            self,
+            metrics_endpoints=[
+                {"path": "/metrics", "port": 9103},
+            ],
+            dashboard_dirs=[COS_DIRPATH / "grafana_dashboards"],
+            metrics_rules_dir=COS_DIRPATH / "prometheus_alert_rules",
+            logs_rules_dir=COS_DIRPATH / "loki_alert_rules",
+        )
         self.framework.observe(self.on.install, self._on_install)
+        self.framework.observe(self.on.upgrade_charm, self._on_install)
         self.framework.observe(self.on.config_changed, self._reconcile)
         self.framework.observe(self.on[PEER_RELATION_NAME].relation_changed, self._reconcile)
         self.framework.observe(self.on[MILTER_RELATION_NAME].relation_changed, self._reconcile)
@@ -84,11 +103,32 @@ class PostfixRelayCharm(ops.CharmBase):
         self.unit.status = ops.MaintenanceStatus("Installing packages")
         apt.add_package(APT_PACKAGES, update_cache=True)
 
+        self._install_telegraf()
+
         utils.copy_file(RSYSLOG_CONF_SRC, RSYSLOG_CONF_DST, perms=0o644)
         contents = utils.update_logrotate_conf(LOG_ROTATE_SYSLOG)
         utils.write_file(contents, LOG_ROTATE_SYSLOG)
 
         self.unit.status = ops.WaitingStatus()
+
+    def _install_telegraf(self) -> None:
+        """Install telegraf."""
+        try:
+            telegraf_snap = cast(snap.Snap, snap.add(["telegraf"]))
+            TELEGRAF_CONF_DST.touch()
+            utils.write_file(TELEGRAF_CONF_SRC.read_text(), TELEGRAF_CONF_DST)
+            # It is necessary to set permissions for the telegraf process to access
+            # the queue directory.
+            # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/postfix/README.md#permissions
+            set_acl_cmd = ["setfacl", "-Rm", f"g:{SNAP_GROUP}:rX", POSTFIX_SPOOL_DIR]
+            set_default_acl_cmd = ["setfacl", "-dm", f"g:{SNAP_GROUP}:rX", POSTFIX_SPOOL_DIR]
+            for cmd in (set_acl_cmd, set_default_acl_cmd):
+                subprocess.check_call(cmd, timeout=5)  # nosec
+            telegraf_snap.restart()
+        except snap.SnapError:
+            logger.exception("An exception occurred when installing Telegraf snap")
+        except subprocess.SubprocessError:
+            logger.exception("Error setting ACL commands for Telegraf")
 
     def _reconcile(self, _: ops.EventBase) -> None:
         self.unit.status = ops.MaintenanceStatus("Reconciling SMTP relay")
