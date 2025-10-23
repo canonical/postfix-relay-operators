@@ -71,18 +71,12 @@ PEER_RELATION_NAME = "peer"
 SNAP_GROUP = "snap_daemon"
 
 
-class ReconcileEvent(ops.EventBase):
-    """Event representing a preconcile event."""
-
-
 class PostfixRelayCharm(ops.CharmBase):
     """Postfix Relay."""
 
     def __init__(self, *args: Any) -> None:
         """Postfix Relay."""
         super().__init__(*args)
-
-        self.on.define_event("reconcile", ReconcileEvent)
 
         self._grafana_agent = COSAgentProvider(
             self,
@@ -96,7 +90,6 @@ class PostfixRelayCharm(ops.CharmBase):
         self.framework.observe(self.on.install, self._on_install)
         self.framework.observe(self.on.upgrade_charm, self._on_install)
         self.framework.observe(self.on.config_changed, self._reconcile)
-        self.framework.observe(self.on.reconcile, self._reconcile)
         self.framework.observe(self.on[PEER_RELATION_NAME].relation_changed, self._reconcile)
         self.framework.observe(self.on[MILTER_RELATION_NAME].relation_changed, self._reconcile)
 
