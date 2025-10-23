@@ -248,15 +248,6 @@ class State(
             additional_smtpd_recipient_restrictions = _parse_list(
                 config.get("additional_smtpd_recipient_restrictions")
             )
-            header_checks = _parse_list(config.get("header_checks"))
-            relay_domains = _parse_list(config.get("relay_domains"))
-            spf_skip_addresses = _parse_list(config.get("spf_skip_addresses"))
-            tls_exclude_ciphers = _parse_list(config.get("tls_exclude_ciphers"))
-            tls_policy_maps = _parse_map(config.get("tls_policy_maps"))
-            tls_protocols = _parse_list(config.get("tls_protocols"))
-            virtual_alias_domains = _parse_list(config.get("virtual_alias_domains"))
-            smtp_auth_users = _parse_list(config.get("smtp_auth_users"))
-            smtp_header_checks = _parse_list(config.get("smtp_header_checks"))
 
             return cls(
                 additional_smtpd_recipient_restrictions=additional_smtpd_recipient_restrictions,
@@ -271,33 +262,35 @@ class State(
                 ),  # type: ignore[arg-type]
                 enable_smtp_auth=config.get("enable_smtp_auth"),  # type: ignore[arg-type]
                 enable_spf=config.get("enable_spf"),  # type: ignore[arg-type]
-                header_checks=header_checks,
+                header_checks=_parse_list(config.get("header_checks")),
                 relay_access_sources=relay_access_sources,
-                relay_domains=relay_domains,
+                relay_domains=_parse_list(config.get("relay_domains")),
                 relay_host=config.get("relay_host"),
                 relay_recipient_maps=relay_recipient_maps,
                 restrict_recipients=restrict_recipients,
                 restrict_senders=restrict_senders,
                 restrict_sender_access=restrict_sender_access,
                 sender_login_maps=sender_login_maps,
-                smtp_auth_users=smtp_auth_users,
-                smtp_header_checks=smtp_header_checks,
-                spf_skip_addresses=spf_skip_addresses,  # type: ignore[arg-type]
+                smtp_auth_users=_parse_list(config.get("smtp_auth_users")),
+                smtp_header_checks=_parse_list(config.get("smtp_header_checks")),
+                spf_skip_addresses=_parse_list(
+                    config.get("spf_skip_addresses")
+                ),  # type: ignore[arg-type]
                 tls_ciphers=(
                     SmtpTlsCipherGrade(config.get("tls_ciphers"))
                     if config.get("tls_ciphers")
                     else None
                 ),
-                tls_exclude_ciphers=tls_exclude_ciphers,
-                tls_policy_maps=tls_policy_maps,
-                tls_protocols=tls_protocols,
+                tls_exclude_ciphers=_parse_list(config.get("tls_exclude_ciphers")),
+                tls_policy_maps=_parse_map(config.get("tls_policy_maps")),
+                tls_protocols=_parse_list(config.get("tls_protocols")),
                 tls_security_level=(
                     SmtpTlsSecurityLevel(config.get("tls_security_level"))
                     if config.get("tls_security_level")
                     else None
                 ),
                 transport_maps=transport_maps,
-                virtual_alias_domains=virtual_alias_domains,
+                virtual_alias_domains=_parse_list(config.get("virtual_alias_domains")),
                 virtual_alias_maps=virtual_alias_maps,
                 virtual_alias_maps_type=PostfixLookupTableType(
                     config.get("virtual_alias_maps_type")

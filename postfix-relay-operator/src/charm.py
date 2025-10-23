@@ -255,7 +255,7 @@ class PostfixRelayCharm(ops.CharmBase):
         return sorted(peers)
 
     def _get_milters(self) -> str:
-        # TODO: We'll bring up a balancer in front of the list of
+        # We could bring up a balancer in front of the list of
         # backend/related milters but for now, let's just map 1-to-1 and
         # try spread depending on how many available units.
 

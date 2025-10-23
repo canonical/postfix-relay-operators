@@ -22,7 +22,6 @@ def construct_dovecot_config_file_content(
     """
     context = {
         "JUJU_HEADER": utils.JUJU_HEADER,
-        # TODO: Allow overriding passdb driver.
         "passdb_driver": "passwd-file",
         "passdb_args": f"scheme=CRYPT username_format=%u {dovecot_users_path}",
         # We need to use /var/spool/postfix/private/auth because
