@@ -15,7 +15,7 @@ jobs:
       self-hosted-runner-label: "edge"
       juju-channel: 3/stable
       provider: 'lxd'
-      working-directory: ./${{ matrix.charm }}-operator
+      working-directory: ./${{ matrix.charm }}-operator/
       identifier: ${{ matrix.charm }}
       pre-run-script: ./postfix-relay-operator/tests/integration/mailcatcher-installation.sh
   allure-report:
