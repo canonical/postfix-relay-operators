@@ -227,7 +227,7 @@ class PostfixRelayCharm(ops.CharmBase):
             utils.write_file(postfix_map.content, postfix_map.path)
         for map_file in postfix.POSTFIX_MAP_FILES:
             if Path(map_file).exists():
-                subprocess.check_call(["postmap", map_file])  # nosec
+                subprocess.check_call(["postmap", f"hash:{map_file}"])  # nosec
 
     @staticmethod
     def _calculate_offset(seed: str, length: int = 2) -> int:

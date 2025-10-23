@@ -13,14 +13,14 @@ from state import AccessMapValue, PostfixLookupTableType, State
 
 POSTFIX_CONF_DIRPATH = Path("/etc/postfix")
 POSTFIX_MAP_FILES = [
-    "hash:/etc/postfix/relay_recipient",
-    "hash:/etc/postfix/restricted_recipients",
-    "hash:/etc/postfix/restricted_senders",
-    "hash:/etc/postfix/access",
-    "hash:/etc/postfix/sender_login",
-    "hash:/etc/postfix/tls_policy",
-    "hash:/etc/postfix/transport_maps",
-    "hash:/etc/postfix/virtual_alias",
+    "/etc/postfix/relay_recipient",
+    "/etc/postfix/restricted_recipients",
+    "/etc/postfix/restricted_senders",
+    "/etc/postfix/access",
+    "/etc/postfix/sender_login",
+    "/etc/postfix/tls_policy",
+    "/etc/postfix/transport_maps",
+    "/etc/postfix/virtual_alias",
 ]
 
 
