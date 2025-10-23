@@ -7,9 +7,9 @@ inotifywait -mr /etc/postfix --exclude /etc/postfix/header_checks --exclude /etc
     : >> $lock #create a file if it doesn't exist
     {
     flock 3 -n -E 0  # Lock file by filedescriptor. Return 0 if lock
-    sleep 5
+    sleep 1
     # variable will be set by Juju
     # shellcheck disable=SC2154
-    juju-exec {{unit_name}} JUJU_DISPATCH_PATH='hooks/config-changed' ./dispatch
     } 3<$lock
+    juju-exec {{unit_name}} JUJU_DISPATCH_PATH='hooks/config-changed' ./dispatch
 done
