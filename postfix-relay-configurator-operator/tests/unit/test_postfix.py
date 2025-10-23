@@ -5,7 +5,6 @@
 
 import postfix
 import state
-import utils
 
 
 def test_build_postfix_maps_returns_correct_data() -> None:
@@ -31,42 +30,42 @@ def test_build_postfix_maps_returns_correct_data() -> None:
         "relay_access_sources": postfix.PostfixMap(
             type=state.PostfixLookupTableType.CIDR,
             path=postfix.POSTFIX_CONF_DIRPATH / "relay_access",
-            content=f"{utils.JUJU_HEADER}\n192.168.1.0/24 OK\n",
+            content="192.168.1.0/24 OK\n",
         ),
         "relay_recipient_maps": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,
             path=postfix.POSTFIX_CONF_DIRPATH / "relay_recipient",
-            content=f"{utils.JUJU_HEADER}\nuser@example.com OK\n",
+            content="user@example.com OK\n",
         ),
         "restrict_recipients": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,
             path=postfix.POSTFIX_CONF_DIRPATH / "restricted_recipients",
-            content=f"{utils.JUJU_HEADER}\nbad@example.com REJECT\n",
+            content="bad@example.com REJECT\n",
         ),
         "restrict_senders": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,
             path=postfix.POSTFIX_CONF_DIRPATH / "restricted_senders",
-            content=f"{utils.JUJU_HEADER}\nspammer@example.com REJECT\n",
+            content="spammer@example.com REJECT\n",
         ),
         "sender_access": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,
             path=postfix.POSTFIX_CONF_DIRPATH / "access",
-            content=f"{utils.JUJU_HEADER}\n{'unwanted.com':35} OK\n",
+            content=f"{'unwanted.com':35} OK\n",
         ),
         "sender_login_maps": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,
             path=postfix.POSTFIX_CONF_DIRPATH / "sender_login",
-            content=f"{utils.JUJU_HEADER}\nsender@example.com user@example.com\n",
+            content="sender@example.com user@example.com\n",
         ),
         "transport_maps": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,
             path=postfix.POSTFIX_CONF_DIRPATH / "transport",
-            content=f"{utils.JUJU_HEADER}\ndomain.com smtp:relay.example.com\n",
+            content="domain.com smtp:relay.example.com\n",
         ),
         "virtual_alias_maps": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,
             path=postfix.POSTFIX_CONF_DIRPATH / "virtual_alias",
-            content=f"{utils.JUJU_HEADER}\nalias@example.com real@example.com\n",
+            content="alias@example.com real@example.com\n",
         ),
     }
 

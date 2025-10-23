@@ -10,7 +10,6 @@ import pytest
 
 import postfix
 import state
-import utils
 
 
 @pytest.mark.parametrize(
@@ -372,17 +371,17 @@ def test_build_postfix_maps_returns_correct_data() -> None:
         "header_checks": postfix.PostfixMap(
             type=state.PostfixLookupTableType.REGEXP,
             path=postfix.POSTFIX_CONF_DIRPATH / "header_checks",
-            content=f"{utils.JUJU_HEADER}\n/^Subject:/ WARN\n",
+            content="/^Subject:/ WARN\n",
         ),
         "smtp_header_checks": postfix.PostfixMap(
             type=state.PostfixLookupTableType.REGEXP,
             path=postfix.POSTFIX_CONF_DIRPATH / "smtp_header_checks",
-            content=f"{utils.JUJU_HEADER}\n/^Received:/ IGNORE\n",
+            content="/^Received:/ IGNORE\n",
         ),
         "tls_policy_maps": postfix.PostfixMap(
             type=state.PostfixLookupTableType.HASH,
             path=postfix.POSTFIX_CONF_DIRPATH / "tls_policy",
-            content=f"{utils.JUJU_HEADER}\nexample.com secure\n",
+            content="example.com secure\n",
         ),
     }
 

@@ -6,7 +6,6 @@
 from pathlib import Path
 from typing import NamedTuple
 
-import utils
 from state import PostfixLookupTableType, State
 
 POSTFIX_CONF_DIRPATH = Path("/etc/postfix")
@@ -27,13 +26,11 @@ class PostfixMap(NamedTuple):
 
 
 def _create_map(type_: str | PostfixLookupTableType, name: str, content: str) -> PostfixMap:
-    type_ = (
-        type_ if isinstance(type_, PostfixLookupTableType) else PostfixLookupTableType(type_)
-    )
+    type_ = type_ if isinstance(type_, PostfixLookupTableType) else PostfixLookupTableType(type_)
     return PostfixMap(
         type=type_,
         path=POSTFIX_CONF_DIRPATH / name,
-        content=f"{utils.JUJU_HEADER}\n{content}\n",
+        content=f"{content}\n",
     )
 
 

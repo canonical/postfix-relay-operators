@@ -98,7 +98,6 @@ def construct_postfix_config_params(  # pylint: disable=too-many-arguments
         str: The context for remndering Postfix configuration file content.
     """
     return {
-        "JUJU_HEADER": utils.JUJU_HEADER,
         "fqdn": fqdn,
         "hostname": hostname,
         "connection_limit": charm_state.connection_limit,
@@ -154,14 +153,13 @@ class PostfixMap(NamedTuple):
 
 
 def _create_map(type_: str | PostfixLookupTableType, name: str, content: str) -> PostfixMap:
-    type_ = (
-        type_ if isinstance(type_, PostfixLookupTableType) else PostfixLookupTableType(type_)
-    )
+    type_ = type_ if isinstance(type_, PostfixLookupTableType) else PostfixLookupTableType(type_)
     return PostfixMap(
         type=type_,
         path=POSTFIX_CONF_DIRPATH / name,
-        content=f"{utils.JUJU_HEADER}\n{content}\n",
+        content=f"{content}\n",
     )
+
 
 def build_postfix_maps(charm_state: State) -> dict[str, PostfixMap]:
     """Ensure various postfix files exist and are up-to-date with the current charm state.
@@ -204,7 +202,6 @@ def construct_policyd_spf_config_file_content(spf_skip_addresses: "list[IPvAnyNe
         str: The rendered configuration file content for policyd-spf.
     """
     context = {
-        "JUJU_HEADER": utils.JUJU_HEADER,
         "skip_addresses": ",".join([str(address) for address in spf_skip_addresses]),
     }
     return utils.render_jinja2_template(context, "templates/policyd_spf_conf.tmpl")

@@ -9,8 +9,6 @@ import pwd
 import shutil
 from pathlib import Path
 
-JUJU_HEADER = "# This file is Juju managed - do not edit by hand #\n\n"
-
 
 def write_file(
     content: str,

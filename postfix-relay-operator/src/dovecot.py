@@ -21,7 +21,6 @@ def construct_dovecot_config_file_content(
         str: The rendered content of the `dovecot.conf` file.
     """
     context = {
-        "JUJU_HEADER": utils.JUJU_HEADER,
         "passdb_driver": "passwd-file",
         "passdb_args": f"scheme=CRYPT username_format=%u {dovecot_users_path}",
         # We need to use /var/spool/postfix/private/auth because
@@ -41,4 +40,4 @@ def construct_dovecot_user_file_content(smtp_auth_users: list[str]) -> str:
     Returns:
         str: The formatted content for the Dovecot users file.
     """
-    return utils.JUJU_HEADER + "\n".join(smtp_auth_users) + "\n"
+    return "\n".join(smtp_auth_users) + "\n"
