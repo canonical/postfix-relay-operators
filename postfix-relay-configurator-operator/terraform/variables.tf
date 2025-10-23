@@ -47,9 +47,3 @@ variable "storage" {
   type        = map(string)
   default     = {}
 }
-
-variable "units" {
-  description = "Number of units to deploy"
-  type        = number
-  default     = 1
-}

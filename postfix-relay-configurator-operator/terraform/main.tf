@@ -14,6 +14,6 @@ resource "juju_application" "postfix_relay_configurator" {
 
   config             = var.config
   constraints        = var.constraints
-  units              = var.units
+  units              = 0
   storage_directives = var.storage
 }
