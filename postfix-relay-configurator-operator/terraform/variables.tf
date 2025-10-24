@@ -4,7 +4,7 @@
 variable "app_name" {
   description = "Name of the application in the Juju model."
   type        = string
-  default     = "postifx-relay"
+  default     = "postifx-relay-configurator"
 }
 
 variable "base" {
@@ -16,11 +16,11 @@ variable "base" {
 variable "channel" {
   description = "The channel to use when deploying a charm."
   type        = string
-  default     = "3/stable"
+  default     = "latest/stable"
 }
 
 variable "config" {
-  description = "Application config. Details about available options can be found at https://charmhub.io/postfix-relay/configurations."
+  description = "Application config. Details about available options can be found at https://charmhub.io/postfix-relay-configurator/configurations."
   type        = map(string)
   default     = {}
 }
@@ -46,10 +46,4 @@ variable "storage" {
   description = "Map of storage used by the application."
   type        = map(string)
   default     = {}
-}
-
-variable "units" {
-  description = "Number of units to deploy"
-  type        = number
-  default     = 1
 }

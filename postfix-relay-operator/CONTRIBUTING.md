@@ -7,7 +7,7 @@
 This document explains the processes and practices recommended for contributing enhancements to the Postfix relay operator.
 
 - Generally, before developing enhancements to this charm, you should consider [opening an issue
-  ](https://github.com/canonical/postfix-relay-operator/issues) explaining your use case.
+  ](https://github.com/canonical/postfix-relay-operators/issues) explaining your use case.
 - If you would like to chat with us about your use-cases or proposed implementation, you can reach
   us at [Canonical Matrix public channel](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
   or [Discourse](https://discourse.charmhub.io/).
@@ -24,7 +24,7 @@ This document explains the processes and practices recommended for contributing 
 The code for this charm can be downloaded as follows:
 
 ```
-git clone https://github.com/canonical/postfix-relay-operator
+git clone https://github.com/canonical/postfix-relay-operators
 ```
 
 You can use the environments created by `tox` for development:
@@ -60,7 +60,7 @@ juju add-model postfix-relay-dev
 # Enable DEBUG logging
 juju model-config logging-config="<root>=INFO;unit=DEBUG"
 # Deploy the charm (assuming you're on amd64)
-juju deploy ./smtp_relay_ubuntu-24.04-amd64.charm
+juju deploy ./postfix_relay_ubuntu-24.04-amd64.charm
 ```
 
 ## Canonical contributor agreement

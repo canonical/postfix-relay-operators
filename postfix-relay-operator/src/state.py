@@ -119,19 +119,6 @@ def _parse_map(raw_map: str | None) -> dict[str, str]:
     return yaml.safe_load(raw_map) if raw_map else {}
 
 
-def _parse_access_map(raw_map: str | None) -> dict[str, AccessMapValue]:
-    """Parse access map input.
-
-    Args:
-        raw_map: the raw map content.
-
-    Returns:
-        the parsed map.
-    """
-    parsed_map = _parse_map(raw_map)
-    return {key: AccessMapValue(value) for key, value in parsed_map.items()}
-
-
 def _parse_list(raw_list: str | None) -> list[str]:
     """Parse list input.
 
@@ -144,7 +131,9 @@ def _parse_list(raw_list: str | None) -> list[str]:
     return yaml.safe_load(raw_list) if raw_list else []
 
 
-class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-instance-attributes
+class State(
+    BaseModel
+):  # pylint: disable=too-few-public-methods,too-many-arguments,too-many-instance-attributes,too-many-positional-arguments
     """The Postfix Relay operator charm state.
 
     Attributes:
@@ -159,7 +148,7 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
         enable_smtp_auth: If SMTP authentication is enabled.
         enable_spf: If SPF checks are enabled.
         header_checks: Header checks to perform on inbound email.
-        relay_access_sources: List of  entries to restrict access based on CIDR source.
+        relay_access_sources: Map of entries to restrict access based on CIDR source.
         relay_domains: List of destination domains to relay mail to.
         restrict_recipients: Access map for restrictions by recipient address or domain.
         restrict_senders: Access map for restrictions by sender address or domain.
@@ -196,7 +185,7 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     enable_smtp_auth: bool
     enable_spf: bool
     header_checks: list[str]
-    relay_access_sources: list[str]
+    relay_access_sources: dict[str, AccessMapValue]
     relay_domains: list[Annotated[str, Field(min_length=1)]]
     restrict_recipients: dict[str, AccessMapValue]
     restrict_senders: dict[str, AccessMapValue]
@@ -219,11 +208,30 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
     connection_limit: int = Field(ge=0)
 
     @classmethod
-    def from_charm(cls, config: Mapping[str, Any]) -> "State":
+    def from_charm(
+        cls,
+        config: Mapping[str, Any],
+        relay_access_sources: dict[str, AccessMapValue],
+        restrict_recipients: dict[str, AccessMapValue],
+        restrict_senders: dict[str, AccessMapValue],
+        relay_recipient_maps: dict[str, str],
+        sender_login_maps: dict[str, str],
+        transport_maps: dict[str, str],
+        virtual_alias_maps: dict[str, str],
+    ) -> "State":
         """Initialize the state from charm.
 
         Args:
             config: the charm configuration.
+            relay_access_sources: Map of entries to restrict access based on CIDR source.
+            restrict_recipients: Access map for restrictions by recipient address or domain.
+            restrict_senders: Access map for restrictions by sender address or domain.
+            relay_recipient_maps: Map that alias mail addresses or domains to addresses.
+            sender_login_maps: List of authenticated users that can send mail.
+            transport_maps: Map from recipient address to message delivery transport
+                or next-hop destination.
+            virtual_alias_maps: Map of aliases of mail addresses or domains to other local or
+                remote addresses.
 
         Returns:
             Current charm state.
@@ -238,23 +246,6 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
             additional_smtpd_recipient_restrictions = _parse_list(
                 config.get("additional_smtpd_recipient_restrictions")
             )
-            header_checks = _parse_list(config.get("header_checks"))
-            relay_access_sources = _parse_list(config.get("relay_access_sources"))
-            relay_domains = _parse_list(config.get("relay_domains"))
-            relay_recipient_maps = _parse_map(config.get("relay_recipient_maps"))
-            restrict_sender_access = _parse_list(config.get("restrict_sender_access"))
-            spf_skip_addresses = _parse_list(config.get("spf_skip_addresses"))
-            tls_exclude_ciphers = _parse_list(config.get("tls_exclude_ciphers"))
-            tls_policy_maps = _parse_map(config.get("tls_policy_maps"))
-            tls_protocols = _parse_list(config.get("tls_protocols"))
-            virtual_alias_domains = _parse_list(config.get("virtual_alias_domains"))
-            restrict_recipients = _parse_access_map(config.get("restrict_recipients"))
-            restrict_senders = _parse_access_map(config.get("restrict_senders"))
-            sender_login_maps = _parse_map(config.get("sender_login_maps"))
-            smtp_auth_users = _parse_list(config.get("smtp_auth_users"))
-            smtp_header_checks = _parse_list(config.get("smtp_header_checks"))
-            transport_maps = _parse_map(config.get("transport_maps"))
-            virtual_alias_maps = _parse_map(config.get("virtual_alias_maps"))
 
             return cls(
                 additional_smtpd_recipient_restrictions=additional_smtpd_recipient_restrictions,
@@ -269,33 +260,35 @@ class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-insta
                 ),  # type: ignore[arg-type]
                 enable_smtp_auth=config.get("enable_smtp_auth"),  # type: ignore[arg-type]
                 enable_spf=config.get("enable_spf"),  # type: ignore[arg-type]
-                header_checks=header_checks,
+                header_checks=_parse_list(config.get("header_checks")),
                 relay_access_sources=relay_access_sources,
-                relay_domains=relay_domains,
+                relay_domains=_parse_list(config.get("relay_domains")),
                 relay_host=config.get("relay_host"),
                 relay_recipient_maps=relay_recipient_maps,
                 restrict_recipients=restrict_recipients,
                 restrict_senders=restrict_senders,
-                restrict_sender_access=restrict_sender_access,
+                restrict_sender_access=_parse_list(config.get("restrict_sender_access")),
                 sender_login_maps=sender_login_maps,
-                smtp_auth_users=smtp_auth_users,
-                smtp_header_checks=smtp_header_checks,
-                spf_skip_addresses=spf_skip_addresses,  # type: ignore[arg-type]
+                smtp_auth_users=_parse_list(config.get("smtp_auth_users")),
+                smtp_header_checks=_parse_list(config.get("smtp_header_checks")),
+                spf_skip_addresses=_parse_list(
+                    config.get("spf_skip_addresses")
+                ),  # type: ignore[arg-type]
                 tls_ciphers=(
                     SmtpTlsCipherGrade(config.get("tls_ciphers"))
                     if config.get("tls_ciphers")
                     else None
                 ),
-                tls_exclude_ciphers=tls_exclude_ciphers,
-                tls_policy_maps=tls_policy_maps,
-                tls_protocols=tls_protocols,
+                tls_exclude_ciphers=_parse_list(config.get("tls_exclude_ciphers")),
+                tls_policy_maps=_parse_map(config.get("tls_policy_maps")),
+                tls_protocols=_parse_list(config.get("tls_protocols")),
                 tls_security_level=(
                     SmtpTlsSecurityLevel(config.get("tls_security_level"))
                     if config.get("tls_security_level")
                     else None
                 ),
                 transport_maps=transport_maps,
-                virtual_alias_domains=virtual_alias_domains,
+                virtual_alias_domains=_parse_list(config.get("virtual_alias_domains")),
                 virtual_alias_maps=virtual_alias_maps,
                 virtual_alias_maps_type=PostfixLookupTableType(
                     config.get("virtual_alias_maps_type")

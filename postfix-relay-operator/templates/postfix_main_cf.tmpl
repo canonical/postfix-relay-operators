@@ -1,4 +1,3 @@
-#{{JUJU_HEADER}}
 smtpd_banner = $myhostname ESMTP $mail_name (Ubuntu)
 biff = no
 
@@ -43,9 +42,7 @@ smtp_tls_CApath = /etc/ssl/certs
 smtp_tls_loglevel = 1
 smtp_tls_security_level = may
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
-{%- if enable_tls_policy_map %}
 smtp_tls_policy_maps = hash:/etc/postfix/tls_policy
-{%- endif %}
 
 message_size_limit = 50000000
 strict_rfc821_envelopes = yes
@@ -99,12 +96,8 @@ non_smtpd_milters = {{milter}}
 policyd-spf_time_limit = 3600s
 {% endif -%}
 
-{%- if header_checks %}
 header_checks = regexp:/etc/postfix/header_checks
-{% endif -%}
-{%- if smtp_header_checks %}
 smtp_header_checks = regexp:/etc/postfix/smtp_header_checks
-{% endif -%}
 
 {%- if virtual_alias_domains %}
 virtual_alias_domains = {{virtual_alias_domains}}
@@ -114,13 +107,11 @@ relay_domains = {{relay_domains}}
 {% endif %}
 
 {%- if transport_maps %}
-transport_maps = hash:/etc/postfix/transport
+transport_maps = hash:/etc/postfix/transport_maps
 {% endif %}
 {%- if virtual_alias_maps -%}
 virtual_alias_maps = {{virtual_alias_maps_type}}:/etc/postfix/virtual_alias
 {% endif %}
-{%- if relay_recipient_maps_combined -%}
-relay_recipient_maps = ${virtual_alias_maps}, ${transport_maps}
-{% elif relay_recipient_maps %}
+{% if relay_recipient_maps %}
 relay_recipient_maps = hash:/etc/postfix/relay_recipient
 {% endif %}
