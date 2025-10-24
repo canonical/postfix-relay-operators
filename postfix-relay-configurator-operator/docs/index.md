@@ -1,7 +1,7 @@
 # Postfix relay configurator operator
 
 A [Juju](https://juju.is/) [charm](https://documentation.ubuntu.com/juju/3.6/reference/charm/)
-deploying and managing a configurator charm for the Postifx relay charm.
+deploying and managing a configurator charm for the Postfix relay charm.
 
 For information about how to deploy, integrate, and manage this charm, see the Official [Postfix relay Operator Documentation](https://charmhub.io/postfix-relay/docs).
 
