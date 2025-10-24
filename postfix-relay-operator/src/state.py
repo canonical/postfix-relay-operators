@@ -134,7 +134,7 @@ def _parse_list(raw_list: str | None) -> list[str]:
 class State(
     BaseModel
 ):  # pylint: disable=too-few-public-methods,too-many-arguments,too-many-instance-attributes,too-many-positional-arguments
-    """The Postfix Relay operator charm state.
+    """The Postfix relay operator charm state.
 
     Attributes:
         additional_smtpd_recipient_restrictions: List of additional recipient restrictions.

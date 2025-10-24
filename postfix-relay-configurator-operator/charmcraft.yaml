@@ -3,9 +3,9 @@
 
 type: "charm"
 name: postfix-relay-configurator
-title: Postfix Relay Configurator
+title: Postfix relay Configurator
 subordinate: true
-summary: Subordinate charm for configuring the Postfix Relay charm
+summary: Subordinate charm for configuring the Postfix relay charm
 links:
   issues: https://github.com/canonical/postfix-relay-operators/issues
   source: https://github.com/canonical/postfix-relay-operators
@@ -13,7 +13,7 @@ links:
   documentation: https://discourse.charmhub.io/t/postfix-relay-configurator-documentation-overview/19017
 
 description: |
-  Installs the configuration files for the Postfix Relay charm for
+  Installs the configuration files for the Postfix relay charm for
   specific user, hosts, or networks.
 
 base: ubuntu@24.04

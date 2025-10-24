@@ -1,5 +1,5 @@
 # Configurations
 
-See [Configurations](link to configurations page).
+See [Configurations](https://charmhub.io/postfix-relay-configurator/configurations).
 
-> Read more about configurations in the Juju docs: [Configuration](https://documentation.ubuntu.com/juju/latest/user/reference/configuration/)
+> Read more about configurations in the Juju docs: [Configuration](https://juju.is/docs/juju/configuration).

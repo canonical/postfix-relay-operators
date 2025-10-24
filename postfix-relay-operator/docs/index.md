@@ -14,9 +14,8 @@ Features include (not limited to):
 - restrict sender address per user
 - fine-tune TLS settings
 - set up limits (rate, size, connections, ...)
-- set up Nagios monitoring
 
-For information about how to deploy, integrate, and manage this charm, see the Official [postfix-relay Operator Documentation](https://charmhub.io/postfix-relay/docs).
+For information about how to deploy, integrate, and manage this charm, see the Official [Postfix relay Operator Documentation](https://charmhub.io/postfix-relay/docs).
 
 ## In this documentation
 
@@ -40,7 +39,7 @@ The Postfix relay Operator is a member of the Ubuntu family. It's an open-source
 - [Code of conduct](https://ubuntu.com/community/code-of-conduct)
 - [Get support](https://discourse.charmhub.io/)
 - [Join our online chat](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
-- [Contribute](https://github.com/canonical/postfix-relay-operators/blob/main/CONTRIBUTING.md)
+- [Contribute](https://github.com/canonical/postfix-relay-operators/postfix-relay-operator/blob/main/CONTRIBUTING.md)
 
 Thinking about using the Postfix relay Operator for your next project? [Get in touch](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)!
 
@@ -58,3 +57,5 @@ Thinking about using the Postfix relay Operator for your next project? [Get in t
 1. [Explanation](explanation)
    1. [Charm architecture](explanation/charm-architecture.md)
    1. [Security](explanation/security.md) 
+1. [Tutorial](tutorial)
+  1. [Deploy the Postfix relay charm for the first time](tutorial/getting-started.md)

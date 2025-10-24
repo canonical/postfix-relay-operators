@@ -1,7 +1,7 @@
 # Deploy the Wazuh Server charm for the first time
 
 ## What you’ll do
-- Deploy the Postfix Relay charm.
+- Deploy the Postfix relay charm.
 
 ## Requirements
 
@@ -25,9 +25,9 @@ your usual work, create a new model using the following command.
 juju add-model postfix-relay-tutorial
 ```
 
-## Deploy the Postfix Relay charm
+## Deploy the Postfix relay charm
 
-The Postfix Relay charm is standalone and doesn't require any other charm.
+The Postfix relay charm is standalone and doesn't require any other charm.
 
 ### Deploy and integrate the charms
 

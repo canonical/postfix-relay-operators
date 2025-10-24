@@ -97,7 +97,7 @@ def _parse_list(raw_list: str | None) -> list[str]:
 
 
 class State(BaseModel):  # pylint: disable=too-few-public-methods,too-many-instance-attributes
-    """The Postfix Relay operator charm state.
+    """The Postfix relay operator charm state.
 
     Attributes:
         relay_access_sources: Map of entries to restrict access based on CIDR source.
