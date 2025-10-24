@@ -1,0 +1,1 @@
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model jubilant-9bb36932 --format json
