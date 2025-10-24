@@ -3,7 +3,7 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Postfix Relay charm."""
+"""Postfix relay charm."""
 
 import hashlib
 import logging
@@ -72,10 +72,10 @@ SNAP_GROUP = "snap_daemon"
 
 
 class PostfixRelayCharm(ops.CharmBase):
-    """Postfix Relay."""
+    """Postfix relay."""
 
     def __init__(self, *args: Any) -> None:
-        """Postfix Relay."""
+        """Postfix relay."""
         super().__init__(*args)
 
         self._grafana_agent = COSAgentProvider(

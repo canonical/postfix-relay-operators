@@ -1,7 +1,7 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Unit tests for the Postfix Relay charm."""
+"""Unit tests for the Postfix relay charm."""
 
 from unittest.mock import Mock, patch
 

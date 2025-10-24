@@ -3,7 +3,7 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Postfix Relay Configurator charm."""
+"""Postfix relay Configurator charm."""
 
 import logging
 from typing import Any
@@ -18,10 +18,10 @@ logger = logging.getLogger(__name__)
 
 
 class PostfixRelayConfiguratorCharm(ops.CharmBase):
-    """Postfix Relay Configurator."""
+    """Postfix relay Configurator."""
 
     def __init__(self, *args: Any) -> None:
-        """Postfix Relay Configurator."""
+        """Postfix relay Configurator."""
         super().__init__(*args)
 
         self.framework.observe(self.on.config_changed, self._reconcile)

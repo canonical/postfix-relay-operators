@@ -6,7 +6,7 @@
 # Postfix relay configurator operator
 
 A [Juju](https://juju.is/) [charm](https://documentation.ubuntu.com/juju/3.6/reference/charm/)
-deploying and managing a subordinate charm o generate the configuration for the Postfix Relay operator.
+deploying and managing a subordinate charm o generate the configuration for the Postfix relay operator.
 
 For information about how to deploy, integrate, and manage this charm, see the Official [postfix-relay-configurator Operator Documentation](https://charmhub.io/postfix-relay-configurator/docs).
 

@@ -3,8 +3,8 @@
 
 type: "charm"
 name: postfix-relay
-title: Postfix Relay
-summary: Postfix Relay
+title: Postfix relay
+summary: Postfix relay
 links:
   issues: https://github.com/canonical/postfix-relay-operator/issues
   source: https://github.com/canonical/postfix-relay-operator
