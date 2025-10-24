@@ -29,8 +29,6 @@ juju add-model postfix-relay-tutorial
 
 The Postfix relay charm is standalone and doesn't require any other charm.
 
-### Deploy and integrate the charms
-
 ```bash
 juju deploy postfix-relay
 ```
