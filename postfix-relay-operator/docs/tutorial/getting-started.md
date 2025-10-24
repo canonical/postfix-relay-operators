@@ -27,10 +27,10 @@ juju add-model postfix-relay-tutorial
 
 ## Deploy the Postfix relay charm
 
-The Postfix relay charm is standalone and doesn't require any other charm.
+The Postfix relay charm is standalone and doesn't require any other charm. For it to work rpoperly, you'll need to specify at least the `relay_domains` configuration with the list of domains to relay email to.
 
 ```bash
-juju deploy postfix-relay --config relay_domains=your.domain
+juju deploy postfix-relay --config relay_domains=-your.domain
 ```
 
 Run `juju status` to see the current status of the deployment. The deployment is complete when the status is `Active`.
