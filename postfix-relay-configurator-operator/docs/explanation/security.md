@@ -1,26 +1,21 @@
-# Security overview
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
+# Security in Postfix relay configurator
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
 
-<!-- Remember to update this file for your charm!!
+This document covers the security aspects of the Postfix relay configurator charm itself.
 
-This document outlines the security design of the charm along common risks and
-possible best practices.
+For all use cases and configurations related to the Postfix product, please refer to the [official documentation](https://www.postfix.org/SMTPD_ACCESS_README.html).
 
-Elaborate on topics such as common risks, good practices, built-in protection, etc.
+## Good practices
 
-Are there upstream security docs that we can point to? If so, include a
-sentence like:
-For details regarding upstream <charm-name> configuration and broader security
-considerations, please refer to the [official <software> documentation](link-to-upstream-docs).
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
+### Use the Postfix relay charm alongside the SMTP DKIM signing charm
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
+
+The charm doesn't support DKIM functionality. In order to sign and verify email, deploy the [SMTP DKIM signing charm](https://charmhub.io/smtp-dkim-signing) alongside the Postfix relay charm and integrate both.
 
 ## Risks
-In most cases, it will be appropriate to include a specific heading
-Risks under which known risks are listed and described. Include a subheading for best
-practices for the user to follow to avoid or limit risks.
 
-## Information security
-In some cases a product will have particular information security implications
-(concerned with potential for information loss, incorrect retention, unlawful disclosure
-and so on). Notes on these should be gathered separately in the overview topic, or
-in a topic of their own.
+The charm configures a Postfix server acting as Postfix relay, and as such, it might handle sensitive information.
 
--->
+You should limit who has access to the service.
