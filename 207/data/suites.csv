@@ -1,0 +1,16 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"
+    arrange: Deploy postfix-relay charm with the testrelay.internal domain in relay domains.
+    act: Send an email to an address with the testrelay.internal domain.
+    assert: The email is correctly relayed to the mailcatcher local test smtp server.
+    ","6445","test_simple_relay","tests.integration","2025-11-04","passed","2025-11-04","","test_charm","",""
+"
+    arrange: Deploy postfix-relay.
+    act: Get the metrics from the unit.
+    assert: The metrics can be scraped and there are metrics.
+    ","192","test_metrics_configured","tests.integration","2025-11-04","passed","2025-11-04","","test_charm","",""
+"
+    arrange: Deploy postfix-relay charm with SMTP authentication enabled and a test user.
+    act: Attempt to send an email without authentication then with authentication.
+    assert: Unauthenticated email sending is refused, authenticated email sending is accepted
+    ","6144","test_authentication","tests.integration","2025-11-04","passed","2025-11-04","","test_charm","",""
