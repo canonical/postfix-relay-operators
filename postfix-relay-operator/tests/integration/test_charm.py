@@ -160,6 +160,11 @@ def test_metrics_configured(juju: jubilant.Juju, postfix_relay_app, machine_ip_a
     act: Get the metrics from the unit.
     assert: The metrics can be scraped and there are metrics.
     """
+    juju.wait(
+        lambda status: status.apps[postfix_relay_app].is_active,
+        timeout=5 * 60,
+        delay=30,
+    )
     status = juju.status()
     unit = list(status.apps[postfix_relay_app].units.values())[0]
     unit_ip = unit.public_address
