@@ -40,7 +40,7 @@ Thinking about using the Postfix relay Operator for your next project? [Get in t
    1. [Upgrade](how-to/upgrade.md)
 1. [Reference](reference)
    1. [Actions](reference/actions.md)
-   1. [Charm architecture](explanation/charm-architecture.md)
+   1. [Charm architecture](reference/charm-architecture.md)
    1. [Configurations](reference/configurations.md)
    1. [External access](reference/external_access.md)
 1. [Explanation](explanation)
