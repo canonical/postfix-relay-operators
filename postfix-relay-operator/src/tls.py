@@ -3,7 +3,6 @@
 
 """TLS Management Service Layer."""
 
-
 import os
 import subprocess  # nosec
 from typing import NamedTuple
