@@ -33,6 +33,12 @@ def deploy_postfix_relay_fixture(
             f"./{postfix_relay_charm}",
             postfix_relay_app_name,
         )
+    juju.deploy("self-signed-certificates")
+    juju.integrate(
+            postfix_relay_app_name,
+        "self-signed-certificates",
+    )
+
     juju.wait(
         lambda status: status.apps[postfix_relay_app_name].is_active,
         error=jubilant.any_blocked,

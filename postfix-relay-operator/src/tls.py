@@ -8,17 +8,6 @@ import subprocess  # nosec
 from typing import NamedTuple
 
 
-def _get_autocert_cn(autocert_conf_dir: str = "/etc/autocert/postfix") -> str:
-    # autocert relation is reversed so we can't get this info from
-    # juju relations but rather try work it out from the shipped out
-    # config.
-    if os.path.exists(autocert_conf_dir):
-        for filename in sorted(os.listdir(autocert_conf_dir)):
-            if filename.endswith(".ini"):
-                return filename.removesuffix(".ini")
-    return ""
-
-
 class TLSConfigPaths(NamedTuple):
     """A container for TLS file paths.
 
@@ -35,7 +24,11 @@ class TLSConfigPaths(NamedTuple):
     tls_cert_key: str
 
 
-def get_tls_config_paths(tls_dh_params: str) -> TLSConfigPaths:
+def get_tls_config_paths(
+    tls_dh_params: str,
+    relation_cert_path: str | None = None,
+    relation_key_path: str | None = None,
+) -> TLSConfigPaths:
     """Determine paths for TLS assets.
 
     Args:
@@ -43,19 +36,21 @@ def get_tls_config_paths(tls_dh_params: str) -> TLSConfigPaths:
 
     Returns:
         TLSConfigPaths: A named tuple containing paths for TLS assets.
+
+    The relation-provided certificate and key are discovered via
+    `relation_cert_path` and `relation_key_path` when provided.
     """
     tls_cert_key = ""
     tls_cert = "/etc/ssl/certs/ssl-cert-snakeoil.pem"
     tls_key = "/etc/ssl/private/ssl-cert-snakeoil.key"
-    tls_cn = _get_autocert_cn()
-    if tls_cn:
-        # autocert currently bundles certs with the key at the end which postfix doesn't like:
-        # `warning: error loading chain from /etc/ssl/{...}.pem: key not first`
-        # Let's not use the newer `smtpd_tls_chain_files` postfix config for now.
-        # tls_cert_key = f"/etc/ssl/{tls_cn}.pem"
-        tls_cert = f"/etc/ssl/{tls_cn}.crt"
-        tls_key = f"/etc/ssl/{tls_cn}.key"
-        tls_dh_params = "/etc/ssl/dhparams.pem"
+    if (
+        relation_cert_path
+        and relation_key_path
+        and os.path.exists(relation_cert_path)
+        and os.path.exists(relation_key_path)
+    ):
+        tls_cert = relation_cert_path
+        tls_key = relation_key_path
     if not os.path.exists(tls_dh_params):
         subprocess.check_call(["openssl", "dhparam", "-out", tls_dh_params, "2048"])  # nosec
 
