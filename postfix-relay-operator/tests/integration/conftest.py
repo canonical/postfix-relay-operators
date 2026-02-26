@@ -42,7 +42,7 @@ def deploy_postfix_relay_fixture(
     juju.wait(
         lambda status: status.apps[postfix_relay_app_name].is_active,
         error=jubilant.any_blocked,
-        timeout=6 * 60,
+        timeout=10 * 60,
     )
     return postfix_relay_app_name
 

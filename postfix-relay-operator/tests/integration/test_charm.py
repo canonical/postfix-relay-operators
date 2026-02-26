@@ -11,6 +11,7 @@ import logging
 import os
 import smtplib
 import socket
+import ssl
 import time
 
 import jubilant
@@ -19,6 +20,35 @@ import requests
 import yaml
 
 logger = logging.getLogger(__name__)
+
+TLS_RELATION_CERT_PATH = "/etc/postfix/tls/fullchain.pem"
+
+
+def _exec_stdout(result) -> str:
+    if hasattr(result, "stdout"):
+        return result.stdout
+    if isinstance(result, bytes):
+        return result.decode("utf-8")
+    if isinstance(result, str):
+        return result
+    return str(result)
+
+
+def _first_pem_certificate(pem_text: str) -> str:
+    begin_marker = "-----BEGIN CERTIFICATE-----"
+    end_marker = "-----END CERTIFICATE-----"
+    start = pem_text.find(begin_marker)
+    if start == -1:
+        raise AssertionError("No certificate found in relation TLS bundle.")
+    end = pem_text.find(end_marker, start)
+    if end == -1:
+        raise AssertionError("Certificate end marker missing in relation TLS bundle.")
+    return pem_text[start : end + len(end_marker)]
+
+
+def _sha256_fingerprint_from_pem(pem_text: str) -> str:
+    der_bytes = ssl.PEM_cert_to_DER_cert(_first_pem_certificate(pem_text))
+    return hashlib.sha256(der_bytes).hexdigest()
 
 
 def sha512(password: str, salt: bytes | None = None) -> str:
@@ -179,3 +209,31 @@ def test_metrics_configured(juju: jubilant.Juju, postfix_relay_app, machine_ip_a
     ]
     for expected_metric in expected_metrics:
         assert expected_metric in metrics_output
+
+
+@pytest.mark.abort_on_fail
+def test_tls_uses_relation_certificate(juju: jubilant.Juju, postfix_relay_app):
+    """
+    arrange: Postfix-relay is related to a TLS certificate provider.
+    act: Connect with STARTTLS and read the presented server certificate.
+    assert: The certificate fingerprint matches the relation-provided fullchain.
+    """
+    status = juju.status()
+    unit = list(status.apps[postfix_relay_app].units.values())[0]
+    unit_ip = unit.public_address
+
+    pem_result = juju.exec(
+        machine=unit.machine,
+        command=f"sudo cat {TLS_RELATION_CERT_PATH}",
+    )
+    pem_text = _exec_stdout(pem_result)
+    assert "BEGIN CERTIFICATE" in pem_text
+
+    with smtplib.SMTP(unit_ip, 587, timeout=10) as server:
+        server.starttls()
+        peer_der = server.sock.getpeercert(binary_form=True)
+
+    assert peer_der
+    peer_fingerprint = hashlib.sha256(peer_der).hexdigest()
+    relation_fingerprint = _sha256_fingerprint_from_pem(pem_text)
+    assert peer_fingerprint == relation_fingerprint
