@@ -24,7 +24,7 @@ terraform {
 
 provider "juju" {}
 
-module "postifx_relay" {
+module "postfix_relay" {
   source   = "./.."
   app_name = "postfix-relay"
   channel  = var.channel
