@@ -1,16 +1,16 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-module "postifx_relay" {
+module "postfix_relay" {
   source      = "../terraform"
-  app_name    = var.postifx_relay.app_name
-  channel     = var.postifx_relay.channel
-  config      = var.postifx_relay.config
+  app_name    = var.postfix_relay.app_name
+  channel     = var.postfix_relay.channel
+  config      = var.postfix_relay.config
   model       = var.model
-  constraints = var.postifx_relay.constraints
-  revision    = var.postifx_relay.revision
-  base        = var.postifx_relay.base
-  units       = var.postifx_relay.units
+  constraints = var.postfix_relay.constraints
+  revision    = var.postfix_relay.revision
+  base        = var.postfix_relay.base
+  units       = var.postfix_relay.units
 }
 
 module "opendkim" {
@@ -24,12 +24,12 @@ module "opendkim" {
   units       = var.opendkim.units
 }
 
-resource "juju_integration" "postifx_relay_opendkim" {
+resource "juju_integration" "postfix_relay_opendkim" {
   model = var.model
 
   application {
-    name     = module.postifx_relay.app_name
-    endpoint = module.postifx_relay.requires.milter
+    name     = module.postfix_relay.app_name
+    endpoint = module.postfix_relay.requires.milter
   }
 
   application {
