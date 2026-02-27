@@ -25,4 +25,5 @@ header:
     - 'postfix-relay-operator/lib/**'
     - 'pyproject.toml'
     - 'zap_rules.tsv'
+    - '**/uv.lock'
   comment: on-failure
