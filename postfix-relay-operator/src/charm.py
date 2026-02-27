@@ -15,15 +15,15 @@ from typing import Any, cast
 
 import ops
 from charmlibs import apt, snap
-from charms.grafana_agent.v0.cos_agent import COSAgentProvider
-from charms.operator_libs_linux.v1 import systemd
-from charms.tls_certificates_interface.v4.tls_certificates import (
+from charmlibs.interfaces.tls_certificates import (
     CertificateAvailableEvent,
     CertificateRequestAttributes,
     Mode,
     ProviderCertificate,
     TLSCertificatesRequiresV4,
 )
+from charms.grafana_agent.v0.cos_agent import COSAgentProvider
+from charms.operator_libs_linux.v1 import systemd
 
 import postfix
 import utils

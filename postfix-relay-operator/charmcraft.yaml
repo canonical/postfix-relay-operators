@@ -38,8 +38,6 @@ charm-libs:
     version: "1"
   - lib: grafana_agent.cos_agent
     version: "0"
-  - lib: tls_certificates_interface.tls_certificates
-    version: "4"
 
 peers:
   peer:
