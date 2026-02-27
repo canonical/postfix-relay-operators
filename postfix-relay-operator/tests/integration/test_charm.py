@@ -13,6 +13,7 @@ import smtplib
 import socket
 import ssl
 import time
+from typing import cast
 
 import jubilant
 import pytest
@@ -43,7 +44,7 @@ def _first_pem_certificate(pem_text: str) -> str:
     end = pem_text.find(end_marker, start)
     if end == -1:
         raise AssertionError("Certificate end marker missing in relation TLS bundle.")
-    return pem_text[start : end + len(end_marker)]
+    return pem_text[start : (end + len(end_marker))]  # noqa: E203
 
 
 def _sha256_fingerprint_from_pem(pem_text: str) -> str:
@@ -231,7 +232,7 @@ def test_tls_uses_relation_certificate(juju: jubilant.Juju, postfix_relay_app):
 
     with smtplib.SMTP(unit_ip, 587, timeout=10) as server:
         server.starttls()
-        peer_der = server.sock.getpeercert(binary_form=True)
+        peer_der = cast(ssl.SSLSocket, server.sock).getpeercert(binary_form=True)
 
     assert peer_der
     peer_fingerprint = hashlib.sha256(peer_der).hexdigest()

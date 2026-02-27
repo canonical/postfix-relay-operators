@@ -122,7 +122,7 @@ class PostfixRelayCharm(ops.CharmBase):
         Returns:
             A list of CertificateRequestAttributes for the requested hostnames.
         """
-        domain = self.config.get("domain", "")
+        domain = cast(str, self.config.get("domain", ""))
         fqdn = self._generate_fqdn(domain) if domain else socket.getfqdn()
         hostnames = [fqdn]
         return [CertificateRequestAttributes(common_name=name) for name in hostnames]
@@ -368,9 +368,7 @@ class PostfixRelayCharm(ops.CharmBase):
     def _sync_tls_certificates(self) -> None:
         """Write TLS assets from the TLS relation to disk if available."""
         for request in self._get_certificate_requests():
-            provider_certificate, private_key = self.certificates.get_assigned_certificate(
-                request
-            )
+            provider_certificate, private_key = self.certificates.get_assigned_certificate(request)
             if not provider_certificate or not private_key:
                 continue
             self._write_tls_files(provider_certificate, str(private_key))

@@ -35,7 +35,7 @@ def deploy_postfix_relay_fixture(
         )
     juju.deploy("self-signed-certificates")
     juju.integrate(
-            postfix_relay_app_name,
+        postfix_relay_app_name,
         "self-signed-certificates",
     )
 

@@ -33,6 +33,8 @@ def get_tls_config_paths(
 
     Args:
         tls_dh_params: Path to the Diffie-Hellman parameters file.
+        relation_cert_path: Path to the tls certification set by the relation.
+        relation_key_path: Path to the tls key set by the relation.
 
     Returns:
         TLSConfigPaths: A named tuple containing paths for TLS assets.
