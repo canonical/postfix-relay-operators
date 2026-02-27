@@ -130,7 +130,7 @@ class PostfixRelayCharm(ops.CharmBase):
     def _on_certificate_available(self, _event: CertificateAvailableEvent) -> None:
         """Handle the TLS Certificate available event."""
         logger.info("TLS certificate available, creating resources.")
-        self._sync_tls_certificates()
+
         self._reconcile(_event)
 
     def _on_install(self, _: ops.InstallEvent) -> None:
@@ -228,7 +228,7 @@ class PostfixRelayCharm(ops.CharmBase):
         self.unit.status = ops.MaintenanceStatus("Setting up Postfix relay")
 
         tls_config_paths = get_tls_config_paths(
-            TLS_DH_PARAMS_FILEPATH,
+            str(TLS_DH_PARAMS_FILEPATH),
             relation_cert_path=str(TLS_RELATION_CERT_FILEPATH),
             relation_key_path=str(TLS_RELATION_KEY_FILEPATH),
         )
