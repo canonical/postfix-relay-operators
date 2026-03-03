@@ -15,6 +15,11 @@ from typing import Any, cast
 
 import ops
 from charmlibs import apt, snap
+from charmlibs.interfaces.tls_certificates import (
+    CertificateRequestAttributes,
+    Mode,
+    TLSCertificatesRequiresV4,
+)
 from charms.grafana_agent.v0.cos_agent import COSAgentProvider
 from charms.operator_libs_linux.v1 import systemd
 
@@ -25,7 +30,10 @@ from dovecot import (
     construct_dovecot_user_file_content,
 )
 from state import ConfigurationError, State
-from tls import get_tls_config_paths
+from tls import (
+    get_tls_config_paths,
+    sync_tls_certificates,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +54,7 @@ POSTFIX_NAME = "postfix"
 POSTFIX_PORT = ops.Port("tcp", 25)
 ALIASES_FILEPATH = Path("/etc/aliases")
 POLICYD_SPF_FILEPATH = Path("/etc/postfix-policyd-spf-python/policyd-spf.conf")
-TLS_DH_PARAMS_FILEPATH = Path("/etc/ssl/private/dhparams.pem")
+TLS_CERT_RELATION_NAME = "certificates"
 MILTER_PORT = ops.Port("tcp", 8892)
 MAIN_CF = "main.cf"
 MAIN_CF_TMPL = "postfix_main_cf.tmpl"
@@ -92,6 +100,24 @@ class PostfixRelayCharm(ops.CharmBase):
         self.framework.observe(self.on.config_changed, self._reconcile)
         self.framework.observe(self.on[PEER_RELATION_NAME].relation_changed, self._reconcile)
         self.framework.observe(self.on[MILTER_RELATION_NAME].relation_changed, self._reconcile)
+
+        self.certificates = TLSCertificatesRequiresV4(
+            charm=self,
+            relationship_name=TLS_CERT_RELATION_NAME,
+            certificate_requests=[self._get_certificate_request()],
+            mode=Mode.UNIT,
+            refresh_events=[self.on.config_changed],
+        )
+        self.framework.observe(self.certificates.on.certificate_available, self._reconcile)
+
+    def _get_certificate_request(self, domain: str | None = None) -> CertificateRequestAttributes:
+        """Get the certificate request based on the hostname.
+
+        Returns:
+            A CertificateRequestAttributes for the requested hostname.
+        """
+        fqdn = self._generate_fqdn(domain) if domain else socket.getfqdn()
+        return CertificateRequestAttributes(common_name=fqdn)
 
     def _on_install(self, _: ops.InstallEvent) -> None:
         """Handle the install event."""
@@ -144,6 +170,7 @@ class PostfixRelayCharm(ops.CharmBase):
             self.unit.status = ops.BlockedStatus("Invalid config")
             return
 
+        sync_tls_certificates(self._get_certificate_request(charm_state.domain), self.certificates)
         self._configure_auth(charm_state)
         self._configure_relay(charm_state)
         self._configure_policyd_spf(charm_state)
@@ -186,7 +213,7 @@ class PostfixRelayCharm(ops.CharmBase):
         """Generate and apply Postfix configuration."""
         self.unit.status = ops.MaintenanceStatus("Setting up Postfix relay")
 
-        tls_config_paths = get_tls_config_paths(TLS_DH_PARAMS_FILEPATH)
+        tls_config_paths = get_tls_config_paths()
         fqdn = self._generate_fqdn(charm_state.domain) if charm_state.domain else socket.getfqdn()
         hostname = socket.gethostname()
         milters = self._get_milters()

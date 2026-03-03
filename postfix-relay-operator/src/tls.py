@@ -3,20 +3,29 @@
 
 """TLS Management Service Layer."""
 
+import logging
 import os
 import subprocess  # nosec
+from pathlib import Path
 from typing import NamedTuple
 
+from charmlibs.interfaces.tls_certificates import (
+    CertificateRequestAttributes,
+    ProviderCertificate,
+    TLSCertificatesRequiresV4,
+)
 
-def _get_autocert_cn(autocert_conf_dir: str = "/etc/autocert/postfix") -> str:
-    # autocert relation is reversed so we can't get this info from
-    # juju relations but rather try work it out from the shipped out
-    # config.
-    if os.path.exists(autocert_conf_dir):
-        for filename in sorted(os.listdir(autocert_conf_dir)):
-            if filename.endswith(".ini"):
-                return filename.removesuffix(".ini")
-    return ""
+import utils
+
+logger = logging.getLogger(__name__)
+
+
+POSTFIX_NAME = "postfix"
+TLS_RELATION_DIRPATH = Path("/etc/postfix/tls")
+TLS_RELATION_CERT_FILEPATH = TLS_RELATION_DIRPATH / "fullchain.pem"
+TLS_RELATION_KEY_FILEPATH = TLS_RELATION_DIRPATH / "key.pem"
+TLS_RELATION_CA_FILEPATH = TLS_RELATION_DIRPATH / "ca.pem"
+TLS_DH_PARAMS_FILEPATH = Path("/etc/ssl/private/dhparams.pem")
 
 
 class TLSConfigPaths(NamedTuple):
@@ -35,33 +44,65 @@ class TLSConfigPaths(NamedTuple):
     tls_cert_key: str
 
 
-def get_tls_config_paths(tls_dh_params: str) -> TLSConfigPaths:
+def get_tls_config_paths() -> TLSConfigPaths:
     """Determine paths for TLS assets.
-
-    Args:
-        tls_dh_params: Path to the Diffie-Hellman parameters file.
 
     Returns:
         TLSConfigPaths: A named tuple containing paths for TLS assets.
+
+    The relation-provided certificate and key are discovered via
+    `TLS_RELATION_CERT_FILEPATH` and `TLS_RELATION_KEY_FILEPATH` when provided.
     """
     tls_cert_key = ""
     tls_cert = "/etc/ssl/certs/ssl-cert-snakeoil.pem"
     tls_key = "/etc/ssl/private/ssl-cert-snakeoil.key"
-    tls_cn = _get_autocert_cn()
-    if tls_cn:
-        # autocert currently bundles certs with the key at the end which postfix doesn't like:
-        # `warning: error loading chain from /etc/ssl/{...}.pem: key not first`
-        # Let's not use the newer `smtpd_tls_chain_files` postfix config for now.
-        # tls_cert_key = f"/etc/ssl/{tls_cn}.pem"
-        tls_cert = f"/etc/ssl/{tls_cn}.crt"
-        tls_key = f"/etc/ssl/{tls_cn}.key"
-        tls_dh_params = "/etc/ssl/dhparams.pem"
-    if not os.path.exists(tls_dh_params):
-        subprocess.check_call(["openssl", "dhparam", "-out", tls_dh_params, "2048"])  # nosec
+    if os.path.exists(TLS_RELATION_CERT_FILEPATH) and os.path.exists(TLS_RELATION_KEY_FILEPATH):
+        tls_cert = str(TLS_RELATION_CERT_FILEPATH)
+        tls_key = str(TLS_RELATION_KEY_FILEPATH)
+    if not os.path.exists(TLS_DH_PARAMS_FILEPATH):
+        subprocess.check_call(
+            ["openssl", "dhparam", "-out", str(TLS_DH_PARAMS_FILEPATH), "2048"]
+        )  # nosec
 
     return TLSConfigPaths(
-        tls_dh_params=tls_dh_params,
+        tls_dh_params=str(TLS_DH_PARAMS_FILEPATH),
         tls_cert=tls_cert,
         tls_key=tls_key,
         tls_cert_key=tls_cert_key,
+    )
+
+
+def sync_tls_certificates(
+    request: CertificateRequestAttributes, certificates: TLSCertificatesRequiresV4
+) -> None:
+    """Write TLS assets from the TLS relation to disk if available."""
+    provider_certificate, private_key = certificates.get_assigned_certificate(request)
+    if provider_certificate and private_key:
+        _write_tls_files(provider_certificate, str(private_key), POSTFIX_NAME)
+
+
+def _write_tls_files(
+    certificate: ProviderCertificate, private_key: str, postfix_name: str
+) -> None:
+    """Persist TLS assets for Postfix to consume."""
+    TLS_RELATION_DIRPATH.mkdir(parents=True, exist_ok=True)
+    chain = [str(certificate.certificate), *[str(cert) for cert in certificate.chain]]
+    fullchain = "\n\n".join(chain).strip() + "\n"
+    utils.write_file(
+        fullchain,
+        TLS_RELATION_CERT_FILEPATH,
+        perms=0o640,
+        group=postfix_name,
+    )
+    utils.write_file(
+        private_key,
+        TLS_RELATION_KEY_FILEPATH,
+        perms=0o640,
+        group=postfix_name,
+    )
+    utils.write_file(
+        str(certificate.ca) + "\n",
+        TLS_RELATION_CA_FILEPATH,
+        perms=0o644,
+        group=postfix_name,
     )

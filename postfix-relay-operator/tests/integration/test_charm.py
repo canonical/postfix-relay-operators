@@ -11,7 +11,9 @@ import logging
 import os
 import smtplib
 import socket
+import ssl
 import time
+from typing import cast
 
 import jubilant
 import pytest
@@ -179,3 +181,21 @@ def test_metrics_configured(juju: jubilant.Juju, postfix_relay_app, machine_ip_a
     ]
     for expected_metric in expected_metrics:
         assert expected_metric in metrics_output
+
+
+@pytest.mark.abort_on_fail
+def test_tls_presents_certificate(juju: jubilant.Juju, postfix_relay_app):
+    """
+    arrange: Postfix-relay is related to a TLS certificate provider.
+    act: Connect with STARTTLS and read the presented server certificate.
+    assert: A certificate is presented by the endpoint.
+    """
+    status = juju.status()
+    unit = list(status.apps[postfix_relay_app].units.values())[0]
+    unit_ip = unit.public_address
+
+    with smtplib.SMTP(unit_ip, 587, timeout=10) as server:
+        server.starttls()
+        peer_cert = cast(ssl.SSLSocket, server.sock).getpeercert(binary_form=True)
+
+    assert peer_cert

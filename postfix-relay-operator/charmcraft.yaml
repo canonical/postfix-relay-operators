@@ -50,6 +50,8 @@ provides:
 requires:
   milter:
     interface: milter
+  certificates:
+    interface: tls-certificates
 
 
 config:
