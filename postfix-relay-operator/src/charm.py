@@ -16,10 +16,8 @@ from typing import Any, cast
 import ops
 from charmlibs import apt, snap
 from charmlibs.interfaces.tls_certificates import (
-    CertificateAvailableEvent,
     CertificateRequestAttributes,
     Mode,
-    ProviderCertificate,
     TLSCertificatesRequiresV4,
 )
 from charms.grafana_agent.v0.cos_agent import COSAgentProvider
@@ -32,7 +30,10 @@ from dovecot import (
     construct_dovecot_user_file_content,
 )
 from state import ConfigurationError, State
-from tls import get_tls_config_paths
+from tls import (
+    get_tls_config_paths,
+    sync_tls_certificates,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -53,12 +54,7 @@ POSTFIX_NAME = "postfix"
 POSTFIX_PORT = ops.Port("tcp", 25)
 ALIASES_FILEPATH = Path("/etc/aliases")
 POLICYD_SPF_FILEPATH = Path("/etc/postfix-policyd-spf-python/policyd-spf.conf")
-TLS_DH_PARAMS_FILEPATH = Path("/etc/ssl/private/dhparams.pem")
 TLS_CERT_RELATION_NAME = "certificates"
-TLS_RELATION_DIRPATH = Path("/etc/postfix/tls")
-TLS_RELATION_CERT_FILEPATH = TLS_RELATION_DIRPATH / "fullchain.pem"
-TLS_RELATION_KEY_FILEPATH = TLS_RELATION_DIRPATH / "key.pem"
-TLS_RELATION_CA_FILEPATH = TLS_RELATION_DIRPATH / "ca.pem"
 MILTER_PORT = ops.Port("tcp", 8892)
 MAIN_CF = "main.cf"
 MAIN_CF_TMPL = "postfix_main_cf.tmpl"
@@ -108,30 +104,20 @@ class PostfixRelayCharm(ops.CharmBase):
         self.certificates = TLSCertificatesRequiresV4(
             charm=self,
             relationship_name=TLS_CERT_RELATION_NAME,
-            certificate_requests=self._get_certificate_requests(),
+            certificate_requests=[self._get_certificate_request()],
             mode=Mode.UNIT,
             refresh_events=[self.on.config_changed],
         )
-        self.framework.observe(
-            self.certificates.on.certificate_available, self._on_certificate_available
-        )
+        self.framework.observe(self.certificates.on.certificate_available, self._reconcile)
 
-    def _get_certificate_requests(self) -> list[CertificateRequestAttributes]:
-        """Get the list of certificate requests based on the hostname.
+    def _get_certificate_request(self, domain: str | None = None) -> CertificateRequestAttributes:
+        """Get the certificate request based on the hostname.
 
         Returns:
-            A list of CertificateRequestAttributes for the requested hostnames.
+            A CertificateRequestAttributes for the requested hostname.
         """
-        domain = cast(str, self.config.get("domain", ""))
         fqdn = self._generate_fqdn(domain) if domain else socket.getfqdn()
-        hostnames = [fqdn]
-        return [CertificateRequestAttributes(common_name=name) for name in hostnames]
-
-    def _on_certificate_available(self, _event: CertificateAvailableEvent) -> None:
-        """Handle the TLS Certificate available event."""
-        logger.info("TLS certificate available, creating resources.")
-
-        self._reconcile(_event)
+        return CertificateRequestAttributes(common_name=fqdn)
 
     def _on_install(self, _: ops.InstallEvent) -> None:
         """Handle the install event."""
@@ -184,7 +170,7 @@ class PostfixRelayCharm(ops.CharmBase):
             self.unit.status = ops.BlockedStatus("Invalid config")
             return
 
-        self._sync_tls_certificates()
+        sync_tls_certificates(self._get_certificate_request(charm_state.domain), self.certificates)
         self._configure_auth(charm_state)
         self._configure_relay(charm_state)
         self._configure_policyd_spf(charm_state)
@@ -227,11 +213,7 @@ class PostfixRelayCharm(ops.CharmBase):
         """Generate and apply Postfix configuration."""
         self.unit.status = ops.MaintenanceStatus("Setting up Postfix relay")
 
-        tls_config_paths = get_tls_config_paths(
-            str(TLS_DH_PARAMS_FILEPATH),
-            relation_cert_path=str(TLS_RELATION_CERT_FILEPATH),
-            relation_key_path=str(TLS_RELATION_KEY_FILEPATH),
-        )
+        tls_config_paths = get_tls_config_paths()
         fqdn = self._generate_fqdn(charm_state.domain) if charm_state.domain else socket.getfqdn()
         hostname = socket.gethostname()
         milters = self._get_milters()
@@ -364,39 +346,6 @@ class PostfixRelayCharm(ops.CharmBase):
             charm_state.spf_skip_addresses
         )
         utils.write_file(contents, POLICYD_SPF_FILEPATH)
-
-    def _sync_tls_certificates(self) -> None:
-        """Write TLS assets from the TLS relation to disk if available."""
-        for request in self._get_certificate_requests():
-            provider_certificate, private_key = self.certificates.get_assigned_certificate(request)
-            if not provider_certificate or not private_key:
-                continue
-            self._write_tls_files(provider_certificate, str(private_key))
-            return
-
-    def _write_tls_files(self, certificate: ProviderCertificate, private_key: str) -> None:
-        """Persist TLS assets for Postfix to consume."""
-        TLS_RELATION_DIRPATH.mkdir(parents=True, exist_ok=True)
-        chain = [str(certificate.certificate), *[str(cert) for cert in certificate.chain]]
-        fullchain = "\n\n".join(chain).strip() + "\n"
-        utils.write_file(
-            fullchain,
-            TLS_RELATION_CERT_FILEPATH,
-            perms=0o640,
-            group=POSTFIX_NAME,
-        )
-        utils.write_file(
-            private_key,
-            TLS_RELATION_KEY_FILEPATH,
-            perms=0o640,
-            group=POSTFIX_NAME,
-        )
-        utils.write_file(
-            str(certificate.ca) + "\n",
-            TLS_RELATION_CA_FILEPATH,
-            perms=0o644,
-            group=POSTFIX_NAME,
-        )
 
 
 if __name__ == "__main__":  # pragma: nocover

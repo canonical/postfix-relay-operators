@@ -12,65 +12,67 @@ import tls
 
 
 class TestGetTlsConfigPaths:
-    @pytest.mark.parametrize(
-        ("dhparams_exist"),
-        [
-            pytest.param(False, id="no_dhparams"),
-            pytest.param(True, id="with_dhparams"),
-        ],
-    )
     @patch("tls.subprocess.check_call")
-    def test_path_logic_without_autocert(
-        self,
-        mock_subprocess_call: Mock,
-        dhparams_exist: bool,
-        tmp_path: Path,
+    def test_returns_snakeoil_and_generates_dhparams(
+        self, mock_subprocess_call: Mock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """
-        arrange: Given no autocert certificate, check behavior based on DH file existence.
+        arrange: No relation certs and no DH params present.
         act: Call get_tls_config_paths.
-        assert: Snakeoil paths are returned and openssl is called only when needed.
+        assert: Snakeoil paths are returned and openssl is invoked.
         """
         dhparams_path = tmp_path / "dhparams.pem"
-        if dhparams_exist:
-            dhparams_path.touch()
+        monkeypatch.setattr(tls, "TLS_DH_PARAMS_FILEPATH", dhparams_path)
 
-        result = tls.get_tls_config_paths(str(dhparams_path))
+        result = tls.get_tls_config_paths()
 
-        if dhparams_exist:
-            mock_subprocess_call.assert_not_called()
-        else:
-            mock_subprocess_call.assert_called_with(
-                ["openssl", "dhparam", "-out", str(dhparams_path), "2048"]
-            )
+        mock_subprocess_call.assert_called_once_with(
+            ["openssl", "dhparam", "-out", str(dhparams_path), "2048"]
+        )
+        assert result.tls_cert == "/etc/ssl/certs/ssl-cert-snakeoil.pem"
+        assert result.tls_key == "/etc/ssl/private/ssl-cert-snakeoil.key"
+        assert result.tls_dh_params == str(dhparams_path)
 
+    @patch("tls.subprocess.check_call")
+    def test_skips_openssl_when_dhparams_exist(
+        self, mock_subprocess_call: Mock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """
+        arrange: DH params already exist and no relation certs.
+        act: Call get_tls_config_paths.
+        assert: openssl is not called.
+        """
+        dhparams_path = tmp_path / "dhparams.pem"
+        dhparams_path.touch()
+        monkeypatch.setattr(tls, "TLS_DH_PARAMS_FILEPATH", dhparams_path)
+
+        result = tls.get_tls_config_paths()
+
+        mock_subprocess_call.assert_not_called()
         assert result.tls_cert == "/etc/ssl/certs/ssl-cert-snakeoil.pem"
         assert result.tls_key == "/etc/ssl/private/ssl-cert-snakeoil.key"
         assert result.tls_dh_params == str(dhparams_path)
 
     @patch("tls.subprocess.check_call")
     def test_relation_paths_preferred(
-        self,
-        mock_subprocess_call: Mock,
-        tmp_path: Path,
+        self, mock_subprocess_call: Mock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """
-        arrange: Provide relation cert/key files.
-        act: Call get_tls_config_paths with relation file paths.
+        arrange: Relation cert/key files exist and DH params present.
+        act: Call get_tls_config_paths.
         assert: Relation files are used and openssl is not called.
         """
         dhparams_path = tmp_path / "dhparams.pem"
         dhparams_path.touch()
-        relation_cert = tmp_path / "relation.crt"
-        relation_key = tmp_path / "relation.key"
+        relation_cert = tmp_path / "fullchain.pem"
+        relation_key = tmp_path / "key.pem"
         relation_cert.write_text("cert")
         relation_key.write_text("key")
+        monkeypatch.setattr(tls, "TLS_DH_PARAMS_FILEPATH", dhparams_path)
+        monkeypatch.setattr(tls, "TLS_RELATION_CERT_FILEPATH", relation_cert)
+        monkeypatch.setattr(tls, "TLS_RELATION_KEY_FILEPATH", relation_key)
 
-        result = tls.get_tls_config_paths(
-            str(dhparams_path),
-            relation_cert_path=str(relation_cert),
-            relation_key_path=str(relation_key),
-        )
+        result = tls.get_tls_config_paths()
 
         mock_subprocess_call.assert_not_called()
         assert result.tls_cert == str(relation_cert)
