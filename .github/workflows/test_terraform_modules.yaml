@@ -16,4 +16,5 @@ jobs:
     secrets: inherit
     with:
       lxd-controller: true
-      terraform-directories: '["postfix-relay-operator/terraform", "postfix-relay-configurator-operator/terraform"]'
+      # postfix-relay-configurator-operator/terraform is excluded until the charm is published in CharmHub
+      terraform-directories: '["postfix-relay-operator/terraform"]'
