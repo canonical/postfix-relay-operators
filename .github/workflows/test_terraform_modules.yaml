@@ -1,0 +1,19 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: Terraform modules tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'postfix-relay-operator/terraform/**'
+      - 'postfix-relay-configurator-operator/terraform/**'
+
+jobs:
+  terraform-tests:
+    uses: canonical/operator-workflows/.github/workflows/terraform_modules_test.yaml@main
+    secrets: inherit
+    with:
+      lxd-controller: true
+      terraform-directories: '["postfix-relay-operator/terraform", "postfix-relay-configurator-operator/terraform"]'

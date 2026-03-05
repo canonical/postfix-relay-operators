@@ -3,7 +3,7 @@
 
 output "app_name" {
   description = "Name of the deployed application."
-  value       = module.postfix_relay.app_name
+  value       = juju_application.postfix_relay.name
 }
 
 output "requires" {
