@@ -26,5 +26,4 @@ header:
     - 'pyproject.toml'
     - 'zap_rules.tsv'
     - '**/uv.lock'
-    - '**/.terraform.lock.hcl'
   comment: on-failure
