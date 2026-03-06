@@ -6,7 +6,7 @@ module "postfix_relay" {
   app_name    = var.postfix_relay.app_name
   channel     = var.postfix_relay.channel
   config      = var.postfix_relay.config
-  model       = var.model
+  model_uuid  = var.model_uuid
   constraints = var.postfix_relay.constraints
   revision    = var.postfix_relay.revision
   base        = var.postfix_relay.base
@@ -19,13 +19,13 @@ module "opendkim" {
   channel     = var.opendkim.channel
   config      = var.opendkim.config
   constraints = var.opendkim.constraints
-  model       = var.model
+  model_uuid  = var.model_uuid
   revision    = var.opendkim.revision
   units       = var.opendkim.units
 }
 
 resource "juju_integration" "postfix_relay_opendkim" {
-  model = var.model
+  model_uuid = var.model_uuid
 
   application {
     name     = module.postfix_relay.app_name

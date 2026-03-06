@@ -4,7 +4,7 @@
 variable "app_name" {
   description = "Name of the application in the Juju model."
   type        = string
-  default     = "postifx-relay-configurator"
+  default     = "postfix-relay-configurator"
 }
 
 variable "base" {
@@ -31,8 +31,8 @@ variable "constraints" {
   default     = "arch=amd64"
 }
 
-variable "model" {
-  description = "Reference to a `juju_model`."
+variable "model_uuid" {
+  description = "UUID of the Juju model to deploy application to."
   type        = string
 }
 
