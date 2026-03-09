@@ -3,5 +3,5 @@
 
 output "app_name" {
   description = "Name of the deployed application."
-  value       = module.postfix_relay_configurator.app_name
+  value       = juju_application.postfix_relay_configurator.name
 }
