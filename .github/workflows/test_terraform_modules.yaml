@@ -8,7 +8,6 @@ on:
   pull_request:
     paths:
       - 'postfix-relay-operator/terraform/**'
-      - 'postfix-relay-operator/terraform-product/**'
       - 'postfix-relay-configurator-operator/terraform/**'
 
 jobs:
@@ -18,4 +17,6 @@ jobs:
     with:
       lxd-controller: true
       # postfix-relay-configurator-operator/terraform is excluded until the charm is published in CharmHub
-      terraform-directories: '["postfix-relay-operator/terraform", "postfix-relay-operator/terraform-product"]'
+      # postfix-relay-operator/terraform-product is excluded because it sources the opendkim module from
+      # a private GitHub repository (canonical/opendkim) which is not accessible from CI runners
+      terraform-directories: '["postfix-relay-operator/terraform"]'
