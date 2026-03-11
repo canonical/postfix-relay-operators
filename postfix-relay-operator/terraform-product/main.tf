@@ -21,6 +21,7 @@ module "opendkim" {
   constraints = var.opendkim.constraints
   model_uuid  = var.model_uuid
   revision    = var.opendkim.revision
+  storage     = var.opendkim.storage
   units       = var.opendkim.units
 }
 
