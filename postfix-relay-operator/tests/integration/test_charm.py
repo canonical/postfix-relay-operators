@@ -56,7 +56,7 @@ def test_simple_relay(juju: jubilant.Juju, postfix_relay_app, machine_ip_address
     command_to_put_domain = (
         f"echo {machine_ip_address} testrelay.internal | sudo tee -a /etc/hosts"
     )
-    juju.exec(machine=unit.machine, command=command_to_put_domain)
+    juju.exec(command_to_put_domain, machine=unit.machine)
 
     juju.config(postfix_relay_app, {"relay_domains": "- testrelay.internal"})
     juju.wait(
