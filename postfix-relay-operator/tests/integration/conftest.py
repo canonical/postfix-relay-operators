@@ -29,15 +29,12 @@ def deploy_postfix_relay_fixture(
     postfix_relay_app_name = "postfix-relay"
 
     if not juju.status().apps.get(postfix_relay_app_name):
-        juju.deploy(
-            f"./{postfix_relay_charm}",
-            postfix_relay_app_name,
-        )
+        juju.deploy(f"./{postfix_relay_charm}", postfix_relay_app_name, log=False)
 
     # Ensure self-signed-certificates is deployed, but make the operation idempotent.
     if not juju.status().apps.get("self-signed-certificates"):
         try:
-            juju.deploy("self-signed-certificates")
+            juju.deploy("self-signed-certificates", log=False)
         except Exception as exc:
             # Ignore benign "already exists" style errors; re-raise anything else.
             if "already exists" not in str(exc):

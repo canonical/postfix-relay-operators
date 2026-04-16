@@ -56,9 +56,9 @@ def test_simple_relay(juju: jubilant.Juju, postfix_relay_app, machine_ip_address
     command_to_put_domain = (
         f"echo {machine_ip_address} testrelay.internal | sudo tee -a /etc/hosts"
     )
-    juju.exec(machine=unit.machine, command=command_to_put_domain)
+    juju.exec(machine=unit.machine, command=command_to_put_domain, log=False)
 
-    juju.config(postfix_relay_app, {"relay_domains": "- testrelay.internal"})
+    juju.config(postfix_relay_app, {"relay_domains": "- testrelay.internal"}, log=False)
     juju.wait(
         lambda status: status.apps[postfix_relay_app].is_active,
         error=jubilant.any_blocked,
@@ -112,6 +112,7 @@ def test_authentication(juju: jubilant.Juju, postfix_relay_app, machine_ip_addre
             "relay_host": f"[{machine_ip_address}]",
             "enable_reject_unknown_sender_domain": "false",
         },
+        log=False,
     )
 
     juju.wait(
