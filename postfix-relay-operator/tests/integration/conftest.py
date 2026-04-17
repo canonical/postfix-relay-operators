@@ -11,14 +11,10 @@ import pytest
 APP_NAME = "postfix-relay"
 
 
-def deploy(juju: jubilant.Juju, charm: str) -> None:
-    """Deploy postfix-relay and its dependencies.
-
-    Args:
-        juju: Jubilant Juju instance.
-        charm: Path to the charm file to deploy.
-    """
-    juju.deploy(f"./{charm}", APP_NAME)
+@pytest.fixture(scope="module")
+def deploy(juju: jubilant.Juju, postfix_relay_charm: str) -> None:
+    """Deploy postfix-relay and its dependencies."""
+    juju.deploy(f"./{postfix_relay_charm}", APP_NAME)
     juju.deploy("self-signed-certificates", channel="latest/edge")
     juju.integrate(APP_NAME, "self-signed-certificates")
     juju.wait(
