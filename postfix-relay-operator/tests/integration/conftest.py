@@ -12,7 +12,7 @@ APP_NAME = "postfix-relay"
 
 
 @pytest.fixture(scope="module")
-def deploy(juju: jubilant.Juju, postfix_relay_charm: str) -> None:
+def postfix_relay_app(juju: jubilant.Juju, postfix_relay_charm: str) -> str:
     """Deploy postfix-relay and its dependencies."""
     juju.deploy(f"./{postfix_relay_charm}", APP_NAME)
     juju.deploy("self-signed-certificates", channel="latest/edge")
@@ -22,6 +22,7 @@ def deploy(juju: jubilant.Juju, postfix_relay_charm: str) -> None:
         error=jubilant.any_blocked,
         timeout=10 * 60,
     )
+    return APP_NAME
 
 
 @pytest.fixture(scope="module")
@@ -37,12 +38,6 @@ def postfix_relay_charm(pytestconfig: pytest.Config) -> str:
     charm = pytestconfig.getoption("--charm-file")
     assert charm, "--charm-file must be set"
     return charm
-
-
-@pytest.fixture(scope="module")
-def postfix_relay_app() -> str:
-    """Return the postfix-relay app name."""
-    return APP_NAME
 
 
 @pytest.fixture(scope="module")

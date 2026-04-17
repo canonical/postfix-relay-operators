@@ -19,9 +19,7 @@ from tests.integration.helpers import sha512
 
 
 @pytest.mark.abort_on_fail
-def test_simple_relay(
-    deploy: None, juju: jubilant.Juju, postfix_relay_app: str, machine_ip_address: str
-):
+def test_simple_relay(juju: jubilant.Juju, postfix_relay_app: str, machine_ip_address: str):
     """Test that postfix-relay correctly relays email.
 
     arrange: Deploy postfix-relay charm with the testrelay.internal domain in relay domains.
@@ -67,9 +65,7 @@ def test_simple_relay(
 
 
 @pytest.mark.abort_on_fail
-def test_authentication(
-    deploy: None, juju: jubilant.Juju, postfix_relay_app: str, machine_ip_address: str
-):
+def test_authentication(juju: jubilant.Juju, postfix_relay_app: str, machine_ip_address: str):
     """Test SMTP authentication enforcement.
 
     arrange: Deploy postfix-relay charm with SMTP authentication enabled and a test user.
@@ -138,7 +134,7 @@ def test_authentication(
 
 
 @pytest.mark.abort_on_fail
-def test_metrics_configured(deploy: None, juju: jubilant.Juju, postfix_relay_app: str):
+def test_metrics_configured(juju: jubilant.Juju, postfix_relay_app: str):
     """Test that Telegraf metrics are exposed and scrapeable.
 
     arrange: Deploy postfix-relay.
@@ -167,7 +163,7 @@ def test_metrics_configured(deploy: None, juju: jubilant.Juju, postfix_relay_app
 
 
 @pytest.mark.abort_on_fail
-def test_tls_presents_certificate(deploy: None, juju: jubilant.Juju, postfix_relay_app: str):
+def test_tls_presents_certificate(juju: jubilant.Juju, postfix_relay_app: str):
     """Test that TLS certificate is presented on SMTP STARTTLS.
 
     arrange: Postfix-relay is related to a TLS certificate provider.
