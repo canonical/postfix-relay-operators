@@ -20,7 +20,12 @@ from tests.integration.helpers import sha512
 
 
 def deploy(juju: jubilant.Juju, charm: str) -> None:
-    """Deploy postfix-relay and its dependencies."""
+    """Deploy postfix-relay and its dependencies.
+
+    Args:
+        juju: Jubilant Juju instance.
+        charm: Path to the charm file to deploy.
+    """
     juju.deploy(f"./{charm}", APP_NAME)
     juju.deploy("self-signed-certificates")
     juju.integrate(APP_NAME, "self-signed-certificates")
