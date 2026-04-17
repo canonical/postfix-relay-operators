@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
-# Copyright 2025 Canonical Ltd.
+# Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Integration tests."""
 
-import base64
-import hashlib
-import logging
-import os
 import smtplib
-import socket
 import ssl
 import time
 from typing import cast
@@ -20,37 +15,48 @@ import pytest
 import requests
 import yaml
 
-logger = logging.getLogger(__name__)
+from tests.integration.conftest import APP_NAME
+from tests.integration.helpers import sha512
 
 
-def sha512(password: str, salt: bytes | None = None) -> str:
-    if salt is None:
-        salt = os.urandom(8)
-    digest = hashlib.sha512(password.encode("utf-8") + salt).digest()
-    b64 = base64.b64encode(digest + salt).decode("ascii")
-    return "{SSHA512}" + b64
+def deploy(juju: jubilant.Juju, charm: str) -> None:
+    """Deploy postfix-relay and its dependencies.
+
+    Args:
+        juju: Jubilant Juju instance.
+        charm: Path to the charm file to deploy.
+    """
+    juju.deploy(f"./{charm}", APP_NAME)
+    juju.deploy("self-signed-certificates")
+    juju.integrate(APP_NAME, "self-signed-certificates")
+    juju.wait(
+        lambda status: status.apps[APP_NAME].is_active,
+        error=jubilant.any_blocked,
+        timeout=10 * 60,
+    )
 
 
-@pytest.fixture(scope="session", name="machine_ip_address")
-def machine_ip_address_fixture() -> str:
-    """IP address for the machine running the tests."""
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    ip_address = s.getsockname()[0]
-    logger.info("IP Address for the current test runner: %s", ip_address)
-    s.close()
-    return ip_address
+@pytest.mark.juju_setup
+def test_deploy(juju: jubilant.Juju, postfix_relay_charm: str) -> None:
+    """Deploy the charm and wait for it to become active.
+
+    arrange: A Juju model exists.
+    act: Deploy postfix-relay and self-signed-certificates, then integrate them.
+    assert: postfix-relay reaches the active status.
+    """
+    deploy(juju, postfix_relay_charm)
 
 
 @pytest.mark.abort_on_fail
-def test_simple_relay(juju: jubilant.Juju, postfix_relay_app, machine_ip_address):
-    """
+def test_simple_relay(juju: jubilant.Juju, postfix_relay_app: str, machine_ip_address: str):
+    """Test that postfix-relay correctly relays email.
+
     arrange: Deploy postfix-relay charm with the testrelay.internal domain in relay domains.
     act: Send an email to an address with the testrelay.internal domain.
     assert: The email is correctly relayed to the mailcatcher local test smtp server.
     """
     status = juju.status()
-    unit = list(status.apps[postfix_relay_app].units.values())[0]
+    unit = status.apps[postfix_relay_app].units[f"{postfix_relay_app}/0"]
     unit_ip = unit.public_address
 
     command_to_put_domain = (
@@ -88,14 +94,15 @@ def test_simple_relay(juju: jubilant.Juju, postfix_relay_app, machine_ip_address
 
 
 @pytest.mark.abort_on_fail
-def test_authentication(juju: jubilant.Juju, postfix_relay_app, machine_ip_address):
-    """
+def test_authentication(juju: jubilant.Juju, postfix_relay_app: str, machine_ip_address: str):
+    """Test SMTP authentication enforcement.
+
     arrange: Deploy postfix-relay charm with SMTP authentication enabled and a test user.
     act: Attempt to send an email without authentication then with authentication.
-    assert: Unauthenticated email sending is refused, authenticated email sending is accepted
+    assert: Unauthenticated email sending is refused, authenticated email sending is accepted.
     """
     status = juju.status()
-    unit = list(status.apps[postfix_relay_app].units.values())[0]
+    unit = status.apps[postfix_relay_app].units[f"{postfix_relay_app}/0"]
     unit_ip = unit.public_address
     mailcatcher_url = "http://127.0.0.1:1080"
 
@@ -156,8 +163,9 @@ def test_authentication(juju: jubilant.Juju, postfix_relay_app, machine_ip_addre
 
 
 @pytest.mark.abort_on_fail
-def test_metrics_configured(juju: jubilant.Juju, postfix_relay_app, machine_ip_address):
-    """
+def test_metrics_configured(juju: jubilant.Juju, postfix_relay_app: str):
+    """Test that Telegraf metrics are exposed and scrapeable.
+
     arrange: Deploy postfix-relay.
     act: Get the metrics from the unit.
     assert: The metrics can be scraped and there are metrics.
@@ -168,7 +176,7 @@ def test_metrics_configured(juju: jubilant.Juju, postfix_relay_app, machine_ip_a
         delay=30,
     )
     status = juju.status()
-    unit = list(status.apps[postfix_relay_app].units.values())[0]
+    unit = status.apps[postfix_relay_app].units[f"{postfix_relay_app}/0"]
     unit_ip = unit.public_address
 
     metrics_output = requests.get(f"http://{unit_ip}:9103/metrics", timeout=5).text
@@ -184,14 +192,15 @@ def test_metrics_configured(juju: jubilant.Juju, postfix_relay_app, machine_ip_a
 
 
 @pytest.mark.abort_on_fail
-def test_tls_presents_certificate(juju: jubilant.Juju, postfix_relay_app):
-    """
+def test_tls_presents_certificate(juju: jubilant.Juju, postfix_relay_app: str):
+    """Test that TLS certificate is presented on SMTP STARTTLS.
+
     arrange: Postfix-relay is related to a TLS certificate provider.
     act: Connect with STARTTLS and read the presented server certificate.
     assert: A certificate is presented by the endpoint.
     """
     status = juju.status()
-    unit = list(status.apps[postfix_relay_app].units.values())[0]
+    unit = status.apps[postfix_relay_app].units[f"{postfix_relay_app}/0"]
     unit_ip = unit.public_address
 
     with smtplib.SMTP(unit_ip, 587, timeout=10) as server:
