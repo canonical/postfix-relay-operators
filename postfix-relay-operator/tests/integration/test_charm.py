@@ -15,25 +15,8 @@ import pytest
 import requests
 import yaml
 
-from tests.integration.conftest import APP_NAME
+from tests.integration.conftest import deploy
 from tests.integration.helpers import sha512
-
-
-def deploy(juju: jubilant.Juju, charm: str) -> None:
-    """Deploy postfix-relay and its dependencies.
-
-    Args:
-        juju: Jubilant Juju instance.
-        charm: Path to the charm file to deploy.
-    """
-    juju.deploy(f"./{charm}", APP_NAME)
-    juju.deploy("self-signed-certificates", channel="latest/edge")
-    juju.integrate(APP_NAME, "self-signed-certificates")
-    juju.wait(
-        lambda status: status.apps[APP_NAME].is_active,
-        error=jubilant.any_blocked,
-        timeout=10 * 60,
-    )
 
 
 @pytest.mark.juju_setup
