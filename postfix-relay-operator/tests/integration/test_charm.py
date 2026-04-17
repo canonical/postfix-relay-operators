@@ -27,7 +27,7 @@ def deploy(juju: jubilant.Juju, charm: str) -> None:
         charm: Path to the charm file to deploy.
     """
     juju.deploy(f"./{charm}", APP_NAME)
-    juju.deploy("self-signed-certificates")
+    juju.deploy("self-signed-certificates", channel="latest/edge")
     juju.integrate(APP_NAME, "self-signed-certificates")
     juju.wait(
         lambda status: status.apps[APP_NAME].is_active,
