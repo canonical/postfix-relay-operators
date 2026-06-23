@@ -14,7 +14,5 @@ jobs:
       matrix:
         charm: [postfix-relay, postfix-relay-configurator]
     with:
-      self-hosted-runner: true
-      self-hosted-runner-label: "edge"
       vale-style-check: false
       working-directory: ./${{ matrix.charm }}-operator
